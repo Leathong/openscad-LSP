@@ -7,9 +7,9 @@ use lsp_types::{
     CompletionItem, CompletionResponse, Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionResponse,
     InitializeParams, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentSyncCapability, TextDocumentSyncKind,
+    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind,
 };
-use tree_sitter::{Node, Parser, TreeCursor};
+use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
 const BUILTIN_FUNCTIONS: [&str; 39] = [
     "abs",
@@ -177,6 +177,62 @@ fn find_error_nodes<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
     cursor.goto_parent();
 }
 
+struct ParsedCode {
+    parser: Parser,
+    code: String,
+    tree: Tree,
+}
+
+impl ParsedCode {
+    fn new(lang: Language, code: String) -> Self {
+        let mut parser = Parser::new();
+        parser
+            .set_language(lang)
+            .expect("Error loading openscad grammar");
+        let tree = parser.parse(&code, None).unwrap();
+        Self { parser, code, tree }
+    }
+
+    fn edit(&mut self, events: &[TextDocumentContentChangeEvent]) {
+        for event in events {
+            let range = event.range.unwrap();
+            let start_ofs = find_offset(&self.code, range.start).unwrap();
+            let end_ofs = find_offset(&self.code, range.end).unwrap();
+            self.code.replace_range(start_ofs..end_ofs, &event.text);
+
+            let new_end_position = match event.text.rfind('\n') {
+                Some(ind) => {
+                    let num_newlines = event.text.bytes().filter(|&c| c == b'\n').count();
+                    Point {
+                        row: range.start.line as usize + num_newlines,
+                        column: event.text.len() - ind,
+                    }
+                }
+                None => Point {
+                    row: range.end.line as usize,
+                    column: range.end.character as usize + event.text.len(),
+                },
+            };
+
+            self.tree.edit(&InputEdit {
+                start_byte: start_ofs,
+                old_end_byte: end_ofs,
+                new_end_byte: start_ofs + event.text.len(),
+                start_position: Point {
+                    row: range.start.line as usize,
+                    column: range.start.character as usize,
+                },
+                old_end_position: Point {
+                    row: range.end.line as usize,
+                    column: range.end.character as usize,
+                },
+                new_end_position,
+            });
+        }
+        self.tree = self.parser.parse(&self.code, Some(&self.tree)).unwrap();
+    }
+}
+
 fn main_loop(
     connection: &Connection,
     params: serde_json::Value,
@@ -238,20 +294,10 @@ fn main_loop(
                 let notif = match cast_notification::<DidOpenTextDocument>(notif) {
                     Ok(DidOpenTextDocumentParams { text_document: doc }) => {
                         eprintln!("opened document:\n- {:?}\n- {:?}", doc.uri, doc.text);
-
-                        let text = doc.text;
-                        {
-                            let mut parser = Parser::new();
-                            parser
-                                .set_language(tree_sitter_openscad::language())
-                                .expect("Error loading openscad grammar");
-                            let tree = parser.parse(&text, None).unwrap();
-
-                            let mut cursor = tree.walk();
-
-                            show_node(&text, &mut cursor, 0);
-                            code.insert(doc.uri, text);
-                        }
+                        code.insert(
+                            doc.uri,
+                            ParsedCode::new(tree_sitter_openscad::language(), doc.text),
+                        );
                         continue;
                     }
                     Err(notif) => notif,
@@ -261,31 +307,22 @@ fn main_loop(
                         text_document,
                         content_changes,
                     }) => {
-                        let text = match code.get_mut(&text_document.uri) {
-                            Some(r) => r,
+                        let pc = match code.get_mut(&text_document.uri) {
+                            Some(x) => x,
                             None => {
                                 eprintln!("unknown document {}", text_document.uri);
                                 continue;
                             }
                         };
-                        for event in content_changes {
-                            let range = event.range.unwrap();
-                            let start_ofs = find_offset(text, range.start).unwrap();
-                            let end_ofs = find_offset(text, range.end).unwrap();
-                            text.replace_range(start_ofs..end_ofs, &event.text);
-                        }
+                        pc.edit(&content_changes);
 
-                        let mut parser = Parser::new();
-                        parser
-                            .set_language(tree_sitter_openscad::language())
-                            .expect("Error loading openscad grammar");
-                        let tree = parser.parse(&text, None).unwrap();
+                        eprintln!("text: {:?}", pc.code);
 
-                        let mut cursor = tree.walk();
+                        let mut cursor = pc.tree.walk();
 
-                        show_node(text, &mut cursor, 0);
+                        show_node(&pc.code, &mut cursor, 0);
 
-                        let diags = error_nodes(tree.walk()).into_iter().map(|node| Diagnostic {
+                        let diags = error_nodes(cursor).into_iter().map(|node| Diagnostic {
                             range: Range {
                                 start: Position {
                                     line: node.start_position().row as u32,
