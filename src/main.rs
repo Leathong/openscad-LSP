@@ -11,6 +11,91 @@ use lsp_types::{
 };
 use tree_sitter::{Node, Parser, TreeCursor};
 
+const BUILTIN_FUNCTIONS: [&str; 39] = [
+    "abs",
+    "acos",
+    "asin",
+    "assert",
+    "atan",
+    "atan2",
+    "ceil",
+    "chr",
+    "concat",
+    "cos",
+    "cross",
+    "dxf_cross",
+    "dxf_dim",
+    "exp",
+    "floor",
+    "is_bool",
+    "is_list",
+    "is_num",
+    "is_string",
+    "is_undef",
+    "len",
+    "ln",
+    "log",
+    "lookup",
+    "max",
+    "min",
+    "norm",
+    "ord",
+    "pow",
+    "rands",
+    "round",
+    "search",
+    "sign",
+    "sin",
+    "sqrt",
+    "str",
+    "tan",
+    "version",
+    "version_num",
+];
+
+const BUILTIN_MODULES: [&str; 36] = [
+    "children",
+    "circle",
+    "color",
+    "cube",
+    "cylinder",
+    "difference",
+    "echo",
+    "else",
+    "for",
+    "group",
+    "hull",
+    "if",
+    "import",
+    "intersection",
+    "intersection_for",
+    "let",
+    "linear_extrude",
+    "minkowski",
+    "mirror",
+    "multmatrix",
+    "offset",
+    "parent_module",
+    "polygon",
+    "polyhedron",
+    "projection",
+    "render",
+    "resize",
+    "rotate",
+    "rotate_extrude",
+    "scale",
+    "sphere",
+    "square",
+    "surface",
+    "text",
+    "translate",
+    "union",
+];
+
+const KEYWORDS: [&str; 7] = [
+    "false", "function", "include", "module", "return", "true", "use",
+];
+
 fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
     let node = cursor.node();
     if !node.is_named() {
@@ -123,9 +208,11 @@ fn main_loop(
                 let req = match cast_request::<Completion>(req) {
                     Ok((id, _params)) => {
                         let result = CompletionResponse::Array(
-                            "aaa abc ddd def ggg ghi 123 147"
-                                .split(' ')
-                                .map(|s| CompletionItem {
+                            BUILTIN_FUNCTIONS
+                                .iter()
+                                .chain(BUILTIN_MODULES.iter())
+                                .chain(KEYWORDS.iter())
+                                .map(|&s| CompletionItem {
                                     label: s.to_owned(),
                                     ..Default::default()
                                 })
