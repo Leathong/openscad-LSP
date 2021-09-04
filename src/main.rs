@@ -6,9 +6,8 @@ use lsp_types::{
     request::{Completion, GotoDefinition},
     CompletionItem, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
-    GotoDefinitionResponse, InitializeParams, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url,
+    GotoDefinitionResponse, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
+    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -132,17 +131,8 @@ fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
-    let caps = ServerCapabilities {
-        text_document_sync: Some(TextDocumentSyncCapability::Kind(
-            TextDocumentSyncKind::Incremental,
-        )),
-        completion_provider: Some(Default::default()),
-        ..Default::default()
-    };
-    let caps = serde_json::to_value(&caps).unwrap();
-    let initialization_params = connection.initialize(caps)?;
-    let mut server = Server::default();
-    server.main_loop(&connection, initialization_params)?;
+    let mut server = Server::new(connection);
+    server.main_loop()?;
     io_threads.join()?;
     Ok(())
 }
@@ -235,34 +225,24 @@ impl ParsedCode {
     }
 }
 
-#[derive(Default)]
 struct Server {
+    connection: Connection,
     code: HashMap<Url, ParsedCode>,
 }
 
+// Message handlers.
 impl Server {
-    fn handle_goto_definition(
-        &mut self,
-        connection: &Connection,
-        id: RequestId,
-        _params: GotoDefinitionParams,
-    ) {
+    fn handle_goto_definition(&mut self, id: RequestId, _params: GotoDefinitionParams) {
         let result = Some(GotoDefinitionResponse::Array(Vec::new()));
         let result = serde_json::to_value(&result).unwrap();
-        let resp = Response {
+        self.respond(Response {
             id,
             result: Some(result),
             error: None,
-        };
-        connection.sender.send(Message::Response(resp)).unwrap();
+        });
     }
 
-    fn handle_completion(
-        &mut self,
-        connection: &Connection,
-        id: RequestId,
-        _params: CompletionParams,
-    ) {
+    fn handle_completion(&mut self, id: RequestId, _params: CompletionParams) {
         let result = CompletionResponse::Array(
             BUILTIN_FUNCTIONS
                 .iter()
@@ -275,19 +255,14 @@ impl Server {
                 .collect(),
         );
         let result = serde_json::to_value(&result).unwrap();
-        let resp = Response {
+        self.respond(Response {
             id,
             result: Some(result),
             error: None,
-        };
-        connection.sender.send(Message::Response(resp)).unwrap();
+        });
     }
 
-    fn handle_did_open_text_document(
-        &mut self,
-        _connection: &Connection,
-        params: DidOpenTextDocumentParams,
-    ) {
+    fn handle_did_open_text_document(&mut self, params: DidOpenTextDocumentParams) {
         let DidOpenTextDocumentParams { text_document: doc } = params;
         self.code.insert(
             doc.uri,
@@ -295,11 +270,7 @@ impl Server {
         );
     }
 
-    fn handle_did_change_text_document(
-        &mut self,
-        connection: &Connection,
-        params: DidChangeTextDocumentParams,
-    ) {
+    fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
         let DidChangeTextDocumentParams {
             text_document,
             content_changes,
@@ -316,67 +287,91 @@ impl Server {
 
         eprintln!("text: {:?}", pc.code);
 
-        let mut cursor = pc.tree.walk();
+        show_node(&pc.code, &mut pc.tree.walk(), 0);
 
-        show_node(&pc.code, &mut cursor, 0);
+        let diags: Vec<_> = error_nodes(pc.tree.walk())
+            .into_iter()
+            .map(|node| Diagnostic {
+                range: Range {
+                    start: Position {
+                        line: node.start_position().row as u32,
+                        character: node.start_position().column as u32,
+                    },
+                    end: Position {
+                        line: node.end_position().row as u32,
+                        character: node.end_position().column as u32,
+                    },
+                },
+                severity: Some(DiagnosticSeverity::Error),
+                message: if node.is_missing() {
+                    format!("missing {}", node.kind())
+                } else {
+                    "syntax error".to_owned()
+                },
+                ..Default::default()
+            })
+            .collect();
 
-        let diags = error_nodes(cursor).into_iter().map(|node| Diagnostic {
-            range: Range {
-                start: Position {
-                    line: node.start_position().row as u32,
-                    character: node.start_position().column as u32,
-                },
-                end: Position {
-                    line: node.end_position().row as u32,
-                    character: node.end_position().column as u32,
-                },
+        self.notify(lsp_server::Notification::new(
+            "textDocument/publishDiagnostics".into(),
+            PublishDiagnosticsParams {
+                uri: text_document.uri,
+                diagnostics: diags,
+                version: Some(text_document.version),
             },
-            severity: Some(DiagnosticSeverity::Error),
-            message: if node.is_missing() {
-                format!("missing {}", node.kind())
-            } else {
-                "syntax error".to_owned()
-            },
-            ..Default::default()
-        });
+        ));
+    }
+}
 
-        connection
-            .sender
-            .send(Message::Notification(lsp_server::Notification::new(
-                "textDocument/publishDiagnostics".into(),
-                PublishDiagnosticsParams {
-                    uri: text_document.uri,
-                    diagnostics: diags.collect(),
-                    version: Some(text_document.version),
-                },
-            )))
-            .unwrap();
+impl Server {
+    fn new(connection: Connection) -> Self {
+        Self {
+            connection,
+            code: Default::default(),
+        }
     }
 
-    fn main_loop(
-        &mut self,
-        connection: &Connection,
-        params: serde_json::Value,
-    ) -> Result<(), Box<dyn Error + Sync + Send>> {
-        let _params: InitializeParams = serde_json::from_value(params).unwrap();
+    fn notify(&self, notif: lsp_server::Notification) {
+        self.connection
+            .sender
+            .send(Message::Notification(notif))
+            .unwrap()
+    }
 
-        for msg in &connection.receiver {
+    fn respond(&self, resp: Response) {
+        self.connection
+            .sender
+            .send(Message::Response(resp))
+            .unwrap()
+    }
+
+    fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
+        let caps = serde_json::to_value(&ServerCapabilities {
+            text_document_sync: Some(TextDocumentSyncCapability::Kind(
+                TextDocumentSyncKind::Incremental,
+            )),
+            completion_provider: Some(Default::default()),
+            ..Default::default()
+        })?;
+        self.connection.initialize(caps)?;
+
+        while let Ok(msg) = self.connection.receiver.recv() {
             eprintln!("got msg: {:?}", msg);
             match msg {
                 Message::Request(req) => {
-                    if connection.handle_shutdown(&req)? {
+                    if self.connection.handle_shutdown(&req)? {
                         return Ok(());
                     }
                     let req = match cast_request::<GotoDefinition>(req) {
                         Ok((id, params)) => {
-                            self.handle_goto_definition(connection, id, params);
+                            self.handle_goto_definition(id, params);
                             continue;
                         }
                         Err(req) => req,
                     };
                     let req = match cast_request::<Completion>(req) {
                         Ok((id, params)) => {
-                            self.handle_completion(connection, id, params);
+                            self.handle_completion(id, params);
                             continue;
                         }
                         Err(req) => req,
@@ -389,14 +384,14 @@ impl Server {
                 Message::Notification(notif) => {
                     let notif = match cast_notification::<DidOpenTextDocument>(notif) {
                         Ok(params) => {
-                            self.handle_did_open_text_document(connection, params);
+                            self.handle_did_open_text_document(params);
                             continue;
                         }
                         Err(notif) => notif,
                     };
                     let notif = match cast_notification::<DidChangeTextDocument>(notif) {
                         Ok(params) => {
-                            self.handle_did_change_text_document(connection, params);
+                            self.handle_did_change_text_document(params);
                             continue;
                         }
                         Err(notif) => notif,
