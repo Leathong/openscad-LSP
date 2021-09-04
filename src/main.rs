@@ -4,10 +4,11 @@ use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
     request::{Completion, GotoDefinition},
-    CompletionItem, CompletionResponse, Diagnostic, DiagnosticSeverity,
-    DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionResponse,
-    InitializeParams, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind,
+    CompletionItem, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
+    DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
+    GotoDefinitionResponse, InitializeParams, Position, PublishDiagnosticsParams, Range,
+    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -140,7 +141,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     };
     let caps = serde_json::to_value(&caps).unwrap();
     let initialization_params = connection.initialize(caps)?;
-    main_loop(&connection, initialization_params)?;
+    let mut server = Server::default();
+    server.main_loop(&connection, initialization_params)?;
     io_threads.join()?;
     Ok(())
 }
@@ -233,141 +235,183 @@ impl ParsedCode {
     }
 }
 
-fn main_loop(
-    connection: &Connection,
-    params: serde_json::Value,
-) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let _params: InitializeParams = serde_json::from_value(params).unwrap();
-    let mut code = HashMap::new();
+#[derive(Default)]
+struct Server {
+    code: HashMap<Url, ParsedCode>,
+}
 
-    for msg in &connection.receiver {
-        eprintln!("got msg: {:?}", msg);
-        match msg {
-            Message::Request(req) => {
-                if connection.handle_shutdown(&req)? {
-                    return Ok(());
+impl Server {
+    fn handle_goto_definition(
+        &mut self,
+        connection: &Connection,
+        id: RequestId,
+        _params: GotoDefinitionParams,
+    ) {
+        let result = Some(GotoDefinitionResponse::Array(Vec::new()));
+        let result = serde_json::to_value(&result).unwrap();
+        let resp = Response {
+            id,
+            result: Some(result),
+            error: None,
+        };
+        connection.sender.send(Message::Response(resp)).unwrap();
+    }
+
+    fn handle_completion(
+        &mut self,
+        connection: &Connection,
+        id: RequestId,
+        _params: CompletionParams,
+    ) {
+        let result = CompletionResponse::Array(
+            BUILTIN_FUNCTIONS
+                .iter()
+                .chain(BUILTIN_MODULES.iter())
+                .chain(KEYWORDS.iter())
+                .map(|&s| CompletionItem {
+                    label: s.to_owned(),
+                    ..Default::default()
+                })
+                .collect(),
+        );
+        let result = serde_json::to_value(&result).unwrap();
+        let resp = Response {
+            id,
+            result: Some(result),
+            error: None,
+        };
+        connection.sender.send(Message::Response(resp)).unwrap();
+    }
+
+    fn handle_did_open_text_document(
+        &mut self,
+        _connection: &Connection,
+        params: DidOpenTextDocumentParams,
+    ) {
+        let DidOpenTextDocumentParams { text_document: doc } = params;
+        self.code.insert(
+            doc.uri,
+            ParsedCode::new(tree_sitter_openscad::language(), doc.text),
+        );
+    }
+
+    fn handle_did_change_text_document(
+        &mut self,
+        connection: &Connection,
+        params: DidChangeTextDocumentParams,
+    ) {
+        let DidChangeTextDocumentParams {
+            text_document,
+            content_changes,
+        } = params;
+
+        let pc = match self.code.get_mut(&text_document.uri) {
+            Some(x) => x,
+            None => {
+                eprintln!("unknown document {}", text_document.uri);
+                return;
+            }
+        };
+        pc.edit(&content_changes);
+
+        eprintln!("text: {:?}", pc.code);
+
+        let mut cursor = pc.tree.walk();
+
+        show_node(&pc.code, &mut cursor, 0);
+
+        let diags = error_nodes(cursor).into_iter().map(|node| Diagnostic {
+            range: Range {
+                start: Position {
+                    line: node.start_position().row as u32,
+                    character: node.start_position().column as u32,
+                },
+                end: Position {
+                    line: node.end_position().row as u32,
+                    character: node.end_position().column as u32,
+                },
+            },
+            severity: Some(DiagnosticSeverity::Error),
+            message: if node.is_missing() {
+                format!("missing {}", node.kind())
+            } else {
+                "syntax error".to_owned()
+            },
+            ..Default::default()
+        });
+
+        connection
+            .sender
+            .send(Message::Notification(lsp_server::Notification::new(
+                "textDocument/publishDiagnostics".into(),
+                PublishDiagnosticsParams {
+                    uri: text_document.uri,
+                    diagnostics: diags.collect(),
+                    version: Some(text_document.version),
+                },
+            )))
+            .unwrap();
+    }
+
+    fn main_loop(
+        &mut self,
+        connection: &Connection,
+        params: serde_json::Value,
+    ) -> Result<(), Box<dyn Error + Sync + Send>> {
+        let _params: InitializeParams = serde_json::from_value(params).unwrap();
+
+        for msg in &connection.receiver {
+            eprintln!("got msg: {:?}", msg);
+            match msg {
+                Message::Request(req) => {
+                    if connection.handle_shutdown(&req)? {
+                        return Ok(());
+                    }
+                    let req = match cast_request::<GotoDefinition>(req) {
+                        Ok((id, params)) => {
+                            self.handle_goto_definition(connection, id, params);
+                            continue;
+                        }
+                        Err(req) => req,
+                    };
+                    let req = match cast_request::<Completion>(req) {
+                        Ok((id, params)) => {
+                            self.handle_completion(connection, id, params);
+                            continue;
+                        }
+                        Err(req) => req,
+                    };
+                    eprintln!("unknown request: {:?}", req);
                 }
-                let req = match cast_request::<GotoDefinition>(req) {
-                    Ok((id, _params)) => {
-                        let result = Some(GotoDefinitionResponse::Array(Vec::new()));
-                        let result = serde_json::to_value(&result).unwrap();
-                        let resp = Response {
-                            id,
-                            result: Some(result),
-                            error: None,
-                        };
-                        connection.sender.send(Message::Response(resp))?;
-                        continue;
-                    }
-                    Err(req) => req,
-                };
-                let req = match cast_request::<Completion>(req) {
-                    Ok((id, _params)) => {
-                        let result = CompletionResponse::Array(
-                            BUILTIN_FUNCTIONS
-                                .iter()
-                                .chain(BUILTIN_MODULES.iter())
-                                .chain(KEYWORDS.iter())
-                                .map(|&s| CompletionItem {
-                                    label: s.to_owned(),
-                                    ..Default::default()
-                                })
-                                .collect(),
-                        );
-                        let result = serde_json::to_value(&result).unwrap();
-                        let resp = Response {
-                            id,
-                            result: Some(result),
-                            error: None,
-                        };
-                        connection.sender.send(Message::Response(resp))?;
-                        continue;
-                    }
-                    Err(req) => req,
-                };
-                eprintln!("unknown request: {:?}", req);
-            }
-            Message::Response(resp) => {
-                eprintln!("got response: {:?}", resp);
-            }
-            Message::Notification(notif) => {
-                let notif = match cast_notification::<DidOpenTextDocument>(notif) {
-                    Ok(DidOpenTextDocumentParams { text_document: doc }) => {
-                        eprintln!("opened document:\n- {:?}\n- {:?}", doc.uri, doc.text);
-                        code.insert(
-                            doc.uri,
-                            ParsedCode::new(tree_sitter_openscad::language(), doc.text),
-                        );
-                        continue;
-                    }
-                    Err(notif) => notif,
-                };
-                let notif = match cast_notification::<DidChangeTextDocument>(notif) {
-                    Ok(DidChangeTextDocumentParams {
-                        text_document,
-                        content_changes,
-                    }) => {
-                        let pc = match code.get_mut(&text_document.uri) {
-                            Some(x) => x,
-                            None => {
-                                eprintln!("unknown document {}", text_document.uri);
-                                continue;
-                            }
-                        };
-                        pc.edit(&content_changes);
+                Message::Response(resp) => {
+                    eprintln!("got response: {:?}", resp);
+                }
+                Message::Notification(notif) => {
+                    let notif = match cast_notification::<DidOpenTextDocument>(notif) {
+                        Ok(params) => {
+                            self.handle_did_open_text_document(connection, params);
+                            continue;
+                        }
+                        Err(notif) => notif,
+                    };
+                    let notif = match cast_notification::<DidChangeTextDocument>(notif) {
+                        Ok(params) => {
+                            self.handle_did_change_text_document(connection, params);
+                            continue;
+                        }
+                        Err(notif) => notif,
+                    };
+                    let notif = match cast_notification::<DidSaveTextDocument>(notif) {
+                        Ok(_) => continue,
+                        Err(notif) => notif,
+                    };
 
-                        eprintln!("text: {:?}", pc.code);
-
-                        let mut cursor = pc.tree.walk();
-
-                        show_node(&pc.code, &mut cursor, 0);
-
-                        let diags = error_nodes(cursor).into_iter().map(|node| Diagnostic {
-                            range: Range {
-                                start: Position {
-                                    line: node.start_position().row as u32,
-                                    character: node.start_position().column as u32,
-                                },
-                                end: Position {
-                                    line: node.end_position().row as u32,
-                                    character: node.end_position().column as u32,
-                                },
-                            },
-                            severity: Some(DiagnosticSeverity::Error),
-                            message: if node.is_missing() {
-                                format!("missing {}", node.kind())
-                            } else {
-                                "syntax error".to_owned()
-                            },
-                            ..Default::default()
-                        });
-
-                        connection
-                            .sender
-                            .send(Message::Notification(lsp_server::Notification::new(
-                                "textDocument/publishDiagnostics".into(),
-                                PublishDiagnosticsParams {
-                                    uri: text_document.uri,
-                                    diagnostics: diags.collect(),
-                                    version: Some(text_document.version),
-                                },
-                            )))
-                            .unwrap();
-
-                        continue;
-                    }
-                    Err(notif) => notif,
-                };
-                let notif = match cast_notification::<DidSaveTextDocument>(notif) {
-                    Ok(_) => continue,
-                    Err(notif) => notif,
-                };
-
-                eprintln!("unknown notification: {:?}", notif);
+                    eprintln!("unknown notification: {:?}", notif);
+                }
             }
         }
+        Ok(())
     }
-    Ok(())
 }
 
 fn cast_request<R>(req: Request) -> Result<(RequestId, R::Params), Request>
