@@ -150,6 +150,20 @@ fn find_offset(text: &str, pos: Position) -> Option<usize> {
     Some(line_start + pos.character as usize)
 }
 
+fn to_point(p: Position) -> Point {
+    Point {
+        row: p.line as usize,
+        column: p.character as usize,
+    }
+}
+
+fn to_position(p: Point) -> Position {
+    Position {
+        line: p.row as u32,
+        character: p.column as u32,
+    }
+}
+
 fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
     let mut ret = vec![];
     find_error_nodes(&mut ret, &mut cursor);
@@ -215,14 +229,8 @@ impl ParsedCode {
                 start_byte: start_ofs,
                 old_end_byte: end_ofs,
                 new_end_byte: start_ofs + event.text.len(),
-                start_position: Point {
-                    row: range.start.line as usize,
-                    column: range.start.character as usize,
-                },
-                old_end_position: Point {
-                    row: range.end.line as usize,
-                    column: range.end.character as usize,
-                },
+                start_position: to_point(range.start),
+                old_end_position: to_point(range.end),
                 new_end_position,
             });
         }
@@ -274,10 +282,7 @@ impl Server {
                 }
             };
 
-            let point = Point {
-                row: pos.line as usize,
-                column: pos.character as usize,
-            };
+            let point = to_point(pos);
             let mut cursor = file.tree.root_node().walk();
             while cursor.goto_first_child_for_point(point).is_some() {}
             eprintln!("parents:");
@@ -377,14 +382,8 @@ impl Server {
             .into_iter()
             .map(|node| Diagnostic {
                 range: Range {
-                    start: Position {
-                        line: node.start_position().row as u32,
-                        character: node.start_position().column as u32,
-                    },
-                    end: Position {
-                        line: node.end_position().row as u32,
-                        character: node.end_position().column as u32,
-                    },
+                    start: to_position(node.start_position()),
+                    end: to_position(node.end_position()),
                 },
                 severity: Some(DiagnosticSeverity::Error),
                 message: if node.is_missing() {
