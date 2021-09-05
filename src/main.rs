@@ -248,7 +248,19 @@ impl Server {
     }
 
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
-        let mut local_names = vec![];
+        fn zip_const<T, U>(it: impl Iterator<Item = T>, kind: U) -> impl Iterator<Item = (T, U)>
+        where
+            U: Clone,
+        {
+            it.zip(iter::repeat(kind))
+        }
+        let funcs = zip_const(BUILTIN_FUNCTIONS.iter(), CompletionItemKind::Function);
+        let modules = zip_const(BUILTIN_MODULES.iter(), CompletionItemKind::Module);
+        let keywords = zip_const(KEYWORDS.iter(), CompletionItemKind::Keyword);
+        let mut items: Vec<_> = (funcs.chain(modules).chain(keywords))
+            .map(|(&v, k)| (v.to_owned(), k))
+            .collect();
+
         {
             let uri = params.text_document_position.text_document.uri;
             let pos = params.text_document_position.position;
@@ -277,14 +289,28 @@ impl Server {
 
                         let node = cursor.node();
                         match node.kind() {
-                            "module_declaration" | "function_declaration" => {
+                            "module_declaration" => {
                                 if let Some(name) = node.child_by_field_name("name") {
-                                    local_names.push(name.utf8_text(file.code.as_bytes()).unwrap());
+                                    items.push((
+                                        name.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
+                                        CompletionItemKind::Module,
+                                    ));
+                                }
+                            }
+                            "function_declaration" => {
+                                if let Some(name) = node.child_by_field_name("name") {
+                                    items.push((
+                                        name.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
+                                        CompletionItemKind::Function,
+                                    ));
                                 }
                             }
                             "assignment" => {
                                 if let Some(left) = node.child_by_field_name("left") {
-                                    local_names.push(left.utf8_text(file.code.as_bytes()).unwrap());
+                                    items.push((
+                                        left.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
+                                        CompletionItemKind::Variable,
+                                    ));
                                 }
                             }
                             _ => {}
@@ -302,21 +328,11 @@ impl Server {
                 }
             }
         }
-
-        fn zip_const<T, U>(it: impl Iterator<Item = T>, kind: U) -> impl Iterator<Item = (T, U)>
-        where
-            U: Clone,
-        {
-            it.zip(iter::repeat(kind))
-        }
-        let funcs = zip_const(BUILTIN_FUNCTIONS.iter(), CompletionItemKind::Function);
-        let modules = zip_const(BUILTIN_MODULES.iter(), CompletionItemKind::Module);
-        let keywords = zip_const(KEYWORDS.iter(), CompletionItemKind::Keyword);
-        let vars = zip_const(local_names.iter(), CompletionItemKind::Variable);
         let result = CompletionResponse::Array(
-            (funcs.chain(modules).chain(keywords).chain(vars))
-                .map(|(&s, kind)| CompletionItem {
-                    label: s.to_owned(),
+            items
+                .into_iter()
+                .map(|(label, kind)| CompletionItem {
+                    label,
                     kind: Some(kind),
                     ..Default::default()
                 })
