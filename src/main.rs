@@ -96,15 +96,10 @@ const KEYWORDS: [&str; 7] = [
     "false", "function", "include", "module", "return", "true", "use",
 ];
 
-fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
+fn node_debug(code: &str, cursor: &TreeCursor) -> String {
     let node = cursor.node();
-    if !node.is_named() {
-        return;
-    }
-
-    eprintln!(
-        "{} {} {} {} {:?}",
-        "    ".repeat(depth),
+    format!(
+        "{} {} {} {:?}",
         cursor.field_name().unwrap_or(if node.is_missing() {
             "MISSING"
         } else if node.is_error() {
@@ -115,7 +110,16 @@ fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
         cursor.field_id().unwrap_or(u16::MAX),
         node.kind(),
         &code[node.start_byte()..node.end_byte().min(node.start_byte() + 32)],
-    );
+    )
+}
+
+fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
+    let node = cursor.node();
+    if !node.is_named() {
+        return;
+    }
+
+    eprintln!("{}{}", "    ".repeat(depth), node_debug(code, cursor));
 
     if !cursor.goto_first_child() {
         return;
@@ -242,12 +246,68 @@ impl Server {
         });
     }
 
-    fn handle_completion(&mut self, id: RequestId, _params: CompletionParams) {
+    fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
+        let mut local_names = vec![];
+        {
+            let uri = params.text_document_position.text_document.uri;
+            let pos = params.text_document_position.position;
+            eprintln!("completion at {:?} {:?}", uri, pos);
+
+            let file = match self.code.get(&uri) {
+                Some(x) => x,
+                None => {
+                    eprintln!("unknown file {:?}", uri);
+                    return;
+                }
+            };
+
+            let point = Point {
+                row: pos.line as usize,
+                column: pos.character as usize,
+            };
+            let mut cursor = file.tree.root_node().walk();
+            while cursor.goto_first_child_for_point(point).is_some() {}
+            eprintln!("parents:");
+            loop {
+                eprintln!("- {}", node_debug(&file.code, &cursor));
+                if cursor.goto_first_child() {
+                    loop {
+                        eprintln!("  - {}", node_debug(&file.code, &cursor));
+
+                        let node = cursor.node();
+                        match node.kind() {
+                            "module_declaration" | "function_declaration" => {
+                                if let Some(name) = node.child_by_field_name("name") {
+                                    local_names.push(name.utf8_text(file.code.as_bytes()).unwrap());
+                                }
+                            }
+                            "assignment" => {
+                                if let Some(left) = node.child_by_field_name("left") {
+                                    local_names.push(left.utf8_text(file.code.as_bytes()).unwrap());
+                                }
+                            }
+                            _ => {}
+                        }
+
+                        if !cursor.goto_next_sibling() {
+                            break;
+                        }
+                    }
+                    cursor.goto_parent();
+                }
+
+                if !cursor.goto_parent() {
+                    break;
+                }
+            }
+        }
+
         let result = CompletionResponse::Array(
             BUILTIN_FUNCTIONS
                 .iter()
                 .chain(BUILTIN_MODULES.iter())
                 .chain(KEYWORDS.iter())
+                .chain(local_names.iter())
                 .map(|&s| CompletionItem {
                     label: s.to_owned(),
                     ..Default::default()
