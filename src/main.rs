@@ -1,13 +1,14 @@
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap, error::Error, iter};
 
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
     request::{Completion, GotoDefinition},
-    CompletionItem, CompletionParams, CompletionResponse, Diagnostic, DiagnosticSeverity,
-    DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
-    GotoDefinitionResponse, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
+    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
+    GotoDefinitionParams, GotoDefinitionResponse, Position, PublishDiagnosticsParams, Range,
+    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -302,14 +303,21 @@ impl Server {
             }
         }
 
+        fn zip_const<T, U>(it: impl Iterator<Item = T>, kind: U) -> impl Iterator<Item = (T, U)>
+        where
+            U: Clone,
+        {
+            it.zip(iter::repeat(kind))
+        }
+        let funcs = zip_const(BUILTIN_FUNCTIONS.iter(), CompletionItemKind::Function);
+        let modules = zip_const(BUILTIN_MODULES.iter(), CompletionItemKind::Module);
+        let keywords = zip_const(KEYWORDS.iter(), CompletionItemKind::Keyword);
+        let vars = zip_const(local_names.iter(), CompletionItemKind::Variable);
         let result = CompletionResponse::Array(
-            BUILTIN_FUNCTIONS
-                .iter()
-                .chain(BUILTIN_MODULES.iter())
-                .chain(KEYWORDS.iter())
-                .chain(local_names.iter())
-                .map(|&s| CompletionItem {
+            (funcs.chain(modules).chain(keywords).chain(vars))
+                .map(|(&s, kind)| CompletionItem {
                     label: s.to_owned(),
+                    kind: Some(kind),
                     ..Default::default()
                 })
                 .collect(),
