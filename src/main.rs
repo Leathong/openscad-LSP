@@ -272,8 +272,6 @@ impl Server {
         {
             let uri = params.text_document_position.text_document.uri;
             let pos = params.text_document_position.position;
-            eprintln!("completion at {:?} {:?}", uri, pos);
-
             let file = match self.code.get(&uri) {
                 Some(x) => x,
                 None => {
@@ -285,40 +283,23 @@ impl Server {
             let point = to_point(pos);
             let mut cursor = file.tree.root_node().walk();
             while cursor.goto_first_child_for_point(point).is_some() {}
-            eprintln!("parents:");
             loop {
-                eprintln!("- {}", node_debug(&file.code, &cursor));
                 if cursor.goto_first_child() {
                     loop {
-                        eprintln!("  - {}", node_debug(&file.code, &cursor));
-
                         let node = cursor.node();
-                        match node.kind() {
-                            "module_declaration" => {
-                                if let Some(name) = node.child_by_field_name("name") {
-                                    items.push((
-                                        name.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
-                                        CompletionItemKind::Module,
-                                    ));
-                                }
+                        let extract_info = match node.kind() {
+                            "module_declaration" => Some(("name", CompletionItemKind::Module)),
+                            "function_declaration" => Some(("name", CompletionItemKind::Function)),
+                            "assignment" => Some(("left", CompletionItemKind::Variable)),
+                            _ => None,
+                        };
+                        if let Some((child, kind)) = extract_info {
+                            if let Some(child) = node.child_by_field_name(child) {
+                                items.push((
+                                    file.code[child.start_byte()..child.end_byte()].to_owned(),
+                                    kind,
+                                ));
                             }
-                            "function_declaration" => {
-                                if let Some(name) = node.child_by_field_name("name") {
-                                    items.push((
-                                        name.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
-                                        CompletionItemKind::Function,
-                                    ));
-                                }
-                            }
-                            "assignment" => {
-                                if let Some(left) = node.child_by_field_name("left") {
-                                    items.push((
-                                        left.utf8_text(file.code.as_bytes()).unwrap().to_owned(),
-                                        CompletionItemKind::Variable,
-                                    ));
-                                }
-                            }
-                            _ => {}
                         }
 
                         if !cursor.goto_next_sibling() {
@@ -373,8 +354,6 @@ impl Server {
             }
         };
         pc.edit(&content_changes);
-
-        eprintln!("text: {:?}", pc.code);
 
         show_node(&pc.code, &mut pc.tree.walk(), 0);
 
