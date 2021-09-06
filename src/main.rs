@@ -3,12 +3,11 @@ use std::{collections::HashMap, error::Error};
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
-    request::{Completion, GotoDefinition},
+    request::Completion,
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
-    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    GotoDefinitionParams, GotoDefinitionResponse, InsertTextFormat, InsertTextMode, Position,
-    PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentContentChangeEvent,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams, InsertTextFormat,
+    InsertTextMode, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
+    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -293,16 +292,6 @@ struct Server {
 
 // Message handlers.
 impl Server {
-    fn handle_goto_definition(&mut self, id: RequestId, _params: GotoDefinitionParams) {
-        let result = Some(GotoDefinitionResponse::Array(Vec::new()));
-        let result = serde_json::to_value(&result).unwrap();
-        self.respond(Response {
-            id,
-            result: Some(result),
-            error: None,
-        });
-    }
-
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
         let mut local_items = vec![];
 
@@ -467,13 +456,6 @@ impl Server {
                     if self.connection.handle_shutdown(&req)? {
                         return Ok(());
                     }
-                    let req = match cast_request::<GotoDefinition>(req) {
-                        Ok((id, params)) => {
-                            self.handle_goto_definition(id, params);
-                            continue;
-                        }
-                        Err(req) => req,
-                    };
                     let req = match cast_request::<Completion>(req) {
                         Ok((id, params)) => {
                             self.handle_completion(id, params);
