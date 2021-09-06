@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, iter};
+use std::{collections::HashMap, error::Error};
 
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
@@ -6,96 +6,144 @@ use lsp_types::{
     request::{Completion, GotoDefinition},
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
     DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    GotoDefinitionParams, GotoDefinitionResponse, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url,
+    GotoDefinitionParams, GotoDefinitionResponse, InsertTextFormat, InsertTextMode, Position,
+    PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentContentChangeEvent,
+    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
-const BUILTIN_FUNCTIONS: [&str; 39] = [
-    "abs",
-    "acos",
-    "asin",
-    "assert",
-    "atan",
-    "atan2",
-    "ceil",
-    "chr",
-    "concat",
-    "cos",
-    "cross",
-    "dxf_cross",
-    "dxf_dim",
-    "exp",
-    "floor",
-    "is_bool",
-    "is_list",
-    "is_num",
-    "is_string",
-    "is_undef",
-    "len",
-    "ln",
-    "log",
-    "lookup",
-    "max",
-    "min",
-    "norm",
-    "ord",
-    "pow",
-    "rands",
-    "round",
-    "search",
-    "sign",
-    "sin",
-    "sqrt",
-    "str",
-    "tan",
-    "version",
-    "version_num",
-];
+#[derive(Clone, Debug)]
+enum ItemKind {
+    Variable,
+    Function,
+    Keyword,
+    LeafModule(String),
+    GroupModule(String),
+}
 
-const BUILTIN_MODULES: [&str; 36] = [
-    "children",
-    "circle",
-    "color",
-    "cube",
-    "cylinder",
-    "difference",
-    "echo",
-    "else",
-    "for",
-    "group",
-    "hull",
-    "if",
-    "import",
-    "intersection",
-    "intersection_for",
-    "let",
-    "linear_extrude",
-    "minkowski",
-    "mirror",
-    "multmatrix",
-    "offset",
-    "parent_module",
-    "polygon",
-    "polyhedron",
-    "projection",
-    "render",
-    "resize",
-    "rotate",
-    "rotate_extrude",
-    "scale",
-    "sphere",
-    "square",
-    "surface",
-    "text",
-    "translate",
-    "union",
-];
+impl ItemKind {
+    fn completion_kind(&self) -> CompletionItemKind {
+        match self {
+            ItemKind::Variable => CompletionItemKind::Variable,
+            ItemKind::Function => CompletionItemKind::Function,
+            ItemKind::Keyword => CompletionItemKind::Keyword,
+            ItemKind::LeafModule(_) => CompletionItemKind::Module,
+            ItemKind::GroupModule(_) => CompletionItemKind::Module,
+        }
+    }
+}
 
-const KEYWORDS: [&str; 7] = [
-    "false", "function", "include", "module", "return", "true", "use",
-];
+struct Item<'a> {
+    name: &'a str,
+    kind: ItemKind,
+}
+
+impl<'a> Item<'a> {
+    fn new(name: &'a str, kind: ItemKind) -> Self {
+        Self { name, kind }
+    }
+
+    fn make_snippet(&self) -> String {
+        match self.kind {
+            ItemKind::Variable => self.name.to_owned(),
+            ItemKind::Function => format!("{}($0)", self.name),
+            ItemKind::Keyword => self.name.to_owned(),
+            ItemKind::LeafModule(ref args) => format!("{}({});$0", self.name, args),
+            ItemKind::GroupModule(ref args) => format!("{}({}) {{\n  $0\n}}", self.name, args),
+        }
+    }
+}
+
+lazy_static::lazy_static! {
+    static ref BUILTINS: Vec<Item<'static>> = vec![
+        // Leaf modules.
+        Item::new("children", ItemKind::LeafModule("$1".to_owned())),
+        Item::new("circle", ItemKind::LeafModule("$1".to_owned())),
+        Item::new("cube", ItemKind::LeafModule("[${1:DX}, ${2:DY}, ${3:DZ}]".to_owned())),
+        Item::new("cylinder", ItemKind::LeafModule("$1".to_owned())),
+        Item::new("polygon", ItemKind::LeafModule("[[$1]]".to_owned())),
+        Item::new("polyhedron", ItemKind::LeafModule("$1".to_owned())),
+        Item::new("sphere", ItemKind::LeafModule("${1:RADIUS}".to_owned())),
+        Item::new("square", ItemKind::LeafModule("[${1:DX}, ${2:DY}]".to_owned())),
+        Item::new("surface", ItemKind::LeafModule("$1".to_owned())),
+        Item::new("text", ItemKind::LeafModule("$1".to_owned())),
+        // Group modules.
+        Item::new("color", ItemKind::GroupModule("".to_owned())),
+        Item::new("difference", ItemKind::GroupModule("".to_owned())),
+        Item::new("echo", ItemKind::GroupModule("".to_owned())),
+        Item::new("else", ItemKind::GroupModule("".to_owned())),
+        Item::new("for", ItemKind::GroupModule("".to_owned())),
+        Item::new("group", ItemKind::GroupModule("".to_owned())),
+        Item::new("hull", ItemKind::GroupModule("".to_owned())),
+        Item::new("if", ItemKind::GroupModule("${1:COND}".to_owned())),
+        Item::new("import", ItemKind::GroupModule("".to_owned())),
+        Item::new("intersection", ItemKind::GroupModule("".to_owned())),
+        Item::new("intersection_for", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("let", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("linear_extrude", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("minkowski", ItemKind::GroupModule("".to_owned())),
+        Item::new("mirror", ItemKind::GroupModule("${1:NORMAL}".to_owned())),
+        Item::new("multmatrix", ItemKind::GroupModule("${1:MATRIX}".to_owned())),
+        Item::new("offset", ItemKind::GroupModule("".to_owned())),
+        Item::new("parent_module", ItemKind::GroupModule("".to_owned())),
+        Item::new("projection", ItemKind::GroupModule("".to_owned())),
+        Item::new("render", ItemKind::GroupModule("".to_owned())),
+        Item::new("resize", ItemKind::GroupModule("".to_owned())),
+        Item::new("rotate", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("rotate_extrude", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("scale", ItemKind::GroupModule("${1:ARGS}".to_owned())),
+        Item::new("translate", ItemKind::GroupModule("[${1:DX}, ${2:DY}, ${3:DZ}]".to_owned())),
+        Item::new("union", ItemKind::GroupModule("".to_owned())),
+        // Keywords.
+        Item::new("false", ItemKind::Keyword),
+        Item::new("function", ItemKind::Keyword),
+        Item::new("include", ItemKind::Keyword),
+        Item::new("module", ItemKind::Keyword),
+        Item::new("return", ItemKind::Keyword),
+        Item::new("true", ItemKind::Keyword),
+        Item::new("use", ItemKind::Keyword),
+        // Functions.
+        Item::new("abs", ItemKind::Function),
+        Item::new("acos", ItemKind::Function),
+        Item::new("asin", ItemKind::Function),
+        Item::new("assert", ItemKind::Function),
+        Item::new("atan", ItemKind::Function),
+        Item::new("atan2", ItemKind::Function),
+        Item::new("ceil", ItemKind::Function),
+        Item::new("chr", ItemKind::Function),
+        Item::new("concat", ItemKind::Function),
+        Item::new("cos", ItemKind::Function),
+        Item::new("cross", ItemKind::Function),
+        Item::new("dxf_cross", ItemKind::Function),
+        Item::new("dxf_dim", ItemKind::Function),
+        Item::new("exp", ItemKind::Function),
+        Item::new("floor", ItemKind::Function),
+        Item::new("is_bool", ItemKind::Function),
+        Item::new("is_list", ItemKind::Function),
+        Item::new("is_num", ItemKind::Function),
+        Item::new("is_string", ItemKind::Function),
+        Item::new("is_undef", ItemKind::Function),
+        Item::new("len", ItemKind::Function),
+        Item::new("ln", ItemKind::Function),
+        Item::new("log", ItemKind::Function),
+        Item::new("lookup", ItemKind::Function),
+        Item::new("max", ItemKind::Function),
+        Item::new("min", ItemKind::Function),
+        Item::new("norm", ItemKind::Function),
+        Item::new("ord", ItemKind::Function),
+        Item::new("pow", ItemKind::Function),
+        Item::new("rands", ItemKind::Function),
+        Item::new("round", ItemKind::Function),
+        Item::new("search", ItemKind::Function),
+        Item::new("sign", ItemKind::Function),
+        Item::new("sin", ItemKind::Function),
+        Item::new("sqrt", ItemKind::Function),
+        Item::new("str", ItemKind::Function),
+        Item::new("tan", ItemKind::Function),
+        Item::new("version", ItemKind::Function),
+        Item::new("version_num", ItemKind::Function),
+    ];
+}
 
 fn node_debug(code: &str, cursor: &TreeCursor) -> String {
     let node = cursor.node();
@@ -256,18 +304,7 @@ impl Server {
     }
 
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
-        fn zip_const<T, U>(it: impl Iterator<Item = T>, kind: U) -> impl Iterator<Item = (T, U)>
-        where
-            U: Clone,
-        {
-            it.zip(iter::repeat(kind))
-        }
-        let funcs = zip_const(BUILTIN_FUNCTIONS.iter(), CompletionItemKind::Function);
-        let modules = zip_const(BUILTIN_MODULES.iter(), CompletionItemKind::Module);
-        let keywords = zip_const(KEYWORDS.iter(), CompletionItemKind::Keyword);
-        let mut items: Vec<_> = (funcs.chain(modules).chain(keywords))
-            .map(|(&v, k)| (v.to_owned(), k))
-            .collect();
+        let mut local_items = vec![];
 
         {
             let uri = params.text_document_position.text_document.uri;
@@ -288,15 +325,17 @@ impl Server {
                     loop {
                         let node = cursor.node();
                         let extract_info = match node.kind() {
-                            "module_declaration" => Some(("name", CompletionItemKind::Module)),
-                            "function_declaration" => Some(("name", CompletionItemKind::Function)),
-                            "assignment" => Some(("left", CompletionItemKind::Variable)),
+                            "module_declaration" => {
+                                Some(("name", ItemKind::LeafModule("$0".to_owned())))
+                            }
+                            "function_declaration" => Some(("name", ItemKind::Function)),
+                            "assignment" => Some(("left", ItemKind::Variable)),
                             _ => None,
                         };
                         if let Some((child, kind)) = extract_info {
                             if let Some(child) = node.child_by_field_name(child) {
-                                items.push((
-                                    file.code[child.start_byte()..child.end_byte()].to_owned(),
+                                local_items.push(Item::new(
+                                    &file.code[child.start_byte()..child.end_byte()],
                                     kind,
                                 ));
                             }
@@ -315,11 +354,15 @@ impl Server {
             }
         }
         let result = CompletionResponse::Array(
-            items
-                .into_iter()
-                .map(|(label, kind)| CompletionItem {
-                    label,
-                    kind: Some(kind),
+            BUILTINS
+                .iter()
+                .chain(local_items.iter())
+                .map(|item| CompletionItem {
+                    label: item.name.to_owned(),
+                    kind: Some(item.kind.completion_kind()),
+                    insert_text: Some(item.make_snippet()),
+                    insert_text_format: Some(InsertTextFormat::Snippet),
+                    insert_text_mode: Some(InsertTextMode::AdjustIndentation),
                     ..Default::default()
                 })
                 .collect(),
