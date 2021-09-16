@@ -303,6 +303,28 @@ impl Server {
             let mut cursor = file.tree.root_node().walk();
             while cursor.goto_first_child_for_point(point).is_some() {}
             loop {
+                if let Some(item) = Item::parse(&file.code, &cursor.node()) {
+                    match item.kind {
+                        ItemKind::Module { params, .. } => {
+                            for p in params {
+                                local_items.push(Item {
+                                    name: p.name,
+                                    kind: ItemKind::Variable,
+                                })
+                            }
+                        }
+                        ItemKind::Function(params) => {
+                            for p in params {
+                                local_items.push(Item {
+                                    name: p.name,
+                                    kind: ItemKind::Variable,
+                                })
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+
                 if cursor.goto_first_child() {
                     loop {
                         let node = cursor.node();
