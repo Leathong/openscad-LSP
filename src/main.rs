@@ -13,6 +13,20 @@ use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
 const BUILTINS_SCAD: &str = include_str!("builtins.scad");
 
+const KEYWORDS: &[(&str, &str)] = &[
+    ("else", "else {  $0\n}"),
+    ("false", "false"),
+    ("for", "for (${1:LOOP}) {\n  $0\n}"),
+    ("function", "function ${1:NAME}(${2:ARGS}) = $0;"),
+    ("if", "if (${1:COND}) {\n  $0\n}"),
+    ("include", "include <${1:PATH}>;$0"),
+    ("intersection_for", "intersection_for(${1:LOOP}) {\n  $0\n}"),
+    ("let", "let (${1:VARS}) $0"),
+    ("module", "module ${1:NAME}(${2:ARGS}) {\n  $0\n}"),
+    ("true", "true"),
+    ("use", "use <${1:PATH}>;$0"),
+];
+
 #[derive(Clone, Debug)]
 struct Param {
     name: String,
@@ -45,12 +59,11 @@ impl Param {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 enum ItemKind {
     Variable,
     Function(Vec<Param>),
-    Keyword,
+    Keyword(String),
     Module { group: bool, params: Vec<Param> },
 }
 
@@ -59,7 +72,7 @@ impl ItemKind {
         match self {
             ItemKind::Variable => CompletionItemKind::Variable,
             ItemKind::Function(_) => CompletionItemKind::Function,
-            ItemKind::Keyword => CompletionItemKind::Keyword,
+            ItemKind::Keyword(_) => CompletionItemKind::Keyword,
             ItemKind::Module { .. } => CompletionItemKind::Module,
         }
     }
@@ -77,7 +90,7 @@ impl Item {
             ItemKind::Function(ref params) => {
                 format!("{}({})$0", self.name, Param::make_snippet(params))
             }
-            ItemKind::Keyword => self.name.clone(),
+            ItemKind::Keyword(comp) => comp.clone(),
             ItemKind::Module { params, group } => {
                 let params = Param::make_snippet(params);
                 if *group {
@@ -399,6 +412,10 @@ impl Server {
                 }
             }
         }
+        ret.extend(KEYWORDS.iter().map(|&(name, comp)| Item {
+            name: name.to_owned(),
+            kind: ItemKind::Keyword(comp.to_owned()),
+        }));
         ret
     }
 
