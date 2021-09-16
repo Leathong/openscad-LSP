@@ -212,27 +212,27 @@ fn to_position(p: Point) -> Position {
 }
 
 fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
-    let mut ret = vec![];
-    find_error_nodes(&mut ret, &mut cursor);
-    ret
-}
-
-fn find_error_nodes<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
-    let node = cursor.node();
-    if node.is_error() || node.is_missing() {
-        ret.push(node);
-    }
-
-    if !cursor.goto_first_child() {
-        return;
-    }
-    loop {
-        find_error_nodes(ret, cursor);
-        if !cursor.goto_next_sibling() {
-            break;
+    fn helper<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
+        let node = cursor.node();
+        if node.is_error() || node.is_missing() {
+            ret.push(node);
         }
+
+        if !cursor.goto_first_child() {
+            return;
+        }
+        loop {
+            helper(ret, cursor);
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+        cursor.goto_parent();
     }
-    cursor.goto_parent();
+
+    let mut ret = vec![];
+    helper(&mut ret, &mut cursor);
+    ret
 }
 
 struct ParsedCode {
