@@ -11,137 +11,116 @@ use lsp_types::{
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
+const BUILTINS_SCAD: &str = include_str!("builtins.scad");
+
+#[derive(Clone, Debug)]
+struct Param {
+    name: String,
+    default: Option<String>,
+}
+
+impl Param {
+    fn parse_declaration(code: &str, node: &Node) -> Vec<Param> {
+        node.children(&mut node.walk())
+            .filter_map(|child| match child.kind() {
+                "identifier" => Some(Param {
+                    name: code[child.start_byte()..child.end_byte()].to_owned(),
+                    default: None,
+                }),
+                "assignment" => None,
+                "special_variable" => None,
+                _ => None,
+            })
+            .collect()
+    }
+
+    fn make_snippet(params: &[Param]) -> String {
+        params
+            .iter()
+            .filter_map(|p| p.default.is_none().then(|| &p.name))
+            .enumerate()
+            .map(|(i, name)| format!("${{{}:{}}}", i + 1, name))
+            .collect::<Vec<_>>()
+            .join(", ")
+    }
+}
+
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 enum ItemKind {
     Variable,
-    Function,
+    Function(Vec<Param>),
     Keyword,
-    LeafModule(String),
-    GroupModule(String),
+    Module { group: bool, params: Vec<Param> },
 }
 
 impl ItemKind {
     fn completion_kind(&self) -> CompletionItemKind {
         match self {
             ItemKind::Variable => CompletionItemKind::Variable,
-            ItemKind::Function => CompletionItemKind::Function,
+            ItemKind::Function(_) => CompletionItemKind::Function,
             ItemKind::Keyword => CompletionItemKind::Keyword,
-            ItemKind::LeafModule(_) => CompletionItemKind::Module,
-            ItemKind::GroupModule(_) => CompletionItemKind::Module,
+            ItemKind::Module { .. } => CompletionItemKind::Module,
         }
     }
 }
 
-struct Item<'a> {
-    name: &'a str,
+struct Item {
+    name: String,
     kind: ItemKind,
 }
 
-impl<'a> Item<'a> {
-    fn new(name: &'a str, kind: ItemKind) -> Self {
-        Self { name, kind }
-    }
-
+impl Item {
     fn make_snippet(&self) -> String {
-        match self.kind {
-            ItemKind::Variable => self.name.to_owned(),
-            ItemKind::Function => format!("{}($0)", self.name),
-            ItemKind::Keyword => self.name.to_owned(),
-            ItemKind::LeafModule(ref args) => format!("{}({});$0", self.name, args),
-            ItemKind::GroupModule(ref args) => format!("{}({}) {{\n  $0\n}}", self.name, args),
+        match &self.kind {
+            ItemKind::Variable => self.name.clone(),
+            ItemKind::Function(ref params) => {
+                format!("{}({})$0", self.name, Param::make_snippet(params))
+            }
+            ItemKind::Keyword => self.name.clone(),
+            ItemKind::Module { params, group } => {
+                let params = Param::make_snippet(params);
+                if *group {
+                    format!("{}({}) {{\n  $0\n}}", self.name, params)
+                } else {
+                    format!("{}({});$0", self.name, params)
+                }
+            }
         }
     }
 }
 
-lazy_static::lazy_static! {
-    static ref BUILTINS: Vec<Item<'static>> = vec![
-        // Leaf modules.
-        Item::new("children", ItemKind::LeafModule("$1".to_owned())),
-        Item::new("circle", ItemKind::LeafModule("$1".to_owned())),
-        Item::new("cube", ItemKind::LeafModule("[${1:DX}, ${2:DY}, ${3:DZ}]".to_owned())),
-        Item::new("cylinder", ItemKind::LeafModule("$1".to_owned())),
-        Item::new("polygon", ItemKind::LeafModule("[[$1]]".to_owned())),
-        Item::new("polyhedron", ItemKind::LeafModule("$1".to_owned())),
-        Item::new("sphere", ItemKind::LeafModule("${1:RADIUS}".to_owned())),
-        Item::new("square", ItemKind::LeafModule("[${1:DX}, ${2:DY}]".to_owned())),
-        Item::new("surface", ItemKind::LeafModule("$1".to_owned())),
-        Item::new("text", ItemKind::LeafModule("$1".to_owned())),
-        // Group modules.
-        Item::new("color", ItemKind::GroupModule("".to_owned())),
-        Item::new("difference", ItemKind::GroupModule("".to_owned())),
-        Item::new("echo", ItemKind::GroupModule("".to_owned())),
-        Item::new("else", ItemKind::GroupModule("".to_owned())),
-        Item::new("for", ItemKind::GroupModule("".to_owned())),
-        Item::new("group", ItemKind::GroupModule("".to_owned())),
-        Item::new("hull", ItemKind::GroupModule("".to_owned())),
-        Item::new("if", ItemKind::GroupModule("${1:COND}".to_owned())),
-        Item::new("import", ItemKind::GroupModule("".to_owned())),
-        Item::new("intersection", ItemKind::GroupModule("".to_owned())),
-        Item::new("intersection_for", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("let", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("linear_extrude", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("minkowski", ItemKind::GroupModule("".to_owned())),
-        Item::new("mirror", ItemKind::GroupModule("${1:NORMAL}".to_owned())),
-        Item::new("multmatrix", ItemKind::GroupModule("${1:MATRIX}".to_owned())),
-        Item::new("offset", ItemKind::GroupModule("".to_owned())),
-        Item::new("parent_module", ItemKind::GroupModule("".to_owned())),
-        Item::new("projection", ItemKind::GroupModule("".to_owned())),
-        Item::new("render", ItemKind::GroupModule("".to_owned())),
-        Item::new("resize", ItemKind::GroupModule("".to_owned())),
-        Item::new("rotate", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("rotate_extrude", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("scale", ItemKind::GroupModule("${1:ARGS}".to_owned())),
-        Item::new("translate", ItemKind::GroupModule("[${1:DX}, ${2:DY}, ${3:DZ}]".to_owned())),
-        Item::new("union", ItemKind::GroupModule("".to_owned())),
-        // Keywords.
-        Item::new("false", ItemKind::Keyword),
-        Item::new("function", ItemKind::Keyword),
-        Item::new("include", ItemKind::Keyword),
-        Item::new("module", ItemKind::Keyword),
-        Item::new("return", ItemKind::Keyword),
-        Item::new("true", ItemKind::Keyword),
-        Item::new("use", ItemKind::Keyword),
-        // Functions.
-        Item::new("abs", ItemKind::Function),
-        Item::new("acos", ItemKind::Function),
-        Item::new("asin", ItemKind::Function),
-        Item::new("assert", ItemKind::Function),
-        Item::new("atan", ItemKind::Function),
-        Item::new("atan2", ItemKind::Function),
-        Item::new("ceil", ItemKind::Function),
-        Item::new("chr", ItemKind::Function),
-        Item::new("concat", ItemKind::Function),
-        Item::new("cos", ItemKind::Function),
-        Item::new("cross", ItemKind::Function),
-        Item::new("dxf_cross", ItemKind::Function),
-        Item::new("dxf_dim", ItemKind::Function),
-        Item::new("exp", ItemKind::Function),
-        Item::new("floor", ItemKind::Function),
-        Item::new("is_bool", ItemKind::Function),
-        Item::new("is_list", ItemKind::Function),
-        Item::new("is_num", ItemKind::Function),
-        Item::new("is_string", ItemKind::Function),
-        Item::new("is_undef", ItemKind::Function),
-        Item::new("len", ItemKind::Function),
-        Item::new("ln", ItemKind::Function),
-        Item::new("log", ItemKind::Function),
-        Item::new("lookup", ItemKind::Function),
-        Item::new("max", ItemKind::Function),
-        Item::new("min", ItemKind::Function),
-        Item::new("norm", ItemKind::Function),
-        Item::new("ord", ItemKind::Function),
-        Item::new("pow", ItemKind::Function),
-        Item::new("rands", ItemKind::Function),
-        Item::new("round", ItemKind::Function),
-        Item::new("search", ItemKind::Function),
-        Item::new("sign", ItemKind::Function),
-        Item::new("sin", ItemKind::Function),
-        Item::new("sqrt", ItemKind::Function),
-        Item::new("str", ItemKind::Function),
-        Item::new("tan", ItemKind::Function),
-        Item::new("version", ItemKind::Function),
-        Item::new("version_num", ItemKind::Function),
-    ];
+impl Item {
+    fn parse(code: &str, node: &Node) -> Option<Self> {
+        let extract_name = |name| {
+            node.child_by_field_name(name)
+                .map(|child| code[child.start_byte()..child.end_byte()].to_owned())
+        };
+
+        match node.kind() {
+            "module_declaration" => Some(Self {
+                name: extract_name("name")?,
+                kind: ItemKind::Module {
+                    group: false,
+                    params: node
+                        .child_by_field_name("parameters")
+                        .map_or(vec![], |params| Param::parse_declaration(code, &params)),
+                },
+            }),
+            "function_declaration" => Some(Self {
+                name: extract_name("name")?,
+                kind: ItemKind::Function(
+                    node.child_by_field_name("parameters")
+                        .map_or(vec![], |params| Param::parse_declaration(code, &params)),
+                ),
+            }),
+            "assignment" => Some(Self {
+                name: extract_name("left")?,
+                kind: ItemKind::Variable,
+            }),
+            _ => None,
+        }
+    }
 }
 
 fn node_debug(code: &str, cursor: &TreeCursor) -> String {
@@ -286,6 +265,7 @@ impl ParsedCode {
 }
 
 struct Server {
+    builtins: Vec<Item>,
     connection: Connection,
     code: HashMap<Url, ParsedCode>,
 }
@@ -313,23 +293,9 @@ impl Server {
                 if cursor.goto_first_child() {
                     loop {
                         let node = cursor.node();
-                        let extract_info = match node.kind() {
-                            "module_declaration" => {
-                                Some(("name", ItemKind::LeafModule("$0".to_owned())))
-                            }
-                            "function_declaration" => Some(("name", ItemKind::Function)),
-                            "assignment" => Some(("left", ItemKind::Variable)),
-                            _ => None,
-                        };
-                        if let Some((child, kind)) = extract_info {
-                            if let Some(child) = node.child_by_field_name(child) {
-                                local_items.push(Item::new(
-                                    &file.code[child.start_byte()..child.end_byte()],
-                                    kind,
-                                ));
-                            }
+                        if let Some(item) = Item::parse(&file.code, &node) {
+                            local_items.push(item);
                         }
-
                         if !cursor.goto_next_sibling() {
                             break;
                         }
@@ -343,7 +309,7 @@ impl Server {
             }
         }
         let result = CompletionResponse::Array(
-            BUILTINS
+            self.builtins
                 .iter()
                 .chain(local_items.iter())
                 .map(|item| CompletionItem {
@@ -418,8 +384,27 @@ impl Server {
 }
 
 impl Server {
+    fn read_builtins() -> Vec<Item> {
+        let code = BUILTINS_SCAD.to_owned();
+        let pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone());
+        let mut cursor: TreeCursor = pc.tree.walk();
+        let mut ret = vec![];
+        if cursor.goto_first_child() {
+            loop {
+                if let Some(item) = Item::parse(&code, &cursor.node()) {
+                    ret.push(item);
+                }
+                if !cursor.goto_next_sibling() {
+                    break;
+                }
+            }
+        }
+        ret
+    }
+
     fn new(connection: Connection) -> Self {
         Self {
+            builtins: Self::read_builtins(),
             connection,
             code: Default::default(),
         }
