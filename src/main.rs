@@ -306,6 +306,11 @@ impl ParsedCode {
     }
 }
 
+enum LoopAction {
+    Exit,
+    Continue,
+}
+
 struct Server {
     builtins: Vec<Item>,
     connection: Connection,
@@ -542,6 +547,57 @@ impl Server {
             .unwrap()
     }
 
+    fn handle_message(&mut self, msg: Message) -> Result<LoopAction, Box<dyn Error + Sync + Send>> {
+        match msg {
+            Message::Request(req) => {
+                if self.connection.handle_shutdown(&req)? {
+                    return Ok(LoopAction::Exit);
+                }
+                let req = match cast_request::<HoverRequest>(req) {
+                    Ok((id, params)) => {
+                        self.handle_hover(id, params);
+                        return Ok(LoopAction::Continue);
+                    }
+                    Err(req) => req,
+                };
+                let req = match cast_request::<Completion>(req) {
+                    Ok((id, params)) => {
+                        self.handle_completion(id, params);
+                        return Ok(LoopAction::Continue);
+                    }
+                    Err(req) => req,
+                };
+                eprintln!("unknown request: {:?}", req);
+            }
+            Message::Response(resp) => {
+                eprintln!("got response: {:?}", resp);
+            }
+            Message::Notification(notif) => {
+                let notif = match cast_notification::<DidOpenTextDocument>(notif) {
+                    Ok(params) => {
+                        self.handle_did_open_text_document(params);
+                        return Ok(LoopAction::Continue);
+                    }
+                    Err(notif) => notif,
+                };
+                let notif = match cast_notification::<DidChangeTextDocument>(notif) {
+                    Ok(params) => {
+                        self.handle_did_change_text_document(params);
+                        return Ok(LoopAction::Continue);
+                    }
+                    Err(notif) => notif,
+                };
+                let notif = match cast_notification::<DidSaveTextDocument>(notif) {
+                    Ok(_) => return Ok(LoopAction::Continue),
+                    Err(notif) => notif,
+                };
+
+                eprintln!("unknown notification: {:?}", notif);
+            }
+        }
+        Ok(LoopAction::Continue)
+    }
+
     fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
         let caps = serde_json::to_value(&ServerCapabilities {
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
@@ -552,55 +608,10 @@ impl Server {
             ..Default::default()
         })?;
         self.connection.initialize(caps)?;
-
         while let Ok(msg) = self.connection.receiver.recv() {
-            eprintln!("got msg: {:?}", msg);
-            match msg {
-                Message::Request(req) => {
-                    if self.connection.handle_shutdown(&req)? {
-                        return Ok(());
-                    }
-                    let req = match cast_request::<HoverRequest>(req) {
-                        Ok((id, params)) => {
-                            self.handle_hover(id, params);
-                            continue;
-                        }
-                        Err(req) => req,
-                    };
-                    let req = match cast_request::<Completion>(req) {
-                        Ok((id, params)) => {
-                            self.handle_completion(id, params);
-                            continue;
-                        }
-                        Err(req) => req,
-                    };
-                    eprintln!("unknown request: {:?}", req);
-                }
-                Message::Response(resp) => {
-                    eprintln!("got response: {:?}", resp);
-                }
-                Message::Notification(notif) => {
-                    let notif = match cast_notification::<DidOpenTextDocument>(notif) {
-                        Ok(params) => {
-                            self.handle_did_open_text_document(params);
-                            continue;
-                        }
-                        Err(notif) => notif,
-                    };
-                    let notif = match cast_notification::<DidChangeTextDocument>(notif) {
-                        Ok(params) => {
-                            self.handle_did_change_text_document(params);
-                            continue;
-                        }
-                        Err(notif) => notif,
-                    };
-                    let notif = match cast_notification::<DidSaveTextDocument>(notif) {
-                        Ok(_) => continue,
-                        Err(notif) => notif,
-                    };
-
-                    eprintln!("unknown notification: {:?}", notif);
-                }
+            match self.handle_message(msg)? {
+                LoopAction::Continue => {}
+                LoopAction::Exit => break,
             }
         }
         Ok(())
