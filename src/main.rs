@@ -7,7 +7,8 @@ use lsp_types::{
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
     DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams, InsertTextFormat,
     InsertTextMode, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    TextDocumentContentChangeEvent, TextDocumentPositionParams, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -286,67 +287,14 @@ struct Server {
 // Message handlers.
 impl Server {
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
-        let mut local_items = vec![];
-
-        {
-            let uri = params.text_document_position.text_document.uri;
-            let pos = params.text_document_position.position;
-            let file = match self.code.get(&uri) {
-                Some(x) => x,
-                None => {
-                    eprintln!("unknown file {:?}", uri);
-                    return;
-                }
-            };
-
-            let point = to_point(pos);
-            let mut cursor = file.tree.root_node().walk();
-            while cursor.goto_first_child_for_point(point).is_some() {}
-            loop {
-                if let Some(item) = Item::parse(&file.code, &cursor.node()) {
-                    match item.kind {
-                        ItemKind::Module { params, .. } => {
-                            for p in params {
-                                local_items.push(Item {
-                                    name: p.name,
-                                    kind: ItemKind::Variable,
-                                })
-                            }
-                        }
-                        ItemKind::Function(params) => {
-                            for p in params {
-                                local_items.push(Item {
-                                    name: p.name,
-                                    kind: ItemKind::Variable,
-                                })
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
-                if cursor.goto_first_child() {
-                    loop {
-                        let node = cursor.node();
-                        if let Some(item) = Item::parse(&file.code, &node) {
-                            local_items.push(item);
-                        }
-                        if !cursor.goto_next_sibling() {
-                            break;
-                        }
-                    }
-                    cursor.goto_parent();
-                }
-
-                if !cursor.goto_parent() {
-                    break;
-                }
-            }
-        }
+        let items = match self.find_visible_items(&params.text_document_position) {
+            Ok(x) => x,
+            Err(_) => return,
+        };
         let result = CompletionResponse::Array(
             self.builtins
                 .iter()
-                .chain(local_items.iter())
+                .chain(items.iter())
                 .map(|item| CompletionItem {
                     label: item.name.to_owned(),
                     kind: Some(item.kind.completion_kind()),
@@ -418,6 +366,68 @@ impl Server {
     }
 }
 
+// Code-related helpers.
+impl Server {
+    fn find_visible_items(&self, params: &TextDocumentPositionParams) -> Result<Vec<Item>, String> {
+        let uri = &params.text_document.uri;
+        let pos = params.position;
+        let file = match self.code.get(uri) {
+            Some(x) => x,
+            None => {
+                return Err(format!("unknown file {:?}", uri));
+            }
+        };
+
+        let point = to_point(pos);
+        let mut cursor = file.tree.root_node().walk();
+        while cursor.goto_first_child_for_point(point).is_some() {}
+
+        let mut items = vec![];
+        loop {
+            if let Some(item) = Item::parse(&file.code, &cursor.node()) {
+                match item.kind {
+                    ItemKind::Module { params, .. } => {
+                        for p in params {
+                            items.push(Item {
+                                name: p.name,
+                                kind: ItemKind::Variable,
+                            })
+                        }
+                    }
+                    ItemKind::Function(params) => {
+                        for p in params {
+                            items.push(Item {
+                                name: p.name,
+                                kind: ItemKind::Variable,
+                            })
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if cursor.goto_first_child() {
+                loop {
+                    let node = cursor.node();
+                    if let Some(item) = Item::parse(&file.code, &node) {
+                        items.push(item);
+                    }
+                    if !cursor.goto_next_sibling() {
+                        break;
+                    }
+                }
+                cursor.goto_parent();
+            }
+
+            if !cursor.goto_parent() {
+                break;
+            }
+        }
+        Ok(items)
+    }
+}
+
+// Miscellaneous high-level logic.
 impl Server {
     fn read_builtins() -> Vec<Item> {
         let code = BUILTINS_SCAD.to_owned();
