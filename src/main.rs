@@ -165,43 +165,6 @@ impl Item {
     }
 }
 
-fn node_debug(code: &str, cursor: &TreeCursor) -> String {
-    let node = cursor.node();
-    format!(
-        "{} {} {} {:?}",
-        cursor.field_name().unwrap_or(if node.is_missing() {
-            "MISSING"
-        } else if node.is_error() {
-            "ERROR"
-        } else {
-            "<none>"
-        }),
-        cursor.field_id().unwrap_or(u16::MAX),
-        node.kind(),
-        &code[node.start_byte()..node.end_byte().min(node.start_byte() + 32)],
-    )
-}
-
-fn show_node(code: &str, cursor: &mut TreeCursor, depth: usize) {
-    let node = cursor.node();
-    if !node.is_named() {
-        return;
-    }
-
-    eprintln!("{}{}", "    ".repeat(depth), node_debug(code, cursor));
-
-    if !cursor.goto_first_child() {
-        return;
-    }
-    loop {
-        show_node(code, cursor, depth + 1);
-        if !cursor.goto_next_sibling() {
-            break;
-        }
-    }
-    cursor.goto_parent();
-}
-
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = Connection::stdio();
     let mut server = Server::new(connection);
@@ -409,8 +372,6 @@ impl Server {
             }
         };
         pc.edit(&content_changes);
-
-        show_node(&pc.code, &mut pc.tree.walk(), 0);
 
         let diags: Vec<_> = error_nodes(pc.tree.walk())
             .into_iter()
