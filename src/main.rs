@@ -3,10 +3,11 @@ use std::{collections::HashMap, error::Error};
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
     notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
-    request::Completion,
+    request::{Completion, HoverRequest},
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
-    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams, InsertTextFormat,
-    InsertTextMode, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
+    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams, Hover,
+    HoverContents, HoverParams, HoverProviderCapability, InsertTextFormat, InsertTextMode,
+    MarkedString, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
     TextDocumentContentChangeEvent, TextDocumentPositionParams, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
 };
@@ -104,6 +105,28 @@ impl Item {
                 } else {
                     format!("{}({});$0", self.name, params)
                 }
+            }
+        }
+    }
+
+    fn make_hover(&self) -> String {
+        let format_params = |params: &[Param]| {
+            params
+                .iter()
+                .map(|p| match &p.default {
+                    Some(d) => format!("{}={}", p.name, d),
+                    None => p.name.clone(),
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        };
+
+        match &self.kind {
+            ItemKind::Variable => "".to_owned(),
+            ItemKind::Function(params) => format!("{}({})", self.name, format_params(params)),
+            ItemKind::Keyword(_) => self.name.clone(),
+            ItemKind::Module { params, .. } => {
+                format!("{}({})", self.name, format_params(params))
             }
         }
     }
@@ -291,6 +314,47 @@ struct Server {
 
 // Message handlers.
 impl Server {
+    fn handle_hover(&mut self, id: RequestId, params: HoverParams) {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let pos = params.text_document_position_params.position;
+        let file = match self.code.get(uri) {
+            Some(x) => x,
+            None => return,
+        };
+
+        let point = to_point(pos);
+        let mut cursor = file.tree.root_node().walk();
+        while cursor.goto_first_child_for_point(point).is_some() {}
+
+        let node = cursor.node();
+        let result = match node.kind() {
+            "identifier" => {
+                let items = match self.find_visible_items(&params.text_document_position_params) {
+                    Ok(x) => x,
+                    Err(_) => return,
+                };
+
+                let name = &file.code[node.start_byte()..node.end_byte()];
+                self.builtins
+                    .iter()
+                    .chain(items.iter())
+                    .find(|item| item.name == name)
+                    .map(|item| Hover {
+                        contents: HoverContents::Scalar(MarkedString::String(item.make_hover())),
+                        range: None,
+                    })
+            }
+            _ => None,
+        };
+
+        let result = result.map(|r| serde_json::to_value(&r).unwrap());
+        self.respond(Response {
+            id,
+            result,
+            error: None,
+        });
+    }
+
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
         let items = match self.find_visible_items(&params.text_document_position) {
             Ok(x) => x,
@@ -483,6 +547,7 @@ impl Server {
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
                 TextDocumentSyncKind::Incremental,
             )),
+            hover_provider: Some(HoverProviderCapability::Simple(true)),
             completion_provider: Some(Default::default()),
             ..Default::default()
         })?;
@@ -495,6 +560,13 @@ impl Server {
                     if self.connection.handle_shutdown(&req)? {
                         return Ok(());
                     }
+                    let req = match cast_request::<HoverRequest>(req) {
+                        Ok((id, params)) => {
+                            self.handle_hover(id, params);
+                            continue;
+                        }
+                        Err(req) => req,
+                    };
                     let req = match cast_request::<Completion>(req) {
                         Ok((id, params)) => {
                             self.handle_completion(id, params);
