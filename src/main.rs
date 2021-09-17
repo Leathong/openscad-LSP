@@ -42,7 +42,12 @@ impl Param {
                     name: code[child.start_byte()..child.end_byte()].to_owned(),
                     default: None,
                 }),
-                "assignment" => None,
+                "assignment" => child.child_by_field_name("left").and_then(|left| {
+                    child.child_by_field_name("right").map(|right| Param {
+                        name: code[left.start_byte()..left.end_byte()].to_owned(),
+                        default: Some(code[right.start_byte()..right.end_byte()].to_owned()),
+                    })
+                }),
                 "special_variable" => None,
                 _ => None,
             })
