@@ -13,25 +13,25 @@ module surface(file, center=false, invert=false, convexity=1) {}
 module text(args) {}
 
 // Group modules.
-module color(c) { children(); }
-module difference() { children(); }
-module group() { children(); }
-module hull() { children(); }
-module intersection() { children(); }
-module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { children(); }
-module minkowski() { children(); }
-module mirror(v) { children(); }
-module multmatrix(m) { children(); }
-module offset(delta, r=0, chamfer=false) { children(); }
-module parent_module() { children(); }
-module projection() { children(); }
-module render() { children(); }
-module resize(newsize) { children(); }
-module rotate(angles) { children(); }
-module rotate_extrude(angle=360, convexity=2) { children(); }
-module scale(v) { children(); }
-module translate(v) { children(); }
-module union() { children(); }
+module color(c) { /* group */ }
+module difference() { /* group */ }
+module group() { /* group */ }
+module hull() { /* group */ }
+module intersection() { /* group */ }
+module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { /* group */ }
+module minkowski() { /* group */ }
+module mirror(v) { /* group */ }
+module multmatrix(m) { /* group */ }
+module offset(delta, r=0, chamfer=false) { /* group */ }
+module parent_module() { /* group */ }
+module projection() { /* group */ }
+module render() { /* group */ }
+module resize(newsize) { /* group */ }
+module rotate(angles) { /* group */ }
+module rotate_extrude(angle=360, convexity=2) { /* group */ }
+module scale(v) { /* group */ }
+module translate(v) { /* group */ }
+module union() { /* group */ }
 
 // Functions.
 function abs(x) = 0;

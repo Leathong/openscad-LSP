@@ -140,15 +140,26 @@ impl Item {
         };
 
         match node.kind() {
-            "module_declaration" => Some(Self {
-                name: extract_name("name")?,
-                kind: ItemKind::Module {
-                    group: false,
-                    params: node
-                        .child_by_field_name("parameters")
-                        .map_or(vec![], |params| Param::parse_declaration(code, &params)),
-                },
-            }),
+            "module_declaration" => {
+                let group = if let Some(child) = node
+                    .child_by_field_name("body")
+                    .and_then(|body| body.named_child(0))
+                {
+                    let body = &code[child.start_byte()..child.end_byte()];
+                    child.kind() == "comment" && (body == "/* group */" || body == "// group")
+                } else {
+                    false
+                };
+                Some(Self {
+                    name: extract_name("name")?,
+                    kind: ItemKind::Module {
+                        group,
+                        params: node
+                            .child_by_field_name("parameters")
+                            .map_or(vec![], |params| Param::parse_declaration(code, &params)),
+                    },
+                })
+            }
             "function_declaration" => Some(Self {
                 name: extract_name("name")?,
                 kind: ItemKind::Function(
