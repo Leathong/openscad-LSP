@@ -8,10 +8,10 @@ use lsp_types::{
     request::{Completion, HoverRequest},
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
     DiagnosticSeverity, DidChangeTextDocumentParams, DidCloseTextDocumentParams,
-    DidOpenTextDocumentParams, Hover, HoverContents, HoverParams, HoverProviderCapability,
-    InsertTextFormat, InsertTextMode, MarkedString, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url,
+    DidOpenTextDocumentParams, DidSaveTextDocumentParams, Hover, HoverContents, HoverParams,
+    HoverProviderCapability, InsertTextFormat, InsertTextMode, MarkedString, Position,
+    PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentContentChangeEvent,
+    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
 
@@ -297,7 +297,7 @@ struct Server {
     code: HashMap<Url, Rc<RefCell<ParsedCode>>>,
 }
 
-// Message handlers.
+// Request handlers.
 impl Server {
     fn handle_hover(&mut self, id: RequestId, params: HoverParams) {
         let uri = &params.text_document_position_params.text_document.uri;
@@ -371,7 +371,10 @@ impl Server {
             error: None,
         });
     }
+}
 
+// Notification handlers.
+impl Server {
     fn handle_did_open_text_document(&mut self, params: DidOpenTextDocumentParams) {
         let DidOpenTextDocumentParams { text_document: doc } = params;
         self.code.insert(
@@ -381,11 +384,6 @@ impl Server {
                 doc.text,
             ))),
         );
-    }
-
-    fn handle_did_close_text_document(&mut self, params: DidCloseTextDocumentParams) {
-        let DidCloseTextDocumentParams { text_document: doc } = params;
-        self.code.remove(&doc.uri);
     }
 
     fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
@@ -428,6 +426,13 @@ impl Server {
                 version: Some(text_document.version),
             },
         ));
+    }
+
+    fn handle_did_save_text_document(&mut self, _params: DidSaveTextDocumentParams) {}
+
+    fn handle_did_close_text_document(&mut self, params: DidCloseTextDocumentParams) {
+        let DidCloseTextDocumentParams { text_document: doc } = params;
+        self.code.remove(&doc.uri);
     }
 }
 
@@ -619,34 +624,27 @@ impl Server {
             Message::Response(resp) => {
                 eprintln!("got response: {:?}", resp);
             }
-            Message::Notification(notif) => {
-                let notif = match cast_notification::<DidOpenTextDocument>(notif) {
-                    Ok(params) => {
-                        self.handle_did_open_text_document(params);
-                        return Ok(LoopAction::Continue);
-                    }
-                    Err(notif) => notif,
-                };
-                let notif = match cast_notification::<DidChangeTextDocument>(notif) {
-                    Ok(params) => {
-                        self.handle_did_change_text_document(params);
-                        return Ok(LoopAction::Continue);
-                    }
-                    Err(notif) => notif,
-                };
-                let notif = match cast_notification::<DidSaveTextDocument>(notif) {
-                    Ok(_) => return Ok(LoopAction::Continue),
-                    Err(notif) => notif,
-                };
-                let notif = match cast_notification::<DidCloseTextDocument>(notif) {
-                    Ok(params) => {
-                        self.handle_did_close_text_document(params);
-                        return Ok(LoopAction::Continue);
-                    }
-                    Err(notif) => notif,
-                };
+            Message::Notification(noti) => {
+                // If the notification is of the given type, consume and convert it, pass it to the
+                // given method, and return.
+                macro_rules! proc {
+                    ($noti:ident, $noti_type:ty, $method:ident) => {
+                        match cast_notification::<$noti_type>($noti) {
+                            Ok(params) => {
+                                self.$method(params);
+                                return Ok(LoopAction::Continue);
+                            }
+                            Err(noti) => noti,
+                        }
+                    };
+                }
 
-                eprintln!("unknown notification: {:?}", notif);
+                let noti = proc!(noti, DidOpenTextDocument, handle_did_open_text_document);
+                let noti = proc!(noti, DidChangeTextDocument, handle_did_change_text_document);
+                let noti = proc!(noti, DidSaveTextDocument, handle_did_save_text_document);
+                let noti = proc!(noti, DidCloseTextDocument, handle_did_close_text_document);
+
+                eprintln!("unknown notification: {:?}", noti);
             }
         }
         Ok(LoopAction::Continue)
