@@ -1,14 +1,16 @@
-use std::{collections::HashMap, error::Error};
+use std::{cell::RefCell, collections::HashMap, error::Error, fs::read_to_string, io, rc::Rc};
 
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
-    notification::{DidChangeTextDocument, DidOpenTextDocument, DidSaveTextDocument},
+    notification::{
+        DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument, DidSaveTextDocument,
+    },
     request::{Completion, HoverRequest},
     CompletionItem, CompletionItemKind, CompletionParams, CompletionResponse, Diagnostic,
-    DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams, Hover,
-    HoverContents, HoverParams, HoverProviderCapability, InsertTextFormat, InsertTextMode,
-    MarkedString, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentContentChangeEvent, TextDocumentPositionParams, TextDocumentSyncCapability,
+    DiagnosticSeverity, DidChangeTextDocumentParams, DidCloseTextDocumentParams,
+    DidOpenTextDocumentParams, Hover, HoverContents, HoverParams, HoverProviderCapability,
+    InsertTextFormat, InsertTextMode, MarkedString, Position, PublishDiagnosticsParams, Range,
+    ServerCapabilities, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
 };
 use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
@@ -40,13 +42,13 @@ impl Param {
         node.children(&mut node.walk())
             .filter_map(|child| match child.kind() {
                 "identifier" => Some(Param {
-                    name: code[child.start_byte()..child.end_byte()].to_owned(),
+                    name: node_text(code, &child).to_owned(),
                     default: None,
                 }),
                 "assignment" => child.child_by_field_name("left").and_then(|left| {
                     child.child_by_field_name("right").map(|right| Param {
-                        name: code[left.start_byte()..left.end_byte()].to_owned(),
-                        default: Some(code[right.start_byte()..right.end_byte()].to_owned()),
+                        name: node_text(code, &left).to_owned(),
+                        default: Some(node_text(code, &right).to_owned()),
                     })
                 }),
                 "special_variable" => None,
@@ -136,7 +138,7 @@ impl Item {
     fn parse(code: &str, node: &Node) -> Option<Self> {
         let extract_name = |name| {
             node.child_by_field_name(name)
-                .map(|child| code[child.start_byte()..child.end_byte()].to_owned())
+                .map(|child| node_text(code, &child).to_owned())
         };
 
         match node.kind() {
@@ -145,7 +147,7 @@ impl Item {
                     .child_by_field_name("body")
                     .and_then(|body| body.named_child(0))
                 {
-                    let body = &code[child.start_byte()..child.end_byte()];
+                    let body = node_text(code, &child);
                     child.kind() == "comment" && (body == "/* group */" || body == "// group")
                 } else {
                     false
@@ -204,6 +206,10 @@ fn to_position(p: Point) -> Position {
         line: p.row as u32,
         character: p.column as u32,
     }
+}
+
+fn node_text<'a>(code: &'a str, node: &Node) -> &'a str {
+    &code[node.start_byte()..node.end_byte()]
 }
 
 fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
@@ -288,7 +294,7 @@ enum LoopAction {
 struct Server {
     builtins: Vec<Item>,
     connection: Connection,
-    code: HashMap<Url, ParsedCode>,
+    code: HashMap<Url, Rc<RefCell<ParsedCode>>>,
 }
 
 // Message handlers.
@@ -297,9 +303,10 @@ impl Server {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
         let file = match self.code.get(uri) {
-            Some(x) => x,
+            Some(x) => Rc::clone(x),
             None => return,
         };
+        let file = file.borrow();
 
         let point = to_point(pos);
         let mut cursor = file.tree.root_node().walk();
@@ -308,12 +315,14 @@ impl Server {
         let node = cursor.node();
         let result = match node.kind() {
             "identifier" => {
-                let items = match self.find_visible_items(&params.text_document_position_params) {
+                let uri = &params.text_document_position_params.text_document.uri;
+                let pos = params.text_document_position_params.position;
+                let items = match self.find_visible_items(uri, pos) {
                     Ok(x) => x,
                     Err(_) => return,
                 };
 
-                let name = &file.code[node.start_byte()..node.end_byte()];
+                let name = node_text(&file.code, &node);
                 self.builtins
                     .iter()
                     .chain(items.iter())
@@ -335,7 +344,9 @@ impl Server {
     }
 
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
-        let items = match self.find_visible_items(&params.text_document_position) {
+        let uri = &params.text_document_position.text_document.uri;
+        let pos = params.text_document_position.position;
+        let items = match self.find_visible_items(uri, pos) {
             Ok(x) => x,
             Err(_) => return,
         };
@@ -365,8 +376,16 @@ impl Server {
         let DidOpenTextDocumentParams { text_document: doc } = params;
         self.code.insert(
             doc.uri,
-            ParsedCode::new(tree_sitter_openscad::language(), doc.text),
+            Rc::new(RefCell::new(ParsedCode::new(
+                tree_sitter_openscad::language(),
+                doc.text,
+            ))),
         );
+    }
+
+    fn handle_did_close_text_document(&mut self, params: DidCloseTextDocumentParams) {
+        let DidCloseTextDocumentParams { text_document: doc } = params;
+        self.code.remove(&doc.uri);
     }
 
     fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
@@ -382,9 +401,9 @@ impl Server {
                 return;
             }
         };
-        pc.edit(&content_changes);
+        pc.borrow_mut().edit(&content_changes);
 
-        let diags: Vec<_> = error_nodes(pc.tree.walk())
+        let diags: Vec<_> = error_nodes(pc.borrow().tree.walk())
             .into_iter()
             .map(|node| Diagnostic {
                 range: Range {
@@ -414,15 +433,12 @@ impl Server {
 
 // Code-related helpers.
 impl Server {
-    fn find_visible_items(&self, params: &TextDocumentPositionParams) -> Result<Vec<Item>, String> {
-        let uri = &params.text_document.uri;
-        let pos = params.position;
-        let file = match self.code.get(uri) {
-            Some(x) => x,
-            None => {
-                return Err(format!("unknown file {:?}", uri));
-            }
+    fn find_visible_items(&mut self, url: &Url, pos: Position) -> Result<Vec<Item>, String> {
+        let file = match self.code.get(url) {
+            Some(x) => Rc::clone(x),
+            None => self.read_disk_file(url.clone()).unwrap(),
         };
+        let file = file.borrow();
 
         let point = to_point(pos);
         let mut cursor = file.tree.root_node().walk();
@@ -430,7 +446,9 @@ impl Server {
 
         let mut items = vec![];
         loop {
-            if let Some(item) = Item::parse(&file.code, &cursor.node()) {
+            let node = cursor.node();
+
+            if let Some(item) = Item::parse(&file.code, &node) {
                 match item.kind {
                     ItemKind::Module { params, .. } => {
                         for p in params {
@@ -455,8 +473,35 @@ impl Server {
             if cursor.goto_first_child() {
                 loop {
                     let node = cursor.node();
-                    if let Some(item) = Item::parse(&file.code, &node) {
-                        items.push(item);
+                    items.extend(Item::parse(&file.code, &node));
+                    if node.kind() == "include_statement" {
+                        let include_path = node.child(1).unwrap();
+                        let other_url = url
+                            .join(
+                                node_text(&file.code, &include_path)
+                                    .trim_start_matches(&['<', '\n'][..])
+                                    .trim_end_matches(&['>', '\n'][..]),
+                            )
+                            .unwrap();
+
+                        let other_items = self.find_visible_items(
+                            &other_url,
+                            Position {
+                                line: 0,
+                                character: 0,
+                            },
+                        )?;
+
+                        let include_type = node_text(&file.code, &node.child(0).unwrap());
+                        if include_type == "include" {
+                            items.extend(other_items);
+                        } else {
+                            items.extend(
+                                other_items
+                                    .into_iter()
+                                    .filter(|item| !matches!(item.kind, ItemKind::Variable)),
+                            );
+                        }
                     }
                     if !cursor.goto_next_sibling() {
                         break;
@@ -470,6 +515,36 @@ impl Server {
             }
         }
         Ok(items)
+    }
+
+    fn read_disk_file(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
+        let text = read_to_string(url.path())?;
+
+        match self.code.entry(url) {
+            std::collections::hash_map::Entry::Occupied(mut o) => {
+                // If the file has changed at all, do a full reparse. To avoid that, we'd have to do
+                // a diff to extract the edit list, which doesn't really sound worth it. Since this
+                // file is not open in the client, we don't expect it to change much anyway.
+                if o.get().borrow().code != text {
+                    let rc = Rc::new(RefCell::new(ParsedCode::new(
+                        tree_sitter_openscad::language(),
+                        text,
+                    )));
+                    o.insert(Rc::clone(&rc));
+                    Ok(rc)
+                } else {
+                    Ok(Rc::clone(o.get()))
+                }
+            }
+            std::collections::hash_map::Entry::Vacant(v) => {
+                let rc = Rc::new(RefCell::new(ParsedCode::new(
+                    tree_sitter_openscad::language(),
+                    text,
+                )));
+                v.insert(Rc::clone(&rc));
+                Ok(rc)
+            }
+        }
     }
 }
 
@@ -561,6 +636,13 @@ impl Server {
                 };
                 let notif = match cast_notification::<DidSaveTextDocument>(notif) {
                     Ok(_) => return Ok(LoopAction::Continue),
+                    Err(notif) => notif,
+                };
+                let notif = match cast_notification::<DidCloseTextDocument>(notif) {
+                    Ok(params) => {
+                        self.handle_did_close_text_document(params);
+                        return Ok(LoopAction::Continue);
+                    }
                     Err(notif) => notif,
                 };
 
