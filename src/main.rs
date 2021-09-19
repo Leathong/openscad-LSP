@@ -31,6 +31,74 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("use", "use <${1:PATH}>;$0"),
 ];
 
+fn find_offset(text: &str, pos: Position) -> Option<usize> {
+    let mut line_start = 0;
+    for _ in 0..pos.line {
+        line_start = text[line_start..].find('\n')? + line_start + 1;
+    }
+    Some(line_start + pos.character as usize)
+}
+
+fn to_point(p: Position) -> Point {
+    Point {
+        row: p.line as usize,
+        column: p.character as usize,
+    }
+}
+
+fn to_position(p: Point) -> Position {
+    Position {
+        line: p.row as u32,
+        character: p.column as u32,
+    }
+}
+
+fn node_text<'a>(code: &'a str, node: &Node) -> &'a str {
+    &code[node.start_byte()..node.end_byte()]
+}
+
+fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
+    fn helper<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
+        let node = cursor.node();
+        if node.is_error() || node.is_missing() {
+            ret.push(node);
+        }
+
+        if !cursor.goto_first_child() {
+            return;
+        }
+        loop {
+            helper(ret, cursor);
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+        cursor.goto_parent();
+    }
+
+    let mut ret = vec![];
+    helper(&mut ret, &mut cursor);
+    ret
+}
+
+fn cast_request<R>(req: Request) -> Result<(RequestId, R::Params), Request>
+where
+    R: lsp_types::request::Request,
+    R::Params: serde::de::DeserializeOwned,
+{
+    req.extract(R::METHOD)
+}
+
+fn cast_notification<N>(
+    notif: lsp_server::Notification,
+) -> Result<N::Params, lsp_server::Notification>
+where
+    N: lsp_types::notification::Notification,
+    N::Params: serde::de::DeserializeOwned,
+{
+    notif.extract(N::METHOD)
+}
+
 #[derive(Clone, Debug)]
 struct Param {
     name: String,
@@ -132,9 +200,7 @@ impl Item {
             }
         }
     }
-}
 
-impl Item {
     fn parse(code: &str, node: &Node) -> Option<Self> {
         let extract_name = |name| {
             node.child_by_field_name(name)
@@ -176,64 +242,6 @@ impl Item {
             _ => None,
         }
     }
-}
-
-fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    let (connection, io_threads) = Connection::stdio();
-    let mut server = Server::new(connection);
-    server.main_loop()?;
-    io_threads.join()?;
-    Ok(())
-}
-
-fn find_offset(text: &str, pos: Position) -> Option<usize> {
-    let mut line_start = 0;
-    for _ in 0..pos.line {
-        line_start = text[line_start..].find('\n')? + line_start + 1;
-    }
-    Some(line_start + pos.character as usize)
-}
-
-fn to_point(p: Position) -> Point {
-    Point {
-        row: p.line as usize,
-        column: p.character as usize,
-    }
-}
-
-fn to_position(p: Point) -> Position {
-    Position {
-        line: p.row as u32,
-        character: p.column as u32,
-    }
-}
-
-fn node_text<'a>(code: &'a str, node: &Node) -> &'a str {
-    &code[node.start_byte()..node.end_byte()]
-}
-
-fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
-    fn helper<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
-        let node = cursor.node();
-        if node.is_error() || node.is_missing() {
-            ret.push(node);
-        }
-
-        if !cursor.goto_first_child() {
-            return;
-        }
-        loop {
-            helper(ret, cursor);
-            if !cursor.goto_next_sibling() {
-                break;
-            }
-        }
-        cursor.goto_parent();
-    }
-
-    let mut ret = vec![];
-    helper(&mut ret, &mut cursor);
-    ret
 }
 
 struct ParsedCode {
@@ -670,20 +678,10 @@ impl Server {
     }
 }
 
-fn cast_request<R>(req: Request) -> Result<(RequestId, R::Params), Request>
-where
-    R: lsp_types::request::Request,
-    R::Params: serde::de::DeserializeOwned,
-{
-    req.extract(R::METHOD)
-}
-
-fn cast_notification<N>(
-    notif: lsp_server::Notification,
-) -> Result<N::Params, lsp_server::Notification>
-where
-    N: lsp_types::notification::Notification,
-    N::Params: serde::de::DeserializeOwned,
-{
-    notif.extract(N::METHOD)
+fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
+    let (connection, io_threads) = Connection::stdio();
+    let mut server = Server::new(connection);
+    server.main_loop()?;
+    io_threads.join()?;
+    Ok(())
 }
