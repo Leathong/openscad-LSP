@@ -363,8 +363,16 @@ impl Server {
                 .iter()
                 .chain(items.iter())
                 .map(|item| CompletionItem {
-                    label: item.name.to_owned(),
+                    label: {
+                        let hover = item.make_hover();
+                        if hover.is_empty() {
+                            item.name.to_owned()
+                        } else {
+                            hover
+                        }
+                    },
                     kind: Some(item.kind.completion_kind()),
+                    filter_text: Some(item.name.to_owned()),
                     insert_text: Some(item.make_snippet()),
                     insert_text_format: Some(InsertTextFormat::Snippet),
                     insert_text_mode: Some(InsertTextMode::AdjustIndentation),
