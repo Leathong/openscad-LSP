@@ -1,6 +1,12 @@
 use std::{
-    cell::RefCell, collections::HashMap, env, error::Error, fs::read_to_string, io, iter,
-    path::PathBuf, rc::Rc,
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    env,
+    error::Error,
+    fs::read_to_string,
+    io, iter,
+    path::PathBuf,
+    rc::Rc,
 };
 
 use lsp_server::{Connection, Message, Request, RequestId, Response};
@@ -308,6 +314,7 @@ struct Server {
 
     connection: Connection,
     code: HashMap<Url, Rc<RefCell<ParsedCode>>>,
+    client_owned: HashSet<Url>,
 }
 
 // Request handlers.
@@ -399,12 +406,13 @@ impl Server {
     fn handle_did_open_text_document(&mut self, params: DidOpenTextDocumentParams) {
         let DidOpenTextDocumentParams { text_document: doc } = params;
         self.code.insert(
-            doc.uri,
+            doc.uri.clone(),
             Rc::new(RefCell::new(ParsedCode::new(
                 tree_sitter_openscad::language(),
                 doc.text,
             ))),
         );
+        self.client_owned.insert(doc.uri);
     }
 
     fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
@@ -454,12 +462,16 @@ impl Server {
     fn handle_did_close_text_document(&mut self, params: DidCloseTextDocumentParams) {
         let DidCloseTextDocumentParams { text_document: doc } = params;
         self.code.remove(&doc.uri);
+        self.client_owned.remove(&doc.uri);
     }
 }
 
 // Code-related helpers.
 impl Server {
     fn find_visible_items(&mut self, url: &Url, pos: Position) -> io::Result<Vec<Item>> {
+        if !self.client_owned.contains(url) {
+            self.code.remove(url);
+        }
         let file = match self.code.get(url) {
             Some(x) => Rc::clone(x),
             None => self.read_disk_file(url.clone())?,
@@ -644,6 +656,7 @@ impl Server {
             library_locations: Self::make_library_locations().into(),
             connection,
             code: Default::default(),
+            client_owned: Default::default(),
         }
     }
 
