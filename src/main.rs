@@ -337,7 +337,7 @@ impl Server {
             "identifier" => {
                 let uri = &params.text_document_position_params.text_document.uri;
                 let pos = params.text_document_position_params.position;
-                let items = match self.find_visible_items(uri, pos) {
+                let items = match self.find_visible_items(uri, pos, false) {
                     Ok(x) => x,
                     Err(_) => return,
                 };
@@ -366,7 +366,7 @@ impl Server {
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
         let uri = &params.text_document_position.text_document.uri;
         let pos = params.text_document_position.position;
-        let items = match self.find_visible_items(uri, pos) {
+        let items = match self.find_visible_items(uri, pos, false) {
             Ok(x) => x,
             Err(_) => return,
         };
@@ -468,7 +468,12 @@ impl Server {
 
 // Code-related helpers.
 impl Server {
-    fn find_visible_items(&mut self, url: &Url, pos: Position) -> io::Result<Vec<Item>> {
+    fn find_visible_items(
+        &mut self,
+        url: &Url,
+        pos: Position,
+        in_use: bool,
+    ) -> io::Result<Vec<Item>> {
         if !self.client_owned.contains(url) {
             self.code.remove(url);
         }
@@ -513,27 +518,29 @@ impl Server {
                     let node = cursor.node();
                     items.extend(Item::parse(&file.code, &node));
                     if node.kind() == "include_statement" {
-                        let include_path = node_text(&file.code, &node.child(1).unwrap())
-                            .trim_start_matches(&['<', '\n'][..])
-                            .trim_end_matches(&['>', '\n'][..]);
+                        let is_use = node_text(&file.code, &node.child(0).unwrap()) == "use";
+                        if !(is_use && in_use) {
+                            let include_path = node_text(&file.code, &node.child(1).unwrap())
+                                .trim_start_matches(&['<', '\n'][..])
+                                .trim_end_matches(&['>', '\n'][..]);
 
-                        for base in iter::once(url).chain(Rc::clone(&self.library_locations).iter())
-                        {
-                            if let Ok(other_items) = self.find_visible_items(
-                                &base.join(include_path).unwrap(),
-                                Position::default(),
-                            ) {
-                                let include_type = node_text(&file.code, &node.child(0).unwrap());
-                                if include_type == "include" {
-                                    items.extend(other_items);
-                                } else {
-                                    items.extend(
-                                        other_items.into_iter().filter(|item| {
+                            for base in
+                                iter::once(url).chain(Rc::clone(&self.library_locations).iter())
+                            {
+                                if let Ok(other_items) = self.find_visible_items(
+                                    &base.join(include_path).unwrap(),
+                                    Position::default(),
+                                    is_use,
+                                ) {
+                                    if is_use {
+                                        items.extend(other_items.into_iter().filter(|item| {
                                             !matches!(item.kind, ItemKind::Variable)
-                                        }),
-                                    );
+                                        }));
+                                    } else {
+                                        items.extend(other_items);
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     }
