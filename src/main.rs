@@ -66,23 +66,29 @@ fn node_text<'a>(code: &'a str, node: &Node) -> &'a str {
     &code[node.start_byte()..node.end_byte()]
 }
 
+// The callback may move the cursor while executing, but it must always ultimately leave it in the
+// same position it was in at the beginning.
+fn for_each_child<'a>(cursor: &mut TreeCursor<'a>, mut cb: impl FnMut(&mut TreeCursor<'a>)) {
+    if cursor.goto_first_child() {
+        loop {
+            cb(cursor);
+            if !cursor.goto_next_sibling() {
+                break;
+            }
+        }
+        cursor.goto_parent();
+    }
+}
+
 fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
     fn helper<'a>(ret: &mut Vec<Node<'a>>, cursor: &mut TreeCursor<'a>) {
         let node = cursor.node();
         if node.is_error() || node.is_missing() {
             ret.push(node);
         }
-
-        if !cursor.goto_first_child() {
-            return;
-        }
-        loop {
+        for_each_child(cursor, |cursor| {
             helper(ret, cursor);
-            if !cursor.goto_next_sibling() {
-                break;
-            }
-        }
-        cursor.goto_parent();
+        });
     }
 
     let mut ret = vec![];
@@ -513,43 +519,38 @@ impl Server {
                 }
             }
 
-            if cursor.goto_first_child() {
-                loop {
-                    let node = cursor.node();
-                    items.extend(Item::parse(&file.code, &node));
-                    if node.kind() == "include_statement" {
-                        let is_use = node_text(&file.code, &node.child(0).unwrap()) == "use";
-                        if !(is_use && in_use) {
-                            let include_path = node_text(&file.code, &node.child(1).unwrap())
-                                .trim_start_matches(&['<', '\n'][..])
-                                .trim_end_matches(&['>', '\n'][..]);
+            for_each_child(&mut cursor, |cursor| {
+                let node = cursor.node();
+                items.extend(Item::parse(&file.code, &node));
+                if node.kind() == "include_statement" {
+                    let is_use = node_text(&file.code, &node.child(0).unwrap()) == "use";
+                    if is_use && in_use {
+                        return;
+                    };
+                    let include_path = node_text(&file.code, &node.child(1).unwrap())
+                        .trim_start_matches(&['<', '\n'][..])
+                        .trim_end_matches(&['>', '\n'][..]);
 
-                            for base in
-                                iter::once(url).chain(Rc::clone(&self.library_locations).iter())
-                            {
-                                if let Ok(other_items) = self.find_visible_items(
-                                    &base.join(include_path).unwrap(),
-                                    Position::default(),
-                                    is_use,
-                                ) {
-                                    if is_use {
-                                        items.extend(other_items.into_iter().filter(|item| {
-                                            !matches!(item.kind, ItemKind::Variable)
-                                        }));
-                                    } else {
-                                        items.extend(other_items);
-                                    }
-                                    break;
-                                }
+                    for base in iter::once(url).chain(Rc::clone(&self.library_locations).iter()) {
+                        if let Ok(other_items) = self.find_visible_items(
+                            &base.join(include_path).unwrap(),
+                            Position::default(),
+                            is_use,
+                        ) {
+                            if is_use {
+                                items.extend(
+                                    other_items
+                                        .into_iter()
+                                        .filter(|item| !matches!(item.kind, ItemKind::Variable)),
+                                );
+                            } else {
+                                items.extend(other_items);
                             }
+                            break;
                         }
                     }
-                    if !cursor.goto_next_sibling() {
-                        break;
-                    }
                 }
-                cursor.goto_parent();
-            }
+            });
 
             if !cursor.goto_parent() {
                 break;
@@ -640,16 +641,11 @@ impl Server {
         let pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone());
         let mut cursor: TreeCursor = pc.tree.walk();
         let mut ret = vec![];
-        if cursor.goto_first_child() {
-            loop {
-                if let Some(item) = Item::parse(&code, &cursor.node()) {
-                    ret.push(item);
-                }
-                if !cursor.goto_next_sibling() {
-                    break;
-                }
+        for_each_child(&mut cursor, |cursor| {
+            if let Some(item) = Item::parse(&code, &cursor.node()) {
+                ret.push(item);
             }
-        }
+        });
         ret.extend(KEYWORDS.iter().map(|&(name, comp)| Item {
             name: name.to_owned(),
             kind: ItemKind::Keyword(comp.to_owned()),
