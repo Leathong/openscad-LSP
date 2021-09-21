@@ -1,4 +1,7 @@
-use std::{cell::RefCell, collections::HashMap, error::Error, fs::read_to_string, io, rc::Rc};
+use std::{
+    cell::RefCell, collections::HashMap, env, error::Error, fs::read_to_string, io, iter,
+    path::PathBuf, rc::Rc,
+};
 
 use lsp_server::{Connection, Message, Request, RequestId, Response};
 use lsp_types::{
@@ -301,6 +304,8 @@ enum LoopAction {
 
 struct Server {
     builtins: Vec<Item>,
+    library_locations: Rc<[Url]>,
+
     connection: Connection,
     code: HashMap<Url, Rc<RefCell<ParsedCode>>>,
 }
@@ -454,10 +459,10 @@ impl Server {
 
 // Code-related helpers.
 impl Server {
-    fn find_visible_items(&mut self, url: &Url, pos: Position) -> Result<Vec<Item>, String> {
+    fn find_visible_items(&mut self, url: &Url, pos: Position) -> io::Result<Vec<Item>> {
         let file = match self.code.get(url) {
             Some(x) => Rc::clone(x),
-            None => self.read_disk_file(url.clone()).unwrap(),
+            None => self.read_disk_file(url.clone())?,
         };
         let file = file.borrow();
 
@@ -496,32 +501,28 @@ impl Server {
                     let node = cursor.node();
                     items.extend(Item::parse(&file.code, &node));
                     if node.kind() == "include_statement" {
-                        let include_path = node.child(1).unwrap();
-                        let other_url = url
-                            .join(
-                                node_text(&file.code, &include_path)
-                                    .trim_start_matches(&['<', '\n'][..])
-                                    .trim_end_matches(&['>', '\n'][..]),
-                            )
-                            .unwrap();
+                        let include_path = node_text(&file.code, &node.child(1).unwrap())
+                            .trim_start_matches(&['<', '\n'][..])
+                            .trim_end_matches(&['>', '\n'][..]);
 
-                        let other_items = self.find_visible_items(
-                            &other_url,
-                            Position {
-                                line: 0,
-                                character: 0,
-                            },
-                        )?;
-
-                        let include_type = node_text(&file.code, &node.child(0).unwrap());
-                        if include_type == "include" {
-                            items.extend(other_items);
-                        } else {
-                            items.extend(
-                                other_items
-                                    .into_iter()
-                                    .filter(|item| !matches!(item.kind, ItemKind::Variable)),
-                            );
+                        for base in iter::once(url).chain(Rc::clone(&self.library_locations).iter())
+                        {
+                            if let Ok(other_items) = self.find_visible_items(
+                                &base.join(include_path).unwrap(),
+                                Position::default(),
+                            ) {
+                                let include_type = node_text(&file.code, &node.child(0).unwrap());
+                                if include_type == "include" {
+                                    items.extend(other_items);
+                                } else {
+                                    items.extend(
+                                        other_items.into_iter().filter(|item| {
+                                            !matches!(item.kind, ItemKind::Variable)
+                                        }),
+                                    );
+                                }
+                                break;
+                            }
                         }
                     }
                     if !cursor.goto_next_sibling() {
@@ -571,6 +572,50 @@ impl Server {
 
 // Miscellaneous high-level logic.
 impl Server {
+    fn env_library_locations() -> Vec<PathBuf> {
+        match env::var_os("OPENSCADPATH") {
+            Some(path) => env::split_paths(&path).collect(),
+            None => vec![],
+        }
+    }
+
+    fn user_library_location() -> Option<PathBuf> {
+        let user_library_rel_path = if cfg!(target_os = "windows") {
+            "My Documents\\OpenSCAD\\libraries"
+        } else if cfg!(target_os = "macos") {
+            "Documents/OpenSCAD/libraries"
+        } else {
+            ".local/share/OpenSCAD/libraries"
+        };
+        home::home_dir().map(|home| home.join(user_library_rel_path))
+    }
+
+    fn installation_library_location() -> Option<PathBuf> {
+        // TODO: Figure out the other cases.
+        if cfg!(target_os = "windows") || cfg!(target_os = "macos") {
+            None
+        } else {
+            Some("/usr/share/openscad/libraries".into())
+        }
+    }
+
+    fn make_library_locations() -> Vec<Url> {
+        let mut ret = Self::env_library_locations();
+        ret.extend(Self::user_library_location());
+        ret.extend(Self::installation_library_location());
+        // Add trailing slashes to ensure that the paths are interpreted as directories.
+        for p in &mut ret {
+            p.push("");
+        }
+        // The helper functions above return `PathBuf`s in a token nod to generality, but it looks
+        // like the LSP spec itself and the URL representation given by lsp-server assume valid
+        // Unicode, so just handle everything as `String`s from here on and drop invalid paths.
+        ret.into_iter()
+            .filter_map(|p| p.into_os_string().into_string().ok())
+            .filter_map(|p| Url::parse(&format!("file://{}", p)).ok())
+            .collect()
+    }
+
     fn read_builtins() -> Vec<Item> {
         let code = BUILTINS_SCAD.to_owned();
         let pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone());
@@ -596,6 +641,7 @@ impl Server {
     fn new(connection: Connection) -> Self {
         Self {
             builtins: Self::read_builtins(),
+            library_locations: Self::make_library_locations().into(),
             connection,
             code: Default::default(),
         }
