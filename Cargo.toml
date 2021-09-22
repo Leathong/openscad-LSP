@@ -1,7 +1,15 @@
 [package]
 name = "openscad-language-server"
 version = "0.1.0"
+authors = ["dzhu"]
 edition = "2018"
+description = "A Language Server Protocol server for OpenSCAD"
+readme = "out/README.md"
+repository = "https://github.com/dzhu/openscad-language-server"
+license = "MIT OR Apache-2.0"
+keywords = ["language-server", "lsp"]
+categories = ["development-tools"]
+include = ["/src", "out/README.md"]
 
 [dependencies]
 home = "0.5.3"
