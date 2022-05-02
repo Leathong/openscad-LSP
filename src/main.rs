@@ -1113,7 +1113,7 @@ impl Server {
     }
 
     fn read_disk_file(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
-        let text = read_to_string(url.path())?;
+        let text = read_to_string(url.to_file_path().unwrap())?;
 
         match self.code.entry(url.clone()) {
             linked_hash_map::Entry::Occupied(o) => {
