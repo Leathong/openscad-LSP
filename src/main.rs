@@ -4,7 +4,6 @@ use std::{
     error::Error,
     fs::read_to_string,
     io::{self, Write},
-    path::Path,
     path::PathBuf,
     rc::Rc,
     vec,
@@ -459,16 +458,20 @@ impl ParsedCode {
         }
 
         let url = self.url.join(include_path).unwrap();
-        if Path::new(url.path()).exists() {
-            res = Some(url);
-        } else {
-            if self.libs.is_some() {
-                let libs = Rc::clone(&self.libs.clone().unwrap());
-                for lib in libs.borrow().iter() {
-                    let file = Path::new(lib.path()).join(include_path);
-                    if file.exists() {
-                        res = Some(Url::from_file_path(file).unwrap());
-                        break;
+        if let Ok(path) = url.to_file_path() {
+            if path.exists() {
+                res = Some(url);
+                return res;
+            }
+        }
+        if self.libs.is_some() {
+            let libs = Rc::clone(&self.libs.clone().unwrap());
+            for lib in libs.borrow().iter() {
+                let url = lib.join(include_path).unwrap();
+                if let Ok(path) = url.to_file_path() {
+                    if path.exists() {
+                        res = Some(url);
+                        return res;
                     }
                 }
             }
@@ -496,7 +499,7 @@ impl ParsedCode {
         }
 
         let mut inc_dirs = vec![];
-        let inc_dir = PathBuf::from(self.url.path()).parent().unwrap().join(dir);
+        let inc_dir = self.url.to_file_path().unwrap().parent().unwrap().join(dir);
         if inc_dir.exists() && inc_dir.is_dir() {
             inc_dirs.push(inc_dir.to_path_buf());
         }
@@ -504,7 +507,7 @@ impl ParsedCode {
         if self.libs.is_some() {
             let libs = Rc::clone(&self.libs.clone().unwrap());
             for lib in libs.borrow().iter() {
-                let dirpath = Path::new(lib.path()).join(dir);
+                let dirpath = lib.join(dir).unwrap().to_file_path().unwrap();
                 if dirpath.exists() && dirpath.is_dir() {
                     inc_dirs.push(dirpath);
                 }
@@ -1136,11 +1139,11 @@ impl Server {
 
     fn user_library_location() -> Option<PathBuf> {
         let user_library_rel_path = if cfg!(target_os = "windows") {
-            "My Documents\\OpenSCAD\\libraries"
+            "My Documents\\OpenSCAD\\libraries\\"
         } else if cfg!(target_os = "macos") {
-            "Documents/OpenSCAD/libraries"
+            "Documents/OpenSCAD/libraries/"
         } else {
-            ".local/share/OpenSCAD/libraries"
+            ".local/share/OpenSCAD/libraries/"
         };
         home::home_dir().map(|home| home.join(user_library_rel_path))
     }
@@ -1148,11 +1151,11 @@ impl Server {
     fn installation_library_location() -> Option<PathBuf> {
         // TODO: Figure out the other cases.
         if cfg!(target_os = "windows") {
-            None
+            Some("C:\\Program Files\\OpenSCAD\\libraries\\".into())
         } else if cfg!(target_os = "macos") {
-            Some("/Applications/OpenSCAD.app/Contents/Resources/libraries".into())
+            Some("/Applications/OpenSCAD.app/Contents/Resources/libraries/".into())
         } else {
-            Some("/usr/share/openscad/libraries".into())
+            Some("/usr/share/openscad/libraries/".into())
         }
     }
 
