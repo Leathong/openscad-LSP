@@ -183,7 +183,7 @@ checksum = "308cc39be01b73d0d18f82a0e7b2a3df85245f84af96fdddc5d202d27e47b86a"
 
 [[package]]
 name = "openscad-language-server"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "home",
  "linked-hash-map",
@@ -372,9 +372,9 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-openscad"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61c70a1145e93304d85d64b3f329fd60057f143b47373f90c6f35010f8b28945"
+checksum = "a0cf0f67079dc695887155d3b294b5ebdd1e5ce126727580099535255cd35233"
 dependencies = [
  "cc",
  "tree-sitter",
