@@ -15,6 +15,7 @@ Features
 -   jump to definition
 -   code snippets
 -   function/module signatures on hover
+-   document symbols
 
 Build
 ------------
@@ -31,6 +32,6 @@ cargo build --release
 Usage
 -----
 
-The server communicates over TCP sockes (127.0.0.1:3245).
+The server communicates over TCP socket (127.0.0.1:3245).
 
 If you work with vscode, you can install the extension directly form the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support&ssr=false#overview)
