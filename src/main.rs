@@ -371,6 +371,16 @@ struct ParsedCode {
     libs: Option<Rc<RefCell<Vec<Url>>>>,
 }
 
+trait KindExt {
+    fn is_include_statement(&self) -> bool;
+}
+
+impl KindExt for str {
+    fn is_include_statement(&self) -> bool {
+        self == "include_statement" || self == "use_statement"
+    }
+}
+
 impl ParsedCode {
     fn new(lang: Language, code: String, url: &Url) -> Self {
         let mut parser = tree_sitter::Parser::new();
@@ -447,7 +457,7 @@ impl ParsedCode {
                 ret.push(Rc::new(item));
             }
 
-            if node.kind() == "include_statement" {
+            if node.kind().is_include_statement() {
                 self.get_include_url(node).map(|url| {
                     inc.push(url);
                 });
@@ -976,7 +986,7 @@ impl Server {
                 let kind = node.kind();
                 // let text = node_text(&bpc.code, &node);
 
-                if kind == "include_statement" {
+                if kind.is_include_statement() {
                     if bpc.get_include_url(&node).is_none() {
                         let subnode = node.child(1).unwrap();
                         let mut start = to_position(subnode.start_position());
@@ -1059,7 +1069,7 @@ impl Server {
             if cursor.goto_first_child() {
                 loop {
                     let node = cursor.node();
-                    if node.kind() == "include_statement" {
+                    if node.kind().is_include_statement() {
                         code.get_include_url(&node).map(|inc| {
                             include_vec.push(inc);
                         });
