@@ -1,4 +1,4 @@
-build: mac windows
+build: mac windows linux
 
 mac:
 	cargo build --release;

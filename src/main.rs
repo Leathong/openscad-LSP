@@ -28,7 +28,9 @@ use lsp_types::{
 use serde::Deserialize;
 use serde_json::json;
 use shellexpand;
-use tree_sitter::{InputEdit, Language, Node, Parser, Point, Tree, TreeCursor};
+use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
+
+use clap::{StructOpt, Parser};
 
 const BUILTINS_SCAD: &str = include_str!("builtins.scad");
 
@@ -45,6 +47,25 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("true", "true"),
     ("use", "use <${1:PATH}>;$0"),
 ];
+
+macro_rules! LOG_PREFIX {
+    () => {
+        "[server] "
+    };
+}
+
+macro_rules! log_to_console {
+    ($fmt:expr, $($arg:tt)*) => {
+        print!(LOG_PREFIX!());
+        println!($fmt, $($arg)*);
+        let _ = io::stdout().flush();
+    };
+    ($fmt:expr) => {
+        print!(LOG_PREFIX!());
+        println!($fmt);
+        let _ = io::stdout().flush();
+    }
+}
 
 fn find_offset(text: &String, pos: Position) -> Option<usize> {
     let mut line_start = 0;
@@ -339,7 +360,7 @@ impl Item {
 }
 
 struct ParsedCode {
-    parser: Parser,
+    parser: tree_sitter::Parser,
     code: String,
     tree: Tree,
     url: Url,
@@ -352,7 +373,7 @@ struct ParsedCode {
 
 impl ParsedCode {
     fn new(lang: Language, code: String, url: &Url) -> Self {
-        let mut parser = Parser::new();
+        let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(lang)
             .expect("Error loading openscad grammar");
@@ -1176,14 +1197,14 @@ impl Server {
 
 // Miscellaneous high-level logic.
 impl Server {
-    fn env_library_locations() -> Vec<PathBuf> {
-        match env::var_os("OPENSCADPATH") {
-            Some(path) => env::split_paths(&path).collect(),
-            None => vec![],
+    fn env_library_locations() -> Vec<String> {
+        match env::var("OPENSCADPATH") {
+            Ok(path) => env::split_paths(&path).filter_map(|buf| buf.into_os_string().into_string().ok()).collect(),
+            Err(_) => vec![],
         }
     }
 
-    fn user_library_location() -> Option<PathBuf> {
+    fn user_library_location() -> Option<String> {
         let user_library_rel_path = if cfg!(target_os = "windows") {
             "My Documents\\OpenSCAD\\libraries\\"
         } else if cfg!(target_os = "macos") {
@@ -1191,10 +1212,10 @@ impl Server {
         } else {
             ".local/share/OpenSCAD/libraries/"
         };
-        home::home_dir().map(|home| home.join(user_library_rel_path))
+        home::home_dir()?.join(user_library_rel_path).into_os_string().into_string().ok()
     }
 
-    fn installation_library_location() -> Option<PathBuf> {
+    fn installation_library_location() -> Option<String> {
         // TODO: Figure out the other cases.
         if cfg!(target_os = "windows") {
             Some("C:\\Program Files\\OpenSCAD\\libraries\\".into())
@@ -1205,7 +1226,7 @@ impl Server {
         }
     }
 
-    fn make_library_locations(userlibs: Vec<PathBuf>) -> Vec<Url> {
+    fn make_library_locations(userlibs: Vec<String>) -> Vec<Url> {
         let mut ret = Self::env_library_locations();
         ret.extend(Self::user_library_location());
         ret.extend(Self::installation_library_location());
@@ -1217,10 +1238,18 @@ impl Server {
         // The helper functions above return `PathBuf`s in a token nod to generality, but it looks
         // like the LSP spec itself and the URL representation given by lsp-server assume valid
         // Unicode, so just handle everything as `String`s from here on and drop invalid paths.
-        ret.into_iter()
-            .filter_map(|p| p.into_os_string().into_string().ok())
+        let libs = ret.into_iter()
+            .map(|path| shellexpand::tilde(&path).to_string())
             .filter_map(|p| Url::parse(&format!("file://{}", p)).ok())
-            .collect()
+            .collect();
+
+        println!();
+        log_to_console!("search paths:");
+        for lib in &libs {
+            log_to_console!("{lib}");
+        }
+        println!();
+        libs
     }
 
     fn extend_libs(&mut self, userlibs: Vec<String>) {
@@ -1239,7 +1268,7 @@ impl Server {
 
     fn read_builtins() -> Vec<Rc<Item>> {
         let code = BUILTINS_SCAD.to_owned();
-        let url = Url::parse("file:///builtin").unwrap();
+        let url = Url::parse("file://builtin").unwrap();
         let mut pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone(), &url);
         pc.is_builtin = true;
         let mut cursor: TreeCursor = pc.tree.walk();
@@ -1361,6 +1390,8 @@ impl Server {
         Ok(LoopAction::Continue)
     }
 
+
+
     fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
         let caps = serde_json::to_value(&ServerCapabilities {
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
@@ -1383,10 +1414,26 @@ impl Server {
     }
 }
 
+#[derive(Parser)]
+#[clap(name = "OpenSCAD-LSP")]
+#[clap(author, version, about)]
+struct Cli {
+    #[clap(short, long, default_value_t = String::from("3245"))]
+    port: String,
+
+    #[clap(long, default_value_t = String::from("127.0.0.1"))]
+    ip: String,
+}
+
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
-    println!("[server] start sucess");
+    let args = Cli::parse();
+
+    log_to_console!("start sucess");
+
+    let ipport = [args.ip, args.port].join(":");
+
     let _ = io::stdout().flush();
-    let res = Connection::listen("127.0.0.1:3245");
+    let res = Connection::listen(ipport);
     match res {
         Ok((connection, io_threads)) => {
             let mut server = Server::new(connection);
