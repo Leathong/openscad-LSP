@@ -1197,14 +1197,14 @@ impl Server {
 
 // Miscellaneous high-level logic.
 impl Server {
-    fn env_library_locations() -> Vec<String> {
+    fn user_defined_library_locations() -> Vec<String> {
         match env::var("OPENSCADPATH") {
             Ok(path) => env::split_paths(&path).filter_map(|buf| buf.into_os_string().into_string().ok()).collect(),
             Err(_) => vec![],
         }
     }
 
-    fn user_library_location() -> Option<String> {
+    fn built_in_library_location() -> Option<String> {
         let user_library_rel_path = if cfg!(target_os = "windows") {
             "My Documents\\OpenSCAD\\libraries\\"
         } else if cfg!(target_os = "macos") {
@@ -1227,8 +1227,8 @@ impl Server {
     }
 
     fn make_library_locations(userlibs: Vec<String>) -> Vec<Url> {
-        let mut ret = Self::env_library_locations();
-        ret.extend(Self::user_library_location());
+        let mut ret = Self::user_defined_library_locations();
+        ret.extend(Self::built_in_library_location());
         ret.extend(Self::installation_library_location());
 
         if userlibs.len() > 0 {
