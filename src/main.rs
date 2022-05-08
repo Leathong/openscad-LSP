@@ -6,7 +6,7 @@ use std::{
     io::{self, Write},
     path::PathBuf,
     rc::Rc,
-    vec
+    vec,
 };
 
 use linked_hash_map::LinkedHashMap;
@@ -16,21 +16,22 @@ use lsp_types::{
         DidChangeConfiguration, DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
         DidSaveTextDocument,
     },
-    request::{Completion, GotoDefinition, HoverRequest, DocumentSymbolRequest},
+    request::{Completion, DocumentSymbolRequest, GotoDefinition, HoverRequest},
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
-    HoverProviderCapability, InsertTextFormat, InsertTextMode, Location, MarkedString, OneOf,
-    Position, PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentContentChangeEvent,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Url, DocumentSymbolParams, DocumentSymbolResponse, SymbolInformation, SymbolKind,
+    DocumentSymbolParams, DocumentSymbolResponse, GotoDefinitionParams, GotoDefinitionResponse,
+    Hover, HoverContents, HoverParams, HoverProviderCapability, InsertTextFormat, InsertTextMode,
+    Location, MarkedString, OneOf, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
+    SymbolInformation, SymbolKind, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
 };
 use serde::Deserialize;
 use serde_json::json;
 use shellexpand;
 use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
 
-use clap::{StructOpt, Parser};
+use clap::{Parser};
 
 const BUILTINS_SCAD: &str = include_str!("builtins.scad");
 
@@ -55,12 +56,12 @@ macro_rules! LOG_PREFIX {
 }
 
 macro_rules! log_to_console {
-    ($fmt:expr, $($arg:tt)*) => {
+    ($fmt:literal, $($arg:tt)*) => {
         print!(LOG_PREFIX!());
         println!($fmt, $($arg)*);
         let _ = io::stdout().flush();
     };
-    ($fmt:expr) => {
+    ($fmt:literal) => {
         print!(LOG_PREFIX!());
         println!($fmt);
         let _ = io::stdout().flush();
@@ -352,9 +353,12 @@ impl Item {
     fn get_symbol_kind(&self) -> SymbolKind {
         match self.kind {
             ItemKind::Function(_) => SymbolKind::FUNCTION,
-            ItemKind::Module { group: _, params: _ } => SymbolKind::MODULE,
+            ItemKind::Module {
+                group: _,
+                params: _,
+            } => SymbolKind::MODULE,
             ItemKind::Variable => SymbolKind::VARIABLE,
-            ItemKind::Keyword(_) => SymbolKind::KEY
+            ItemKind::Keyword(_) => SymbolKind::KEY,
         }
     }
 }
@@ -909,17 +913,23 @@ impl Server {
         let mut bfile = file.borrow_mut();
         bfile.gen_items_if_needed();
         if let Some(items) = &bfile.root_items {
-            let result: Vec<SymbolInformation> = items.iter().map(|item| {
-                #[allow(deprecated)]
-                SymbolInformation {
-                    name: item.name.to_owned(),
-                    kind: item.get_symbol_kind(),
-                    tags: None,
-                    deprecated: None,
-                    location: Location { uri: item.url.clone().unwrap(), range: item.range }, 
-                    container_name: None,
-                }
-            }).collect();
+            let result: Vec<SymbolInformation> = items
+                .iter()
+                .map(|item| {
+                    #[allow(deprecated)]
+                    SymbolInformation {
+                        name: item.name.to_owned(),
+                        kind: item.get_symbol_kind(),
+                        tags: None,
+                        deprecated: None,
+                        location: Location {
+                            uri: item.url.clone().unwrap(),
+                            range: item.range,
+                        },
+                        container_name: None,
+                    }
+                })
+                .collect();
 
             let result = DocumentSymbolResponse::Flat(result);
 
@@ -931,7 +941,6 @@ impl Server {
             });
         }
     }
-
 }
 
 // Notification handlers.
@@ -1209,7 +1218,9 @@ impl Server {
 impl Server {
     fn user_defined_library_locations() -> Vec<String> {
         match env::var("OPENSCADPATH") {
-            Ok(path) => env::split_paths(&path).filter_map(|buf| buf.into_os_string().into_string().ok()).collect(),
+            Ok(path) => env::split_paths(&path)
+                .filter_map(|buf| buf.into_os_string().into_string().ok())
+                .collect(),
             Err(_) => vec![],
         }
     }
@@ -1222,7 +1233,11 @@ impl Server {
         } else {
             ".local/share/OpenSCAD/libraries/"
         };
-        home::home_dir()?.join(user_library_rel_path).into_os_string().into_string().ok()
+        home::home_dir()?
+            .join(user_library_rel_path)
+            .into_os_string()
+            .into_string()
+            .ok()
     }
 
     fn installation_library_location() -> Option<String> {
@@ -1248,7 +1263,8 @@ impl Server {
         // The helper functions above return `PathBuf`s in a token nod to generality, but it looks
         // like the LSP spec itself and the URL representation given by lsp-server assume valid
         // Unicode, so just handle everything as `String`s from here on and drop invalid paths.
-        let libs = ret.into_iter()
+        let libs = ret
+            .into_iter()
             .map(|path| shellexpand::tilde(&path).to_string())
             .filter_map(|p| Url::parse(&format!("file://{}", p)).ok())
             .collect();
@@ -1399,8 +1415,6 @@ impl Server {
         }
         Ok(LoopAction::Continue)
     }
-
-
 
     fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
         let caps = serde_json::to_value(&ServerCapabilities {
