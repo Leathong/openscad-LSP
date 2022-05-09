@@ -773,10 +773,9 @@ impl Server {
 
         // print!("{:?} {:?}\n", name, &id);
 
-        let namecp = String::from(name);
         let mut items = self.find_identities(
             &(*file.borrow()),
-            &|item_name| item_name.starts_with(&namecp),
+            &|_| true,
             &mut cursor,
             true,
         );
@@ -866,7 +865,7 @@ impl Server {
                     .collect(),
             }),
             _ => CompletionResponse::List(CompletionList {
-                is_incomplete: false,
+                is_incomplete: true,
                 items: self
                     .builtins
                     .iter()
