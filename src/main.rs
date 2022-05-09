@@ -267,10 +267,10 @@ impl Item {
 
         match &self.kind {
             ItemKind::Variable => "".to_owned(),
-            ItemKind::Function(params) => format!("{}({})", self.name, format_params(params)),
+            ItemKind::Function(params) => format!("function {}({})", self.name, format_params(params)),
             ItemKind::Keyword(_) => self.name.clone(),
             ItemKind::Module { params, .. } => {
-                format!("{}({})", self.name, format_params(params))
+                format!("module {}({})", self.name, format_params(params))
             }
         }
     }
