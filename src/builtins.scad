@@ -1,4 +1,3 @@
-// Leaf modules.
 module children(index) {}
 module circle(rad) {}
 module cube(size, center) {}
@@ -12,7 +11,6 @@ module square(size) {}
 module surface(file, center=false, invert=false, convexity=1) {}
 module text(args) {}
 
-// Group modules.
 module color(c) { /* group */ }
 module difference() { /* group */ }
 module group() { /* group */ }
@@ -33,7 +31,6 @@ module scale(v) { /* group */ }
 module translate(v) { /* group */ }
 module union() { /* group */ }
 
-// Functions.
 function abs(x) = 0;
 function acos(x) = 0;
 function asin(x) = 0;

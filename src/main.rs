@@ -49,6 +49,8 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("use", "use <${1:PATH}>;$0"),
 ];
 
+const BUILTIN_PATH: &str = "file://builtin";
+
 macro_rules! LOG_PREFIX {
     () => {
         "[server] "
@@ -656,7 +658,6 @@ enum LoopAction {
 }
 
 struct Server {
-    builtins: Vec<Rc<Item>>,
     library_locations: Rc<RefCell<Vec<Url>>>,
 
     connection: Connection,
@@ -690,16 +691,13 @@ impl Server {
             "identifier" => {
                 let namecp = name.clone();
                 let items = self.find_identities(
-                    &(*file.borrow()),
+                    &file.borrow(),
                     &|item_name| item_name == namecp,
                     &mut cursor,
                     false,
+                    true
                 );
-                self.builtins
-                    .iter()
-                    .chain(items.iter())
-                    .find(|item| item.name == name)
-                    .map(|item| Hover {
+                items.first().map(|item| Hover {
                         contents: HoverContents::Markup(MarkupContent {
                             kind: lsp_types::MarkupKind::Markdown,
                             value: match &item.hover {
@@ -755,6 +753,7 @@ impl Server {
                     &|item_name| item_name == namecp,
                     &mut cursor,
                     false,
+                    true,
                 );
                 let locs = items
                     .iter()
@@ -847,7 +846,7 @@ impl Server {
 
         // print!("{:?} {:?}\n", name, &id);
 
-        let mut items = self.find_identities(&(*file.borrow()), &|_| true, &mut cursor, true);
+        let mut items = self.find_identities(&(*file.borrow()), &|_| true, &mut cursor, true, true);
 
         let kind = node.kind();
         if let Some(parent) = &node.parent().and_then(|parent| parent.parent()) {
@@ -871,10 +870,11 @@ impl Server {
                     .map(|child| node_text(&bfile.code, &child))
                     .map(|name| {
                         let fun_items = self.find_identities(
-                            &(*file.borrow()),
+                            &file.borrow(),
                             &|item_name| item_name == name,
                             &mut cursor,
                             false,
+                            true,
                         );
 
                         if fun_items.len() > 0 {
@@ -937,12 +937,7 @@ impl Server {
             }),
             _ => CompletionResponse::List(CompletionList {
                 is_incomplete: true,
-                items: self
-                    .builtins
-                    .iter()
-                    .filter(|item| item.name.starts_with(name))
-                    .chain(items.iter())
-                    .map(|item| CompletionItem {
+                items: items.iter().map(|item| CompletionItem {
                         label: match &item.label {
                             Some(label) => label.to_owned(),
                             None => item.make_label()
@@ -1144,10 +1139,12 @@ impl Server {
         comparator: &dyn Fn(&str) -> bool,
         cursor: &'a mut TreeCursor,
         findall: bool,
+        inc_builtin: bool,
     ) -> Vec<Rc<Item>> {
         let mut result = vec![];
         let mut start_pos = cursor.node().start_byte();
         let mut include_vec = vec![];
+        if inc_builtin {include_vec.push(Url::parse(BUILTIN_PATH).unwrap())}
 
         let mut should_process_param = false;
         while cursor.goto_parent() {
@@ -1233,12 +1230,6 @@ impl Server {
             cursor.goto_parent();
         }
 
-        if include_vec.len() == 0 {
-            code.includes.as_ref().map(|urls| {
-                include_vec.extend(urls.clone());
-            });
-        }
-
         for inc in include_vec {
             let inccode = match self.code.get(&inc) {
                 Some(x) => Rc::clone(x),
@@ -1267,6 +1258,7 @@ impl Server {
                 &comparator,
                 &mut inccode.tree.walk(),
                 findall,
+                false
             ));
             if result.len() > 0 && findall == false {
                 return result;
@@ -1370,25 +1362,17 @@ impl Server {
         }
     }
 
-    fn read_builtins() -> Vec<Rc<Item>> {
-        let code = BUILTINS_SCAD.to_owned();
-        let url = Url::parse("file://builtin").unwrap();
-        let mut pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone(), &url);
-        pc.is_builtin = true;
-        pc.gen_items_if_needed();
-        match pc.root_items {
-            Some(items) => items,
-            None => vec![],
-        }
-    }
 
     fn new(connection: Connection) -> Self {
-        Self {
-            builtins: Self::read_builtins(),
+        let mut instance = Self {
             library_locations: Rc::new(RefCell::new(Self::make_library_locations(vec![]))),
             connection,
             code: Default::default(),
-        }
+        };
+        let code = BUILTINS_SCAD.to_owned();
+        let url = Url::parse(BUILTIN_PATH).unwrap();
+        instance.insert_code(&url, &code);
+        instance
     }
 
     fn notify(&self, notif: lsp_server::Notification) {
