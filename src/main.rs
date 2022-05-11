@@ -20,18 +20,18 @@ use lsp_types::{
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    DocumentSymbolParams, DocumentSymbolResponse, GotoDefinitionParams, GotoDefinitionResponse,
-    Hover, HoverContents, HoverParams, HoverProviderCapability, InsertTextFormat, InsertTextMode,
-    Location, MarkedString, OneOf, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    SymbolInformation, SymbolKind, TextDocumentContentChangeEvent, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url,
+    DocumentSymbolParams, DocumentSymbolResponse, Documentation, GotoDefinitionParams,
+    GotoDefinitionResponse, Hover, HoverContents, HoverParams, HoverProviderCapability,
+    InsertTextFormat, InsertTextMode, Location, OneOf, Position,
+    PublishDiagnosticsParams, Range, ServerCapabilities, SymbolInformation, SymbolKind,
+    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url, MarkupContent,
 };
 use serde::Deserialize;
 use serde_json::json;
 use shellexpand;
 use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
 
-use clap::{Parser};
+use clap::Parser;
 
 const BUILTINS_SCAD: &str = include_str!("builtins.scad");
 
@@ -208,12 +208,17 @@ impl Param {
     }
 }
 
-#[derive(Clone, Debug)]
 enum ItemKind {
     Variable,
     Function(Vec<Param>),
     Keyword(String),
     Module { group: bool, params: Vec<Param> },
+}
+
+impl Default for ItemKind {
+    fn default() -> Self {
+        ItemKind::Variable
+    }
 }
 
 impl ItemKind {
@@ -227,11 +232,15 @@ impl ItemKind {
     }
 }
 
+#[derive(Default)]
 struct Item {
     name: String,
     kind: ItemKind,
     range: Range,
     url: Option<Url>,
+    doc: Option<String>,
+    hover: Option<String>,
+    label: Option<String>,
 }
 
 impl Item {
@@ -254,6 +263,23 @@ impl Item {
     }
 
     fn make_hover(&self) -> String {
+        let mut label = match &self.label {
+            Some(label) => label.to_owned(),
+            None => self.make_label(),
+        };
+        label = match self.kind {
+            ItemKind::Function(_) => format!("```scad\nfunction {}\n```", label),
+            ItemKind::Module { group: _, params: _ } => format!("```scad\nmodule {}\n```", label),
+            _ => format!("```scad\n{}\n```", label),
+        };
+        if let Some(doc) = &self.doc {
+            label = format!("{}\n---\n```scad\n{}\n```", label, doc);
+        }
+        // print!("{}", &label);
+        label
+    }
+
+    fn make_label(&self) -> String{
         let format_params = |params: &[Param]| {
             params
                 .iter()
@@ -265,14 +291,24 @@ impl Item {
                 .join(", ")
         };
 
-        match &self.kind {
-            ItemKind::Variable => "".to_owned(),
-            ItemKind::Function(params) => format!("function {}({})", self.name, format_params(params)),
+        let lable = match &self.kind {
+            ItemKind::Variable => self.name.to_owned(),
+            ItemKind::Function(params) => format!(
+                "{}({})",
+                self.name,
+                format_params(params)
+            ),
             ItemKind::Keyword(_) => self.name.clone(),
             ItemKind::Module { params, .. } => {
-                format!("module {}({})", self.name, format_params(params))
+                format!(
+                    "{}({})",
+                    self.name,
+                    format_params(params)
+                )
             }
-        }
+        };
+
+        lable
     }
 
     fn parse(code: &str, node: &Node) -> Option<Self> {
@@ -288,7 +324,7 @@ impl Item {
                     .and_then(|body| body.named_child(0))
                 {
                     let body = node_text(code, &child);
-                    child.kind() == "comment" && (body == "/* group */" || body == "// group")
+                    child.kind().is_comment() && (body == "/* group */" || body == "// group")
                 } else {
                     false
                 };
@@ -311,6 +347,7 @@ impl Item {
                         },
                     },
                     url: None,
+                    ..Default::default()
                 })
             }
             "function_declaration" => Some(Self {
@@ -330,6 +367,7 @@ impl Item {
                     },
                 },
                 url: None,
+                ..Default::default()
             }),
             "assignment" => Some(Self {
                 name: extract_name("left")?,
@@ -345,6 +383,7 @@ impl Item {
                     },
                 },
                 url: None,
+                ..Default::default()
             }),
             _ => None,
         }
@@ -377,11 +416,16 @@ struct ParsedCode {
 
 trait KindExt {
     fn is_include_statement(&self) -> bool;
+    fn is_comment(&self) -> bool;
 }
 
 impl KindExt for str {
     fn is_include_statement(&self) -> bool {
         self == "include_statement" || self == "use_statement"
+    }
+
+    fn is_comment(&self) -> bool {
+        self == "comment"
     }
 }
 
@@ -453,18 +497,41 @@ impl ParsedCode {
         let mut cursor: TreeCursor = self.tree.walk();
         let mut ret = vec![];
         let mut inc = vec![];
+
+        let mut doc: Option<String> = None;
+        let mut doc_node: Option<Node> = None;
         for_each_child(&mut cursor, |cursor| {
             let node = &cursor.node();
+            if node.kind().is_comment() {
+                if doc_node.is_some()
+                    && node.end_position().row - &doc_node.unwrap().end_position().row <= 1
+                {
+                    if let Some(doc_str) = &mut doc {
+                        doc_str.push('\n');
+                        doc_str.push_str(node_text(&self.code, node));
+                    }
+                } else {
+                    doc = Some(node_text(&self.code, node).to_owned());
+                }
+                doc_node = Some(node.clone());
+            } else {
+                if let Some(mut item) = Item::parse(&self.code, &node) {
+                    item.url = Some(self.url.clone());
+                    item.doc = match &doc {
+                        Some(doc) => Some(doc.to_owned()),
+                        None => None,
+                    };
+                    item.label = Some(item.make_label());
+                    item.hover = Some(item.make_hover());
+                    ret.push(Rc::new(item));
+                } else if node.kind().is_include_statement() {
+                    self.get_include_url(node).map(|url| {
+                        inc.push(url);
+                    });
+                }
 
-            if let Some(mut item) = Item::parse(&self.code, &node) {
-                item.url = Some(self.url.clone());
-                ret.push(Rc::new(item));
-            }
-
-            if node.kind().is_include_statement() {
-                self.get_include_url(node).map(|url| {
-                    inc.push(url);
-                });
+                doc = None;
+                doc_node = None;
             }
         });
 
@@ -484,6 +551,7 @@ impl ParsedCode {
                         },
                     },
                     url: None,
+                    ..Default::default()
                 })
             }));
         }
@@ -632,7 +700,13 @@ impl Server {
                     .chain(items.iter())
                     .find(|item| item.name == name)
                     .map(|item| Hover {
-                        contents: HoverContents::Scalar(MarkedString::String(item.make_hover())),
+                        contents: HoverContents::Markup(MarkupContent {
+                            kind: lsp_types::MarkupKind::Markdown,
+                            value: match &item.hover {
+                                Some(hover) => hover.to_owned(),
+                                None => item.make_hover(),
+                            },
+                        }),
                         range: None,
                     })
             }
@@ -773,12 +847,7 @@ impl Server {
 
         // print!("{:?} {:?}\n", name, &id);
 
-        let mut items = self.find_identities(
-            &(*file.borrow()),
-            &|_| true,
-            &mut cursor,
-            true,
-        );
+        let mut items = self.find_identities(&(*file.borrow()), &|_| true, &mut cursor, true);
 
         let kind = node.kind();
         if let Some(parent) = &node.parent().and_then(|parent| parent.parent()) {
@@ -820,6 +889,7 @@ impl Server {
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(bfile.url.clone()),
+                                            ..Default::default()
                                         }));
                                     }
                                     result
@@ -832,6 +902,7 @@ impl Server {
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(bfile.url.clone()),
+                                            ..Default::default()
                                         }));
                                     }
                                     result
@@ -872,19 +943,25 @@ impl Server {
                     .filter(|item| item.name.starts_with(name))
                     .chain(items.iter())
                     .map(|item| CompletionItem {
-                        label: {
-                            let hover = item.make_hover();
-                            if hover.is_empty() {
-                                item.name.to_owned()
-                            } else {
-                                hover
-                            }
+                        label: match &item.label {
+                            Some(label) => label.to_owned(),
+                            None => item.make_label()
                         },
                         kind: Some(item.kind.completion_kind()),
                         filter_text: Some(item.name.to_owned()),
                         insert_text: Some(item.make_snippet()),
-                        insert_text_format: Some(InsertTextFormat::SNIPPET),
+                        insert_text_format: Some(match &item.kind {
+                            ItemKind::Variable => InsertTextFormat::PLAIN_TEXT,
+                            _ => InsertTextFormat::SNIPPET,
+                        }),
                         insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
+                        documentation: match &item.hover {
+                            Some(doc) => Some(Documentation::MarkupContent(MarkupContent {
+                                kind: lsp_types::MarkupKind::Markdown,
+                                value: doc.to_owned()
+                            })),
+                            None => None,
+                        },
                         ..Default::default()
                     })
                     .collect(),
@@ -1106,6 +1183,7 @@ impl Server {
                                                     kind: ItemKind::Variable,
                                                     range: p.range,
                                                     url: Some(code.url.clone()),
+                                                    ..Default::default()
                                                 }));
                                                 if !findall {
                                                     return result;
@@ -1123,6 +1201,7 @@ impl Server {
                                                     kind: ItemKind::Variable,
                                                     range: p.range,
                                                     url: Some(code.url.clone()),
+                                                    ..Default::default()
                                                 }));
                                                 if !findall {
                                                     return result;
@@ -1296,31 +1375,11 @@ impl Server {
         let url = Url::parse("file://builtin").unwrap();
         let mut pc = ParsedCode::new(tree_sitter_openscad::language(), code.clone(), &url);
         pc.is_builtin = true;
-        let mut cursor: TreeCursor = pc.tree.walk();
-        let mut ret = vec![];
-        for_each_child(&mut cursor, |cursor| {
-            if let Some(item) = Item::parse(&code, &cursor.node()) {
-                ret.push(Rc::new(item));
-            }
-        });
-        ret.extend(KEYWORDS.iter().map(|&(name, comp)| {
-            Rc::new(Item {
-                name: name.to_owned(),
-                kind: ItemKind::Keyword(comp.to_owned()),
-                range: Range {
-                    start: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                    end: Position {
-                        line: 0,
-                        character: 0,
-                    },
-                },
-                url: None,
-            })
-        }));
-        ret
+        pc.gen_items_if_needed();
+        match pc.root_items {
+            Some(items) => items,
+            None => vec![],
+        }
     }
 
     fn new(connection: Connection) -> Self {
