@@ -8,6 +8,8 @@ inspired by [dzhu/openscad-language-server](https://github.com/dzhu/openscad-lan
 
 Tested with VSCode on Mac and Windows.
 
+Tested with lsp-mode on Emacs on Linux by [@Lenbok](https://github.com/Lenbok).
+
 Features
 --------
 
