@@ -1371,7 +1371,8 @@ impl Server {
         };
         let code = BUILTINS_SCAD.to_owned();
         let url = Url::parse(BUILTIN_PATH).unwrap();
-        instance.insert_code(&url, &code);
+        let rc = instance.insert_code(&url, &code);
+        rc.borrow_mut().is_builtin = true;
         instance
     }
 
