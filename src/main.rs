@@ -3,28 +3,30 @@ use std::{
     env,
     error::Error,
     fs::read_to_string,
-    io::{self, Write},
+    io::{self, Read, Write},
     path::PathBuf,
+    process::{Command, Stdio},
     rc::Rc,
     vec,
 };
 
 use linked_hash_map::LinkedHashMap;
-use lsp_server::{Connection, ExtractError, Message, Request, RequestId, Response};
+use lsp_server::{Connection, ExtractError, Message, Request, RequestId, Response, ResponseError};
 use lsp_types::{
     notification::{
         DidChangeConfiguration, DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
         DidSaveTextDocument,
     },
-    request::{Completion, DocumentSymbolRequest, GotoDefinition, HoverRequest},
+    request::{Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest},
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    DocumentSymbolParams, DocumentSymbolResponse, Documentation, GotoDefinitionParams,
-    GotoDefinitionResponse, Hover, HoverContents, HoverParams, HoverProviderCapability,
-    InsertTextFormat, InsertTextMode, Location, OneOf, Position,
-    PublishDiagnosticsParams, Range, ServerCapabilities, SymbolInformation, SymbolKind,
-    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, Url, MarkupContent,
+    DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
+    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
+    HoverProviderCapability, InsertTextFormat, InsertTextMode, Location, MarkupContent, OneOf,
+    Position, PublishDiagnosticsParams, Range, ServerCapabilities, SymbolInformation, SymbolKind,
+    TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, TextEdit,
+    Url,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -66,6 +68,25 @@ macro_rules! log_to_console {
     ($fmt:literal) => {
         print!(LOG_PREFIX!());
         println!($fmt);
+        let _ = io::stdout().flush();
+    }
+}
+
+macro_rules! ERR_PREFIX {
+    () => {
+        "[error] "
+    };
+}
+
+macro_rules! err_to_console {
+    ($fmt:literal, $($arg:tt)*) => {
+        eprint!(ERR_PREFIX!());
+        eprintln!($fmt, $($arg)*);
+        let _ = io::stdout().flush();
+    };
+    ($fmt:literal) => {
+        eprint!(ERR_PREFIX!());
+        eprintln!($fmt);
         let _ = io::stdout().flush();
     }
 }
@@ -271,7 +292,10 @@ impl Item {
         };
         label = match self.kind {
             ItemKind::Function(_) => format!("```scad\nfunction {}\n```", label),
-            ItemKind::Module { group: _, params: _ } => format!("```scad\nmodule {}\n```", label),
+            ItemKind::Module {
+                group: _,
+                params: _,
+            } => format!("```scad\nmodule {}\n```", label),
             _ => format!("```scad\n{}\n```", label),
         };
         if let Some(doc) = &self.doc {
@@ -281,7 +305,7 @@ impl Item {
         label
     }
 
-    fn make_label(&self) -> String{
+    fn make_label(&self) -> String {
         let format_params = |params: &[Param]| {
             params
                 .iter()
@@ -295,18 +319,10 @@ impl Item {
 
         let lable = match &self.kind {
             ItemKind::Variable => self.name.to_owned(),
-            ItemKind::Function(params) => format!(
-                "{}({})",
-                self.name,
-                format_params(params)
-            ),
+            ItemKind::Function(params) => format!("{}({})", self.name, format_params(params)),
             ItemKind::Keyword(_) => self.name.clone(),
             ItemKind::Module { params, .. } => {
-                format!(
-                    "{}({})",
-                    self.name,
-                    format_params(params)
-                )
+                format!("{}({})", self.name, format_params(params))
             }
         };
 
@@ -662,6 +678,7 @@ struct Server {
 
     connection: Connection,
     code: LinkedHashMap<Url, Rc<RefCell<ParsedCode>>>,
+    args: Cli,
 }
 
 // Request handlers.
@@ -670,12 +687,9 @@ impl Server {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
 
-        let file = match self.code.get(uri) {
-            Some(x) => Rc::clone(x),
-            None => match self.read_disk_file(uri.clone()) {
-                Err(_) => return,
-                Ok(res) => res,
-            },
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
         };
         let point = to_point(pos);
         let bfile = file.borrow();
@@ -695,18 +709,18 @@ impl Server {
                     &|item_name| item_name == namecp,
                     &mut cursor,
                     false,
-                    true
+                    true,
                 );
                 items.first().map(|item| Hover {
-                        contents: HoverContents::Markup(MarkupContent {
-                            kind: lsp_types::MarkupKind::Markdown,
-                            value: match &item.hover {
-                                Some(hover) => hover.to_owned(),
-                                None => item.make_hover(),
-                            },
-                        }),
-                        range: None,
-                    })
+                    contents: HoverContents::Markup(MarkupContent {
+                        kind: lsp_types::MarkupKind::Markdown,
+                        value: match &item.hover {
+                            Some(hover) => hover.to_owned(),
+                            None => item.make_hover(),
+                        },
+                    }),
+                    range: None,
+                })
             }
             _ => None,
         };
@@ -723,12 +737,9 @@ impl Server {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
 
-        let file = match self.code.get(uri) {
-            Some(x) => Rc::clone(x),
-            None => match self.read_disk_file(uri.clone()) {
-                Err(_) => return,
-                Ok(res) => res,
-            },
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
         };
 
         file.borrow_mut().gen_items_if_needed();
@@ -820,12 +831,9 @@ impl Server {
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
         let uri = &params.text_document_position.text_document.uri;
         let pos = params.text_document_position.position;
-        let file = match self.code.get(uri) {
-            Some(x) => Rc::clone(x),
-            None => match self.read_disk_file(uri.clone()) {
-                Err(_) => return,
-                Ok(res) => res,
-            },
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
         };
 
         let mut point = to_point(pos);
@@ -937,10 +945,12 @@ impl Server {
             }),
             _ => CompletionResponse::List(CompletionList {
                 is_incomplete: true,
-                items: items.iter().map(|item| CompletionItem {
+                items: items
+                    .iter()
+                    .map(|item| CompletionItem {
                         label: match &item.label {
                             Some(label) => label.to_owned(),
-                            None => item.make_label()
+                            None => item.make_label(),
                         },
                         kind: Some(item.kind.completion_kind()),
                         filter_text: Some(item.name.to_owned()),
@@ -953,7 +963,7 @@ impl Server {
                         documentation: match &item.hover {
                             Some(doc) => Some(Documentation::MarkupContent(MarkupContent {
                                 kind: lsp_types::MarkupKind::Markdown,
-                                value: doc.to_owned()
+                                value: doc.to_owned(),
                             })),
                             None => None,
                         },
@@ -973,12 +983,9 @@ impl Server {
 
     fn handle_document_symbols(&mut self, id: RequestId, params: DocumentSymbolParams) {
         let uri = &params.text_document.uri;
-        let file = match self.code.get(uri) {
-            Some(x) => Rc::clone(x),
-            None => match self.read_disk_file(uri.clone()) {
-                Err(_) => return,
-                Ok(res) => res,
-            },
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
         };
 
         let mut bfile = file.borrow_mut();
@@ -1012,6 +1019,102 @@ impl Server {
             });
         }
     }
+
+    fn handle_formatting(&mut self, id: RequestId, params: DocumentFormattingParams) {
+        let uri = params.text_document.uri;
+
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
+        };
+
+        let internal_err = |err: String| {
+            self.respond(Response {
+                id: id.clone(),
+                result: None,
+                error: Some(ResponseError {
+                    code: -32603,
+                    message: err,
+                    data: None,
+                }),
+            });
+        };
+
+        let mut code = String::new();
+        let mut last_pos = 0;
+        for_each_child(&mut (file.borrow().tree.walk()), |cursor| {
+            let node = cursor.node();
+
+            let code_str = &file.borrow().code;
+
+            if node.start_byte() > last_pos {
+                let mut sub = &code_str[last_pos..node.start_byte()];
+                sub = sub.trim_matches(' ');
+                sub = sub.trim_matches('\t');
+                code.push_str(&sub);
+            }
+
+            if node.kind().is_include_statement() {
+                code.push('#');
+            }
+            code.push_str(node_text(code_str, &node));
+
+            last_pos = node.end_byte();
+        });
+
+        let child = match Command::new(&self.args.fmt_exe)
+            .arg(format!("-style={}", self.args.fmt_style))
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()
+        {
+            Ok(res) => res,
+            Err(err) => {
+                internal_err(err.to_string());
+                return;
+            }
+        };
+
+        match child.stdin.unwrap().write_all(code.as_bytes()) {
+            Err(why) => {
+                internal_err(why.to_string());
+                return;
+            }
+            Ok(_) => (),
+        }
+
+        let mut code = String::new();
+
+        match child.stdout.unwrap().read_to_string(&mut code) {
+            Err(why) => {
+                internal_err(why.to_string());
+                return;
+            }
+            Ok(size) => {
+                if size > 0 {
+                    code = code.replace("#include", "include");
+                    code = code.replace("#use", "use");
+                    let result = vec![TextEdit {
+                        range: Range {
+                            start: Position {
+                                line: 0,
+                                character: 0,
+                            },
+                            end: to_position(file.borrow().tree.root_node().end_position()),
+                        },
+                        new_text: code.to_owned(),
+                    }];
+
+                    let result = serde_json::to_value(&result).unwrap();
+                    self.respond(Response {
+                        id,
+                        result: Some(result),
+                        error: None,
+                    });
+                }
+            }
+        }
+    }
 }
 
 // Notification handlers.
@@ -1033,7 +1136,7 @@ impl Server {
         let pc = match self.code.get_mut(&text_document.uri) {
             Some(x) => x,
             None => {
-                eprintln!("unknown document {}", text_document.uri);
+                err_to_console!("unknown document {}", text_document.uri);
                 return;
             }
         };
@@ -1118,6 +1221,17 @@ impl Server {
 
 // Code-related helpers.
 impl Server {
+    fn get_code(&mut self, uri: &Url) -> Option<Rc<RefCell<ParsedCode>>> {
+        let code = match self.code.get(uri) {
+            Some(x) => Some(Rc::clone(x)),
+            None => match self.read_and_cache(uri.clone()) {
+                Err(_) => None,
+                Ok(res) => Some(res),
+            },
+        };
+        code
+    }
+
     fn insert_code(&mut self, url: &Url, code: &String) -> Rc<RefCell<ParsedCode>> {
         while self.code.len() > 100 {
             self.code.pop_front();
@@ -1144,7 +1258,9 @@ impl Server {
         let mut result = vec![];
         let mut start_pos = cursor.node().start_byte();
         let mut include_vec = vec![];
-        if inc_builtin {include_vec.push(Url::parse(BUILTIN_PATH).unwrap())}
+        if inc_builtin {
+            include_vec.push(Url::parse(BUILTIN_PATH).unwrap())
+        }
 
         let mut should_process_param = false;
         while cursor.goto_parent() {
@@ -1231,12 +1347,9 @@ impl Server {
         }
 
         for inc in include_vec {
-            let inccode = match self.code.get(&inc) {
-                Some(x) => Rc::clone(x),
-                None => match self.read_disk_file(inc.clone()) {
-                    Err(_) => return result,
-                    Ok(res) => res,
-                },
+            let inccode = match self.get_code(&inc) {
+                Some(code) => code,
+                _ => return result,
             };
 
             let mut inccode = inccode.borrow_mut();
@@ -1258,7 +1371,7 @@ impl Server {
                 &comparator,
                 &mut inccode.tree.walk(),
                 findall,
-                false
+                false,
             ));
             if result.len() > 0 && findall == false {
                 return result;
@@ -1268,7 +1381,7 @@ impl Server {
         result
     }
 
-    fn read_disk_file(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
+    fn read_and_cache(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
         let text = read_to_string(url.to_file_path().unwrap())?;
 
         match self.code.entry(url.clone()) {
@@ -1362,12 +1475,13 @@ impl Server {
         }
     }
 
-
-    fn new(connection: Connection) -> Self {
+    fn new(connection: Connection, args: Cli) -> Self {
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(Self::make_library_locations(vec![]))),
             connection,
             code: Default::default(),
+
+            args: args,
         };
         let code = BUILTINS_SCAD.to_owned();
         let url = Url::parse(BUILTIN_PATH).unwrap();
@@ -1411,7 +1525,7 @@ impl Server {
                             Err(error) => match error {
                                 ExtractError::MethodMismatch(req) => req,
                                 ExtractError::JsonError { method, error } => {
-                                    eprintln!("method: {method} error: {error}\n");
+                                    err_to_console!("method: {method} error: {error}\n");
                                     return Ok(LoopAction::Continue);
                                 }
                             },
@@ -1423,10 +1537,11 @@ impl Server {
                 let req = proc_req!(req, Completion, handle_completion);
                 let req = proc_req!(req, GotoDefinition, handle_definition);
                 let req = proc_req!(req, DocumentSymbolRequest, handle_document_symbols);
-                eprintln!("unknown request: {:?}", req);
+                let req = proc_req!(req, Formatting, handle_formatting);
+                err_to_console!("unknown request: {:?}", req);
             }
             Message::Response(resp) => {
-                eprintln!("got response: {:?}", resp);
+                err_to_console!("got response: {:?}", resp);
             }
             Message::Notification(noti) => {
                 macro_rules! proc {
@@ -1439,7 +1554,7 @@ impl Server {
                             Err(error) => match error {
                                 ExtractError::MethodMismatch(noti) => noti,
                                 ExtractError::JsonError { method, error } => {
-                                    eprintln!("method: {method} error: {error}\n");
+                                    err_to_console!("method: {method} error: {error}\n");
                                     return Ok(LoopAction::Exit);
                                 }
                             },
@@ -1453,7 +1568,7 @@ impl Server {
                 let noti = proc!(noti, DidCloseTextDocument, handle_did_close_text_document);
                 let noti = proc!(noti, DidChangeConfiguration, handle_did_change_config);
 
-                eprintln!("unknown notification: {:?}", noti);
+                err_to_console!("unknown notification: {:?}", noti);
             }
         }
         Ok(LoopAction::Continue)
@@ -1468,6 +1583,7 @@ impl Server {
             definition_provider: Some(OneOf::Left(true)),
             hover_provider: Some(HoverProviderCapability::Simple(true)),
             document_symbol_provider: Some(OneOf::Left(true)),
+            document_formatting_provider: Some(OneOf::Left(true)),
             ..Default::default()
         })?;
         self.connection.initialize(caps)?;
@@ -1490,6 +1606,12 @@ struct Cli {
 
     #[clap(long, default_value_t = String::from("127.0.0.1"))]
     ip: String,
+
+    #[clap(long, default_value_t = String::from("Microsoft"), help = "LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file")]
+    fmt_style: String,
+
+    #[clap(long, default_value_t = String::from("clang-format"), help = "clang format executable file path")]
+    fmt_exe: String,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -1497,18 +1619,18 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     log_to_console!("start sucess");
 
-    let ipport = [args.ip, args.port].join(":");
+    let ipport = [args.ip.clone(), args.port.clone()].join(":");
 
     let _ = io::stdout().flush();
     let res = Connection::listen(ipport);
     match res {
         Ok((connection, io_threads)) => {
-            let mut server = Server::new(connection);
+            let mut server = Server::new(connection, args);
             server.main_loop()?;
             io_threads.join()?;
         }
         Err(err) => {
-            eprintln!("{:?}", &err);
+            err_to_console!("{:?}", &err);
         }
     }
     Ok(())
