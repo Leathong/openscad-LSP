@@ -1201,16 +1201,35 @@ impl Server {
         #[derive(Deserialize)]
         struct Settings {
             #[serde(rename = "searchPaths")]
-            search_paths: Vec<String>,
+            search_paths: String,
+
+            fmt_style: String,
+            fmt_exe: String,
         }
 
         let settings = match serde_json::from_value::<Settings>(params.settings) {
             Ok(settings) => Some(settings),
-            _ => None,
+            Err(err) => {
+                err_to_console!("{}", err.to_string());
+                None
+            }
         };
 
         if let Some(settings) = settings {
-            self.extend_libs(settings.search_paths);
+            // self.extend_libs(settings.search_paths);
+            let paths: Vec<String> = env::split_paths(&settings.search_paths)
+                .filter_map(|buf| buf.into_os_string().into_string().ok())
+                .collect();
+
+            self.extend_libs(paths);
+
+            if !settings.fmt_style.is_empty() && self.args.fmt_style != settings.fmt_style {
+                self.args.fmt_style = settings.fmt_style;
+            }
+
+            if !settings.fmt_exe.is_empty() && self.args.fmt_exe != settings.fmt_exe {
+                self.args.fmt_exe = settings.fmt_exe;
+            }
         }
     }
 
@@ -1434,50 +1453,53 @@ impl Server {
         }
     }
 
-    fn make_library_locations(userlibs: Vec<String>) -> Vec<Url> {
+    fn make_library_locations(&mut self) {
         let mut ret = Self::user_defined_library_locations();
         ret.extend(Self::built_in_library_location());
         ret.extend(Self::installation_library_location());
 
-        if userlibs.len() > 0 {
-            ret.extend(userlibs);
-        }
-
-        // The helper functions above return `PathBuf`s in a token nod to generality, but it looks
-        // like the LSP spec itself and the URL representation given by lsp-server assume valid
-        // Unicode, so just handle everything as `String`s from here on and drop invalid paths.
-        let libs = ret
-            .into_iter()
-            .map(|path| shellexpand::tilde(&path).to_string())
-            .filter_map(|p| Url::parse(&format!("file://{}", p)).ok())
-            .collect();
-
-        println!();
-        log_to_console!("search paths:");
-        for lib in &libs {
-            log_to_console!("{lib}");
-        }
-        println!();
-        libs
+        self.extend_libs(ret);
     }
 
     fn extend_libs(&mut self, userlibs: Vec<String>) {
         let ret: Vec<Url> = userlibs
             .into_iter()
             .map(|lib| shellexpand::tilde(&lib).to_string())
-            .filter_map(|p| Url::parse(&format!("file://{}", p)).ok())
+            .filter_map(|p| {
+                if p.is_empty() {
+                    return None;
+                }
+
+                if let Ok(uri) = Url::parse(&format!("file://{}", p)) {
+                    if let Ok(path) = uri.to_file_path() {
+                        if path.exists() {
+                            return Some(uri);
+                        }
+                    }
+                };
+
+                return None;
+            })
             .collect();
 
-        for lib in ret {
-            if !self.library_locations.borrow().contains(&lib) {
-                self.library_locations.borrow_mut().push(lib);
+        if ret.len() > 0 {
+            println!();
+            log_to_console!("search paths:");
+
+            for lib in ret {
+                log_to_console!("{}", &lib);
+                if !self.library_locations.borrow().contains(&lib) {
+                    self.library_locations.borrow_mut().push(lib);
+                }
             }
+
+            println!();
         }
     }
 
     fn new(connection: Connection, args: Cli) -> Self {
         let mut instance = Self {
-            library_locations: Rc::new(RefCell::new(Self::make_library_locations(vec![]))),
+            library_locations: Rc::new(RefCell::new(vec![])),
             connection,
             code: Default::default(),
 
@@ -1487,6 +1509,9 @@ impl Server {
         let url = Url::parse(BUILTIN_PATH).unwrap();
         let rc = instance.insert_code(&url, &code);
         rc.borrow_mut().is_builtin = true;
+
+        instance.make_library_locations();
+
         instance
     }
 
