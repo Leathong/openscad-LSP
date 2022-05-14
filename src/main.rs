@@ -1320,7 +1320,6 @@ impl Server {
                                                 if !findall {
                                                     return result;
                                                 }
-                                                return result;
                                             }
                                         }
                                     }
@@ -1338,7 +1337,6 @@ impl Server {
                                                 if !findall {
                                                     return result;
                                                 }
-                                                return result;
                                             }
                                         }
                                     }
