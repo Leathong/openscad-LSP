@@ -1055,7 +1055,7 @@ impl Server {
             }
 
             if node.kind().is_include_statement() {
-                code.push('#');
+                code.push_str("#include <");
             }
             code.push_str(node_text(code_str, &node));
 
@@ -1092,8 +1092,7 @@ impl Server {
             }
             Ok(size) => {
                 if size > 0 {
-                    code = code.replace("#include", "include");
-                    code = code.replace("#use", "use");
+                    code = code.replace("#include <", "");
                     let result = vec![TextEdit {
                         range: Range {
                             start: Position {
