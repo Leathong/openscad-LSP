@@ -1070,7 +1070,7 @@ impl Server {
         {
             Ok(res) => res,
             Err(err) => {
-                internal_err(err.to_string());
+                internal_err(format!("{}: {}", &self.args.fmt_exe, &err.to_string()));
                 return;
             }
         };
