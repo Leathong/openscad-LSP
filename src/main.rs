@@ -1230,13 +1230,13 @@ impl Server {
             self.extend_libs(paths);
 
             if let Some(style) = settings.openscad.fmt_style {
-                if !style.is_empty() && self.args.fmt_style != style {
+                if !style.trim().is_empty() && self.args.fmt_style != style {
                     self.args.fmt_style = style;
                 }
             }
 
             if let Some(fmt_exe) = settings.openscad.fmt_exe {
-                if self.args.fmt_exe != fmt_exe {
+                if !fmt_exe.trim().is_empty() && self.args.fmt_exe != fmt_exe {
                     self.args.fmt_exe = fmt_exe;
                 }
             }
