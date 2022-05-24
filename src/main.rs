@@ -1199,36 +1199,46 @@ impl Server {
 
     fn handle_did_change_config(&mut self, params: DidChangeConfigurationParams) {
         #[derive(Deserialize)]
-        struct Settings {
-            #[serde(rename = "searchPaths")]
-            search_paths: String,
+        struct Openscad {
+            search_paths: Option<String>,
+            fmt_style: Option<String>,
+            fmt_exe: Option<String>,
+        }
 
-            fmt_style: String,
-            fmt_exe: String,
+        #[derive(Deserialize)]
+        struct Settings {
+            openscad: Openscad
         }
 
         let settings = match serde_json::from_value::<Settings>(params.settings) {
             Ok(settings) => Some(settings),
             Err(err) => {
                 err_to_console!("{}", err.to_string());
-                None
+                return
             }
         };
 
         if let Some(settings) = settings {
             // self.extend_libs(settings.search_paths);
-            let paths: Vec<String> = env::split_paths(&settings.search_paths)
+            let paths: Vec<String> = settings.openscad.search_paths.and_then(|paths| {
+                let res: Vec<String> = env::split_paths(&paths)
                 .filter_map(|buf| buf.into_os_string().into_string().ok())
                 .collect();
+                Some(res)
+            }).unwrap();
 
             self.extend_libs(paths);
 
-            if !settings.fmt_style.is_empty() && self.args.fmt_style != settings.fmt_style {
-                self.args.fmt_style = settings.fmt_style;
+            if let Some(style) = settings.openscad.fmt_style {
+                if !style.is_empty() && self.args.fmt_style != style {
+                    self.args.fmt_style = style;
+                }
             }
 
-            if !settings.fmt_exe.is_empty() && self.args.fmt_exe != settings.fmt_exe {
-                self.args.fmt_exe = settings.fmt_exe;
+            if let Some(fmt_exe) = settings.openscad.fmt_exe {
+                if self.args.fmt_exe != fmt_exe {
+                    self.args.fmt_exe = fmt_exe;
+                }
             }
         }
     }
