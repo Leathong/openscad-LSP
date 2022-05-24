@@ -1064,6 +1064,7 @@ impl Server {
 
         let child = match Command::new(&self.args.fmt_exe)
             .arg(format!("-style={}", self.args.fmt_style))
+            .arg("-assume-filename=foo.scad")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
