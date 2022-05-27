@@ -1280,13 +1280,18 @@ impl Server {
         if inc_builtin {
             include_vec.push(Url::parse(BUILTIN_PATH).unwrap())
         }
+        if let Some(incs) = &code.includes {
+            include_vec.extend(incs.clone());
+        }
 
         let mut should_process_param = false;
 
         let mut node = *start_node;
         let mut parent = start_node.parent();
 
-        while parent.is_some() && parent.unwrap().parent().is_some() {
+        while parent.is_some() {
+            let should_continue = parent.unwrap().parent().is_some();
+
             loop {
                 if node.kind().is_include_statement() {
                     code.get_include_url(&node).map(|inc| {
@@ -1346,7 +1351,7 @@ impl Server {
                             };
                         }
 
-                        if comparator(&item.name) {
+                        if should_continue && comparator(&item.name) {
                             item.url = Some(code.url.clone());
                             result.push(Rc::new(item));
                             if !findall {
@@ -1360,9 +1365,13 @@ impl Server {
                     node = parent.unwrap();
                     parent = node.parent();
                     break;
+                } else {
+                    node = node.prev_sibling().unwrap();
                 }
+            }
 
-                node = node.prev_sibling().unwrap();
+            if !should_continue {
+                break;
             }
         }
 
