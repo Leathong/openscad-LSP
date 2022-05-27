@@ -93,19 +93,16 @@ macro_rules! err_to_console {
 }
 
 fn find_offset(text: &str, pos: Position) -> Option<usize> {
-    let mut line_start = 0;
+    let mut offset = 0;
     for _ in 0..pos.line {
-        line_start = text[line_start..].find('\n')? + line_start + 1;
+        offset = text[offset..].find('\n')? + offset + 1;
     }
 
-    for _ in 0..pos.character {
-        text[line_start..]
-            .char_indices()
-            .next()
-            .map(|(_, c)| line_start += c.len_utf8());
-    }
-
-    Some(line_start)
+    text[offset..]
+        .char_indices()
+        .nth(pos.character as usize)
+        .map(|(c_pos, _)| offset += c_pos);
+    Some(offset)
 }
 
 fn to_point(p: Position) -> Point {
