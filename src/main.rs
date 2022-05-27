@@ -427,7 +427,7 @@ struct ParsedCode {
     includes: Option<Vec<Url>>,
     is_builtin: bool,
     changed: bool,
-    libs: Option<Rc<RefCell<Vec<Url>>>>,
+    libs: Rc<RefCell<Vec<Url>>>,
 }
 
 trait KindExt {
@@ -446,7 +446,7 @@ impl KindExt for str {
 }
 
 impl ParsedCode {
-    fn new(lang: Language, code: String, url: Url) -> Self {
+    fn new(lang: Language, code: String, url: Url, libs: Rc<RefCell<Vec<Url>>>) -> Self {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(lang)
@@ -460,7 +460,7 @@ impl ParsedCode {
             root_items: None,
             includes: None,
             is_builtin: false,
-            libs: None,
+            libs,
             changed: true,
         }
     }
@@ -589,15 +589,12 @@ impl ParsedCode {
                 return res;
             }
         }
-        if self.libs.is_some() {
-            let libs = Rc::clone(&self.libs.clone().unwrap());
-            for lib in libs.borrow().iter() {
-                let url = lib.join(include_path).unwrap();
-                if let Ok(path) = url.to_file_path() {
-                    if path.exists() {
-                        res = Some(url);
-                        return res;
-                    }
+        for lib in self.libs.borrow().iter() {
+            let url = lib.join(include_path).unwrap();
+            if let Ok(path) = url.to_file_path() {
+                if path.exists() {
+                    res = Some(url);
+                    return res;
                 }
             }
         }
@@ -629,13 +626,10 @@ impl ParsedCode {
             inc_dirs.push(inc_dir);
         }
 
-        if self.libs.is_some() {
-            let libs = Rc::clone(&self.libs.clone().unwrap());
-            for lib in libs.borrow().iter() {
-                let dirpath = lib.join(dir).unwrap().to_file_path().unwrap();
-                if dirpath.exists() && dirpath.is_dir() {
-                    inc_dirs.push(dirpath);
-                }
+        for lib in self.libs.borrow().iter() {
+            let dirpath = lib.join(dir).unwrap().to_file_path().unwrap();
+            if dirpath.exists() && dirpath.is_dir() {
+                inc_dirs.push(dirpath);
             }
         }
 
@@ -1241,14 +1235,10 @@ impl Server {
 // Code-related helpers.
 impl Server {
     fn get_code(&mut self, uri: &Url) -> Option<Rc<RefCell<ParsedCode>>> {
-        let code = match self.code.get(uri) {
+        match self.code.get(uri) {
             Some(x) => Some(Rc::clone(x)),
-            None => match self.read_and_cache(uri.clone()) {
-                Err(_) => None,
-                Ok(res) => Some(res),
-            },
-        };
-        code
+            None => self.read_and_cache(uri.clone()).ok(),
+        }
     }
 
     fn insert_code(&mut self, url: Url, code: String) -> Rc<RefCell<ParsedCode>> {
@@ -1260,8 +1250,8 @@ impl Server {
             tree_sitter_openscad::language(),
             code,
             url.clone(),
+            self.library_locations.clone(),
         )));
-        rc.borrow_mut().libs = Some(self.library_locations.clone());
         self.code.insert(url, rc.clone());
         rc
     }
