@@ -54,42 +54,21 @@ const KEYWORDS: &[(&str, &str)] = &[
 
 const BUILTIN_PATH: &str = "file://builtin";
 
-macro_rules! LOG_PREFIX {
-    () => {
-        "[server] "
-    };
-}
+const LOG_PREFIX: &str = "[server] ";
+const ERR_PREFIX: &str = "[error] ";
 
 macro_rules! log_to_console {
-    ($fmt:literal, $($arg:tt)*) => {
-        print!(LOG_PREFIX!());
-        println!($fmt, $($arg)*);
-        let _ = io::stdout().flush();
-    };
-    ($fmt:literal) => {
-        print!(LOG_PREFIX!());
-        println!($fmt);
-        let _ = io::stdout().flush();
-    }
-}
-
-macro_rules! ERR_PREFIX {
-    () => {
-        "[error] "
+    ($($arg:tt)*) => {
+        eprint!("{}", LOG_PREFIX);
+        eprintln!($($arg)*);
     };
 }
 
 macro_rules! err_to_console {
-    ($fmt:literal, $($arg:tt)*) => {
-        eprint!(ERR_PREFIX!());
-        eprintln!($fmt, $($arg)*);
-        let _ = io::stdout().flush();
+    ($($arg:tt)*) => {
+        eprint!("{}", ERR_PREFIX);
+        eprintln!($($arg)*);
     };
-    ($fmt:literal) => {
-        eprint!(ERR_PREFIX!());
-        eprintln!($fmt);
-        let _ = io::stdout().flush();
-    }
 }
 
 fn find_offset(text: &str, pos: Position) -> Option<usize> {
@@ -1482,7 +1461,7 @@ impl Server {
             .collect();
 
         if !ret.is_empty() {
-            println!();
+            eprintln!();
             log_to_console!("search paths:");
 
             for lib in ret {
@@ -1492,7 +1471,7 @@ impl Server {
                 }
             }
 
-            println!();
+            eprintln!();
         }
     }
 
@@ -1635,6 +1614,9 @@ struct Cli {
 
     #[clap(long, default_value_t = String::from("clang-format"), help = "clang format executable file path")]
     fmt_exe: String,
+
+    #[clap(long, help = "use stdio instead of tcp")]
+    stdio: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -1642,19 +1624,15 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     log_to_console!("start sucess");
 
-    let ipport = [args.ip.clone(), args.port.clone()].join(":");
+    let (connection, io_threads) = if args.stdio {
+        Connection::stdio()
+    } else {
+        Connection::listen(format!("{}:{}", args.ip, args.port))?
+    };
 
-    let _ = io::stdout().flush();
-    let res = Connection::listen(ipport);
-    match res {
-        Ok((connection, io_threads)) => {
-            let mut server = Server::new(connection, args);
-            server.main_loop()?;
-            io_threads.join()?;
-        }
-        Err(err) => {
-            err_to_console!("{:?}", &err);
-        }
-    }
+    let mut server = Server::new(connection, args);
+    server.main_loop()?;
+    io_threads.join()?;
+
     Ok(())
 }
