@@ -1,14 +1,15 @@
 [package]
-name = "openscad-language-server"
-version = "1.0.1"
+name = "openscad-lsp"
+version = "1.0.2"
 edition = "2021"
 authors = ["Leathong"]
 description = "A language(LSP) server for OpenSCAD"
-readme = "out/README.md"
+readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["language-server", "lsp"]
 categories = ["development-tools"]
-include = ["/src", "out/README.md"]
+include = ["/src", "README.md"]
+repository = "https://github.com/Leathong/openscad-LSP"
 
 [dependencies]
 home = "0.5.3"
