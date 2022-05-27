@@ -3,7 +3,7 @@
 	"tasks": [
 		{
 			"type": "cargo",
-			"command": "check",
+			"command": "clippy",
 			"problemMatcher": [
 				"$rustc"
 			],
