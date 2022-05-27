@@ -691,6 +691,9 @@ impl Server {
             Some(code) => code,
             _ => return,
         };
+
+        file.borrow_mut().gen_items_if_needed();
+
         let point = to_point(pos);
         let bfile = file.borrow();
         let mut cursor = bfile.tree.root_node().walk();
@@ -707,7 +710,7 @@ impl Server {
                 let items = self.find_identities(
                     &file.borrow(),
                     &|item_name| item_name == namecp,
-                    &mut cursor,
+                    &node,
                     false,
                     true,
                 );
@@ -760,9 +763,9 @@ impl Server {
             "identifier" => {
                 let namecp = name.clone();
                 let items = self.find_identities(
-                    &(*file.borrow()),
+                    &file.borrow(),
                     &|item_name| item_name == namecp,
-                    &mut cursor,
+                    &node,
                     false,
                     true,
                 );
@@ -836,6 +839,8 @@ impl Server {
             _ => return,
         };
 
+        file.borrow_mut().gen_items_if_needed();
+
         let mut point = to_point(pos);
 
         if point.column > 0 {
@@ -854,7 +859,7 @@ impl Server {
 
         // print!("{:?} {:?}\n", name, &id);
 
-        let mut items = self.find_identities(&(*file.borrow()), &|_| true, &mut cursor, true, true);
+        let mut items = self.find_identities(&file.borrow(), &|_| true, &node, true, true);
 
         let kind = node.kind();
         if let Some(parent) = &node.parent().and_then(|parent| parent.parent()) {
@@ -880,7 +885,7 @@ impl Server {
                         let fun_items = self.find_identities(
                             &file.borrow(),
                             &|item_name| item_name == name,
-                            &mut cursor,
+                            &node,
                             false,
                             true,
                         );
@@ -1280,22 +1285,24 @@ impl Server {
         &mut self,
         code: &ParsedCode,
         comparator: &dyn Fn(&str) -> bool,
-        cursor: &'a mut TreeCursor,
+        start_node: &Node,
         findall: bool,
         inc_builtin: bool,
     ) -> Vec<Rc<Item>> {
         let mut result = vec![];
-        let mut start_pos = cursor.node().start_byte();
+        let mut start_pos = start_node.start_byte();
         let mut include_vec = vec![];
         if inc_builtin {
             include_vec.push(Url::parse(BUILTIN_PATH).unwrap())
         }
 
         let mut should_process_param = false;
-        while cursor.goto_parent() {
-            if cursor.goto_first_child() {
+
+        let mut node = *start_node;
+        let mut parent = start_node.parent();
+
+        while parent.is_some() && parent.unwrap().parent().is_some() {
                 loop {
-                    let node = cursor.node();
                     if node.kind().is_include_statement() {
                         code.get_include_url(&node).map(|inc| {
                             include_vec.push(inc);
@@ -1364,13 +1371,25 @@ impl Server {
                         }
                     }
 
-                    if !cursor.goto_next_sibling() {
+                    if node.prev_sibling().is_none() {
+                        node = parent.unwrap();
+                        parent = node.parent();
                         break;
+                    }
+
+                    node = node.prev_sibling().unwrap();
+            }
+        }
+
+        if let Some(items) = &code.root_items {
+            for item in items {
+                if comparator(&item.name) {
+                    result.push(item.clone());
+                    if !findall {
+                        return result;
                     }
                 }
             }
-
-            cursor.goto_parent();
         }
 
         for inc in include_vec {
@@ -1381,22 +1400,10 @@ impl Server {
 
             let mut inccode = inccode.borrow_mut();
             inccode.gen_items_if_needed();
-
-            if let Some(items) = &inccode.root_items {
-                for item in items {
-                    if comparator(&item.name) {
-                        result.push(item.clone());
-                        if !findall {
-                            return result;
-                        }
-                    }
-                }
-            }
-
             result.extend(self.find_identities(
                 &inccode,
                 &comparator,
-                &mut inccode.tree.walk(),
+                &inccode.tree.root_node(),
                 findall,
                 false,
             ));
@@ -1531,7 +1538,7 @@ impl Server {
     }
 
     fn respond(&self, mut resp: Response) {
-        // print!("{:?}\n\n", &resp);
+        // log_to_console!("{:?}\n\n", &resp);
         if let None = resp.result {
             resp.result = Some(json!("{}"))
         }
