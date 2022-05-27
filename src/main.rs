@@ -1,3 +1,5 @@
+#![allow(clippy::option_map_unit_fn)]
+
 use std::{
     cell::RefCell,
     env,
@@ -30,7 +32,6 @@ use lsp_types::{
 };
 use serde::Deserialize;
 use serde_json::json;
-use shellexpand;
 use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
 
 use clap::Parser;
@@ -91,7 +92,7 @@ macro_rules! err_to_console {
     }
 }
 
-fn find_offset(text: &String, pos: Position) -> Option<usize> {
+fn find_offset(text: &str, pos: Position) -> Option<usize> {
     let mut line_start = 0;
     for _ in 0..pos.line {
         line_start = text[line_start..].find('\n')? + line_start + 1;
@@ -100,7 +101,7 @@ fn find_offset(text: &String, pos: Position) -> Option<usize> {
     for _ in 0..pos.character {
         text[line_start..]
             .char_indices()
-            .nth(0)
+            .next()
             .map(|(_, c)| line_start += c.len_utf8());
     }
 
@@ -122,7 +123,7 @@ fn to_position(p: Point) -> Position {
 }
 
 fn node_text<'a>(code: &'a str, node: &Node) -> &'a str {
-    &code[node.start_byte()..node.end_byte()]
+    &code[node.byte_range()]
 }
 
 // The callback may move the cursor while executing, but it must always ultimately leave it in the
@@ -448,7 +449,7 @@ impl KindExt for str {
 }
 
 impl ParsedCode {
-    fn new(lang: Language, code: String, url: &Url) -> Self {
+    fn new(lang: Language, code: String, url: Url) -> Self {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(lang)
@@ -458,7 +459,7 @@ impl ParsedCode {
             parser,
             code,
             tree,
-            url: url.clone(),
+            url,
             root_items: None,
             includes: None,
             is_builtin: false,
@@ -504,7 +505,7 @@ impl ParsedCode {
     }
 
     fn gen_items_if_needed(&mut self) {
-        if self.root_items.is_some() && self.changed == false {
+        if self.root_items.is_some() && !self.changed {
             return;
         }
         self.changed = false;
@@ -522,7 +523,7 @@ impl ParsedCode {
             let node = &cursor.node();
             if node.kind().is_comment() {
                 if doc_node.is_some()
-                    && node.end_position().row - &doc_node.unwrap().end_position().row <= 1
+                    && node.end_position().row - doc_node.unwrap().end_position().row <= 1
                 {
                     if let Some(doc_str) = &mut doc {
                         doc_str.push('\n');
@@ -531,14 +532,11 @@ impl ParsedCode {
                 } else {
                     doc = Some(node_text(&self.code, node).to_owned());
                 }
-                doc_node = Some(node.clone());
+                doc_node = Some(*node);
             } else {
-                if let Some(mut item) = Item::parse(&self.code, &node) {
+                if let Some(mut item) = Item::parse(&self.code, node) {
                     item.url = Some(self.url.clone());
-                    item.doc = match &doc {
-                        Some(doc) => Some(doc.to_owned()),
-                        None => None,
-                    };
+                    item.doc = doc.take();
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
                     ret.push(Rc::new(item));
@@ -583,7 +581,7 @@ impl ParsedCode {
             .trim_start_matches(&['<', '\n'][..])
             .trim_end_matches(&['>', '\n'][..]);
 
-        if include_path.len() == 0 {
+        if include_path.is_empty() {
             return None;
         }
 
@@ -631,7 +629,7 @@ impl ParsedCode {
         let mut inc_dirs = vec![];
         let inc_dir = self.url.to_file_path().unwrap().parent().unwrap().join(dir);
         if inc_dir.exists() && inc_dir.is_dir() {
-            inc_dirs.push(inc_dir.to_path_buf());
+            inc_dirs.push(inc_dir);
         }
 
         if self.libs.is_some() {
@@ -645,7 +643,7 @@ impl ParsedCode {
         }
 
         for inc_dir in inc_dirs {
-            if let Some(paths) = inc_dir.read_dir().ok() {
+            if let Ok(paths) = inc_dir.read_dir() {
                 for file in paths {
                     let name = file.as_ref().unwrap().file_name();
                     if name
@@ -687,7 +685,7 @@ impl Server {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
 
-        let file = match self.get_code(&uri) {
+        let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
         };
@@ -706,10 +704,9 @@ impl Server {
 
         let result = match kind {
             "identifier" => {
-                let namecp = name.clone();
                 let items = self.find_identities(
                     &file.borrow(),
-                    &|item_name| item_name == namecp,
+                    &|item_name| item_name == name,
                     &node,
                     false,
                     true,
@@ -740,15 +737,13 @@ impl Server {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
 
-        let file = match self.get_code(&uri) {
+        let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
         };
 
         file.borrow_mut().gen_items_if_needed();
 
-        let kind;
-        let name;
         let point = to_point(pos);
         let bfile = file.borrow();
         let mut cursor = bfile.tree.root_node().walk();
@@ -756,8 +751,8 @@ impl Server {
 
         let node = cursor.node();
 
-        kind = node.kind();
-        name = String::from(node_text(&bfile.code, &node));
+        let kind = node.kind();
+        let name = String::from(node_text(&bfile.code, &node));
 
         let result = match kind {
             "identifier" => {
@@ -818,12 +813,9 @@ impl Server {
             _ => None,
         };
 
-        let result = match result {
-            Some(vec) => Some(GotoDefinitionResponse::Array(vec)),
-            _ => None,
-        };
-
+        let result = result.map(GotoDefinitionResponse::Array);
         let result = serde_json::to_value(&result).unwrap();
+
         self.respond(Response {
             id,
             result: Some(result),
@@ -834,7 +826,7 @@ impl Server {
     fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
         let uri = &params.text_document_position.text_document.uri;
         let pos = params.text_document_position.position;
-        let file = match self.get_code(&uri) {
+        let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
         };
@@ -875,7 +867,7 @@ impl Server {
             }
 
             if kind == "module_call" || kind == "function_call" {
-                node = Some(parent.clone());
+                node = Some(*parent);
             }
 
             if let Some(node) = node {
@@ -890,7 +882,7 @@ impl Server {
                             true,
                         );
 
-                        if fun_items.len() > 0 {
+                        if !fun_items.is_empty() {
                             let item = &fun_items[0];
 
                             let param_items = match &item.kind {
@@ -965,13 +957,12 @@ impl Server {
                             _ => InsertTextFormat::SNIPPET,
                         }),
                         insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
-                        documentation: match &item.hover {
-                            Some(doc) => Some(Documentation::MarkupContent(MarkupContent {
+                        documentation: item.hover.as_ref().map(|doc| {
+                            Documentation::MarkupContent(MarkupContent {
                                 kind: lsp_types::MarkupKind::Markdown,
                                 value: doc.to_owned(),
-                            })),
-                            None => None,
-                        },
+                            })
+                        }),
                         ..Default::default()
                     })
                     .collect(),
@@ -988,7 +979,7 @@ impl Server {
 
     fn handle_document_symbols(&mut self, id: RequestId, params: DocumentSymbolParams) {
         let uri = &params.text_document.uri;
-        let file = match self.get_code(&uri) {
+        let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
         };
@@ -1026,9 +1017,9 @@ impl Server {
     }
 
     fn handle_formatting(&mut self, id: RequestId, params: DocumentFormattingParams) {
-        let uri = params.text_document.uri;
+        let uri = &params.text_document.uri;
 
-        let file = match self.get_code(&uri) {
+        let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
         };
@@ -1056,7 +1047,7 @@ impl Server {
                 let mut sub = &code_str[last_pos..node.start_byte()];
                 sub = sub.trim_matches(' ');
                 sub = sub.trim_matches('\t');
-                code.push_str(&sub);
+                code.push_str(sub);
             }
 
             if node.kind().is_include_statement() {
@@ -1081,12 +1072,9 @@ impl Server {
             }
         };
 
-        match child.stdin.unwrap().write_all(code.as_bytes()) {
-            Err(why) => {
-                internal_err(why.to_string());
-                return;
-            }
-            Ok(_) => (),
+        if let Err(why) = child.stdin.unwrap().write_all(code.as_bytes()) {
+            internal_err(why.to_string());
+            return;
         }
 
         let mut code = String::new();
@@ -1094,7 +1082,6 @@ impl Server {
         match child.stdout.unwrap().read_to_string(&mut code) {
             Err(why) => {
                 internal_err(why.to_string());
-                return;
             }
             Ok(size) => {
                 if size > 0 {
@@ -1129,7 +1116,7 @@ impl Server {
         if self.code.contains_key(&doc.uri) {
             return;
         }
-        self.insert_code(&doc.uri, &doc.text);
+        self.insert_code(doc.uri, doc.text);
     }
 
     fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
@@ -1174,20 +1161,18 @@ impl Server {
                 let kind = node.kind();
                 // let text = node_text(&bpc.code, &node);
 
-                if kind.is_include_statement() {
-                    if bpc.get_include_url(&node).is_none() {
-                        let subnode = node.child(1).unwrap();
-                        let mut start = to_position(subnode.start_position());
-                        start.character += 1;
-                        let mut end = to_position(subnode.end_position());
-                        end.character -= 1;
-                        diags.push(Diagnostic {
-                            range: Range { start, end },
-                            severity: Some(DiagnosticSeverity::ERROR),
-                            message: "file not found!".to_owned(),
-                            ..Default::default()
-                        });
-                    };
+                if kind.is_include_statement() && bpc.get_include_url(&node).is_none() {
+                    let subnode = node.child(1).unwrap();
+                    let mut start = to_position(subnode.start_position());
+                    start.character += 1;
+                    let mut end = to_position(subnode.end_position());
+                    end.character -= 1;
+                    diags.push(Diagnostic {
+                        range: Range { start, end },
+                        severity: Some(DiagnosticSeverity::ERROR),
+                        message: "file not found!".to_owned(),
+                        ..Default::default()
+                    });
                 }
             }
         }
@@ -1212,25 +1197,28 @@ impl Server {
 
         #[derive(Deserialize)]
         struct Settings {
-            openscad: Openscad
+            openscad: Openscad,
         }
 
         let settings = match serde_json::from_value::<Settings>(params.settings) {
             Ok(settings) => Some(settings),
             Err(err) => {
                 err_to_console!("{}", err.to_string());
-                return
+                return;
             }
         };
 
         if let Some(settings) = settings {
             // self.extend_libs(settings.search_paths);
-            let paths: Vec<String> = settings.openscad.search_paths.and_then(|paths| {
-                let res: Vec<String> = env::split_paths(&paths)
-                .filter_map(|buf| buf.into_os_string().into_string().ok())
-                .collect();
-                Some(res)
-            }).unwrap();
+            let paths: Vec<String> = settings
+                .openscad
+                .search_paths
+                .map(|paths| {
+                    env::split_paths(&paths)
+                        .filter_map(|buf| buf.into_os_string().into_string().ok())
+                        .collect::<Vec<String>>()
+                })
+                .unwrap();
 
             self.extend_libs(paths);
 
@@ -1266,22 +1254,22 @@ impl Server {
         code
     }
 
-    fn insert_code(&mut self, url: &Url, code: &String) -> Rc<RefCell<ParsedCode>> {
+    fn insert_code(&mut self, url: Url, code: String) -> Rc<RefCell<ParsedCode>> {
         while self.code.len() > 100 {
             self.code.pop_front();
         }
 
         let rc = Rc::new(RefCell::new(ParsedCode::new(
             tree_sitter_openscad::language(),
-            code.clone(),
-            url,
+            code,
+            url.clone(),
         )));
         rc.borrow_mut().libs = Some(self.library_locations.clone());
-        self.code.insert(url.clone(), rc.clone());
-        return rc;
+        self.code.insert(url, rc.clone());
+        rc
     }
 
-    fn find_identities<'a, 'b>(
+    fn find_identities(
         &mut self,
         code: &ParsedCode,
         comparator: &dyn Fn(&str) -> bool,
@@ -1302,82 +1290,82 @@ impl Server {
         let mut parent = start_node.parent();
 
         while parent.is_some() && parent.unwrap().parent().is_some() {
-                loop {
-                    if node.kind().is_include_statement() {
-                        code.get_include_url(&node).map(|inc| {
-                            include_vec.push(inc);
-                        });
-                    }
+            loop {
+                if node.kind().is_include_statement() {
+                    code.get_include_url(&node).map(|inc| {
+                        include_vec.push(inc);
+                    });
+                }
 
-                    match node.kind() {
-                        "module_declaration" | "function_declaration" => {
-                            if node.end_byte() > start_pos {
-                                should_process_param = true;
-                                start_pos = code.tree.root_node().end_byte();
-                            }
+                match node.kind() {
+                    "module_declaration" | "function_declaration" => {
+                        if node.end_byte() > start_pos {
+                            should_process_param = true;
+                            start_pos = code.tree.root_node().end_byte();
                         }
-                        _ => (),
                     }
+                    _ => (),
+                }
 
-                    if node.start_byte() < start_pos {
-                        if let Some(mut item) = Item::parse(&code.code, &node) {
-                            if should_process_param {
-                                match &item.kind {
-                                    ItemKind::Module { params, .. } => {
-                                        should_process_param = false;
-                                        for p in params {
-                                            if comparator(&p.name) {
-                                                result.push(Rc::new(Item {
-                                                    name: p.name.clone(),
-                                                    kind: ItemKind::Variable,
-                                                    range: p.range,
-                                                    url: Some(code.url.clone()),
-                                                    ..Default::default()
-                                                }));
-                                                if !findall {
-                                                    return result;
-                                                }
+                if node.start_byte() < start_pos {
+                    if let Some(mut item) = Item::parse(&code.code, &node) {
+                        if should_process_param {
+                            match &item.kind {
+                                ItemKind::Module { params, .. } => {
+                                    should_process_param = false;
+                                    for p in params {
+                                        if comparator(&p.name) {
+                                            result.push(Rc::new(Item {
+                                                name: p.name.clone(),
+                                                kind: ItemKind::Variable,
+                                                range: p.range,
+                                                url: Some(code.url.clone()),
+                                                ..Default::default()
+                                            }));
+                                            if !findall {
+                                                return result;
                                             }
                                         }
                                     }
-                                    ItemKind::Function(params) => {
-                                        should_process_param = false;
-                                        for p in params {
-                                            if comparator(&p.name) {
-                                                result.push(Rc::new(Item {
-                                                    name: p.name.clone(),
-                                                    kind: ItemKind::Variable,
-                                                    range: p.range,
-                                                    url: Some(code.url.clone()),
-                                                    ..Default::default()
-                                                }));
-                                                if !findall {
-                                                    return result;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    _ => {}
-                                };
-                            }
-
-                            if comparator(&item.name) {
-                                item.url = Some(code.url.clone());
-                                result.push(Rc::new(item));
-                                if !findall {
-                                    return result;
                                 }
+                                ItemKind::Function(params) => {
+                                    should_process_param = false;
+                                    for p in params {
+                                        if comparator(&p.name) {
+                                            result.push(Rc::new(Item {
+                                                name: p.name.clone(),
+                                                kind: ItemKind::Variable,
+                                                range: p.range,
+                                                url: Some(code.url.clone()),
+                                                ..Default::default()
+                                            }));
+                                            if !findall {
+                                                return result;
+                                            }
+                                        }
+                                    }
+                                }
+                                _ => {}
+                            };
+                        }
+
+                        if comparator(&item.name) {
+                            item.url = Some(code.url.clone());
+                            result.push(Rc::new(item));
+                            if !findall {
+                                return result;
                             }
                         }
                     }
+                }
 
-                    if node.prev_sibling().is_none() {
-                        node = parent.unwrap();
-                        parent = node.parent();
-                        break;
-                    }
+                if node.prev_sibling().is_none() {
+                    node = parent.unwrap();
+                    parent = node.parent();
+                    break;
+                }
 
-                    node = node.prev_sibling().unwrap();
+                node = node.prev_sibling().unwrap();
             }
         }
 
@@ -1407,7 +1395,7 @@ impl Server {
                 findall,
                 false,
             ));
-            if result.len() > 0 && findall == false {
+            if !result.is_empty() && !findall {
                 return result;
             }
         }
@@ -1421,12 +1409,12 @@ impl Server {
         match self.code.entry(url.clone()) {
             linked_hash_map::Entry::Occupied(o) => {
                 if o.get().borrow().code != text {
-                    Ok(self.insert_code(&url, &text))
+                    Ok(self.insert_code(url, text))
                 } else {
                     Ok(Rc::clone(o.get()))
                 }
             }
-            linked_hash_map::Entry::Vacant(_) => Ok(self.insert_code(&url, &text)),
+            linked_hash_map::Entry::Vacant(_) => Ok(self.insert_code(url, text)),
         }
     }
 }
@@ -1493,11 +1481,11 @@ impl Server {
                     }
                 };
 
-                return None;
+                None
             })
             .collect();
 
-        if ret.len() > 0 {
+        if !ret.is_empty() {
             println!();
             log_to_console!("search paths:");
 
@@ -1517,12 +1505,11 @@ impl Server {
             library_locations: Rc::new(RefCell::new(vec![])),
             connection,
             code: Default::default(),
-
-            args: args,
+            args,
         };
         let code = BUILTINS_SCAD.to_owned();
         let url = Url::parse(BUILTIN_PATH).unwrap();
-        let rc = instance.insert_code(&url, &code);
+        let rc = instance.insert_code(url, code);
         rc.borrow_mut().is_builtin = true;
 
         instance.make_library_locations();
@@ -1539,7 +1526,7 @@ impl Server {
 
     fn respond(&self, mut resp: Response) {
         // log_to_console!("{:?}\n\n", &resp);
-        if let None = resp.result {
+        if resp.result.is_none() {
             resp.result = Some(json!("{}"))
         }
         self.connection
