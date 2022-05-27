@@ -6,7 +6,7 @@ server for [OpenSCAD](https://openscad.org).
 
 inspired by [dzhu/openscad-language-server](https://github.com/dzhu/openscad-language-server)
 
-Tested with VSCode on Mac and Windows.
+Tested with VSCode on Mac and Windows. [[vscode extension]](https://github.com/Leathong/openscad-support-vscode)
 
 Tested with lsp-mode on Emacs on Linux by [@Lenbok](https://github.com/Lenbok).
 
