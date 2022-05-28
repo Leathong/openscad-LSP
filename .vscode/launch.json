@@ -7,15 +7,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'openscad-language-server'",
+            "name": "openscad-lsp",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=openscad-language-server",
-                    "--package=openscad-language-server",
+                    "--bin=openscad-lsp",
+                    "--package=openscad-lsp",
                 ],
                 "filter": {
-                    "name": "openscad-language-server",
+                    "name": "openscad-lsp",
                     "kind": "bin"
                 }
             },
@@ -24,22 +24,10 @@
         },
         {
             "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'openscad-language-server'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=openscad-language-server",
-                    "--package=openscad-language-server"
-                ],
-                "filter": {
-                    "name": "openscad-language-server",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
+            "request": "attach",
+            "name": "attach",
+            "program": "${workspaceFolder}/target/debug/openscad-lsp",
+            "sourceLanguages": ["rust"]
         }
     ]
 }

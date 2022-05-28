@@ -77,10 +77,12 @@ fn find_offset(text: &str, pos: Position) -> Option<usize> {
         offset = text[offset..].find('\n')? + offset + 1;
     }
 
-    text[offset..]
+    for _ in 0..pos.character {
+        text[offset..]
         .char_indices()
-        .nth(pos.character as usize)
-        .map(|(c_pos, _)| offset += c_pos);
+        .next()
+        .map(|(_, c)| offset += c.len_utf8());
+    };
     Some(offset)
 }
 
@@ -1622,17 +1624,25 @@ struct Cli {
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let args = Cli::parse();
 
-    log_to_console!("start sucess");
-
     let (connection, io_threads) = if args.stdio {
+        log_to_console!("start with stdio");
         Connection::stdio()
     } else {
-        Connection::listen(format!("{}:{}", args.ip, args.port))?
+        log_to_console!("start with socket");
+        match Connection::listen(format!("{}:{}", args.ip, args.port)) {
+            Ok(res) => res,
+            Err(err) => {
+                err_to_console!("{}", err);
+                return Err(Box::new(err));
+            }
+        } 
     };
 
+    log_to_console!("start sucess");
     let mut server = Server::new(connection, args);
     server.main_loop()?;
     io_threads.join()?;
 
+    err_to_console!("exit");
     Ok(())
 }
