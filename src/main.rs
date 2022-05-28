@@ -1632,8 +1632,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         match Connection::listen(format!("{}:{}", args.ip, args.port)) {
             Ok(res) => res,
             Err(err) => {
-                err_to_console!("{}", err);
-                return Err(Box::new(err));
+                err_to_console!("{}", err); 
+                return Ok(()); // return an error from main will print it to stderr
             }
         } 
     };
