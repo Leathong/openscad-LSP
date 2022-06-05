@@ -77,12 +77,10 @@ fn find_offset(text: &str, pos: Position) -> Option<usize> {
         offset = text[offset..].find('\n')? + offset + 1;
     }
 
+    let mut chars = text[offset..].chars();
     for _ in 0..pos.character {
-        text[offset..]
-        .char_indices()
-        .next()
-        .map(|(_, c)| offset += c.len_utf8());
-    };
+        chars.next().map(|c| offset += c.len_utf8());
+    }
     Some(offset)
 }
 
@@ -1632,10 +1630,10 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         match Connection::listen(format!("{}:{}", args.ip, args.port)) {
             Ok(res) => res,
             Err(err) => {
-                err_to_console!("{}", err); 
+                err_to_console!("{}", err);
                 return Ok(()); // return an error from main will print it to stderr
             }
-        } 
+        }
     };
 
     log_to_console!("start sucess");
