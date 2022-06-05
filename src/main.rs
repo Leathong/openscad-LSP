@@ -74,12 +74,12 @@ macro_rules! err_to_console {
 fn find_offset(text: &str, pos: Position) -> Option<usize> {
     let mut offset = 0;
     for _ in 0..pos.line {
-        offset = text[offset..].find('\n')? + offset + 1;
+        offset += text[offset..].find('\n')? + 1;
     }
 
     let mut chars = text[offset..].chars();
     for _ in 0..pos.character {
-        chars.next().map(|c| offset += c.len_utf8());
+        offset += chars.next()?.len_utf8();
     }
     Some(offset)
 }
@@ -88,13 +88,6 @@ fn to_point(p: Position) -> Point {
     Point {
         row: p.line as usize,
         column: p.character as usize,
-    }
-}
-
-fn to_position(p: Point) -> Position {
-    Position {
-        line: p.row as u32,
-        character: p.column as u32,
     }
 }
 
@@ -135,7 +128,6 @@ fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
 fn cast_request<R>(req: Request) -> Result<(RequestId, R::Params), ExtractError<Request>>
 where
     R: lsp_types::request::Request,
-    R::Params: serde::de::DeserializeOwned,
 {
     req.extract(R::METHOD)
 }
@@ -145,7 +137,6 @@ fn cast_notification<N>(
 ) -> Result<N::Params, ExtractError<lsp_server::Notification>>
 where
     N: lsp_types::notification::Notification,
-    N::Params: serde::de::DeserializeOwned,
 {
     notif.extract(N::METHOD)
 }
@@ -164,31 +155,13 @@ impl Param {
                 "identifier" => Some(Param {
                     name: node_text(code, &child).to_owned(),
                     default: None,
-                    range: Range {
-                        start: Position {
-                            line: child.start_position().row as u32,
-                            character: child.start_position().column as u32,
-                        },
-                        end: Position {
-                            line: child.end_position().row as u32,
-                            character: child.end_position().column as u32,
-                        },
-                    },
+                    range: child.lsp_range(),
                 }),
                 "assignment" => child.child_by_field_name("left").and_then(|left| {
                     child.child_by_field_name("right").map(|right| Param {
                         name: node_text(code, &left).to_owned(),
                         default: Some(node_text(code, &right).to_owned()),
-                        range: Range {
-                            start: Position {
-                                line: right.start_position().row as u32,
-                                character: right.start_position().column as u32,
-                            },
-                            end: Position {
-                                line: right.end_position().row as u32,
-                                character: right.end_position().column as u32,
-                            },
-                        },
+                        range: right.lsp_range(),
                     })
                 }),
                 "special_variable" => None,
@@ -331,17 +304,7 @@ impl Item {
                             .child_by_field_name("parameters")
                             .map_or(vec![], |params| Param::parse_declaration(code, &params)),
                     },
-                    range: Range {
-                        start: Position {
-                            line: node.start_position().row as u32,
-                            character: node.start_position().column as u32,
-                        },
-                        end: Position {
-                            line: node.end_position().row as u32,
-                            character: node.end_position().column as u32,
-                        },
-                    },
-                    url: None,
+                    range: node.lsp_range(),
                     ..Default::default()
                 })
             }
@@ -351,33 +314,13 @@ impl Item {
                     node.child_by_field_name("parameters")
                         .map_or(vec![], |params| Param::parse_declaration(code, &params)),
                 ),
-                range: Range {
-                    start: Position {
-                        line: node.start_position().row as u32,
-                        character: node.start_position().column as u32,
-                    },
-                    end: Position {
-                        line: node.end_position().row as u32,
-                        character: node.end_position().column as u32,
-                    },
-                },
-                url: None,
+                range: node.lsp_range(),
                 ..Default::default()
             }),
             "assignment" => Some(Self {
                 name: extract_name("left")?,
                 kind: ItemKind::Variable,
-                range: Range {
-                    start: Position {
-                        line: node.start_position().row as u32,
-                        character: node.start_position().column as u32,
-                    },
-                    end: Position {
-                        line: node.end_position().row as u32,
-                        character: node.end_position().column as u32,
-                    },
-                },
-                url: None,
+                range: node.lsp_range(),
                 ..Default::default()
             }),
             _ => None,
@@ -421,6 +364,26 @@ impl KindExt for str {
 
     fn is_comment(&self) -> bool {
         self == "comment"
+    }
+}
+
+trait NodeExt {
+    fn lsp_range(&self) -> Range;
+}
+
+impl NodeExt for Node<'_> {
+    fn lsp_range(&self) -> Range {
+        let r = self.range();
+        Range {
+            start: Position {
+                line: r.start_point.row as u32,
+                character: r.start_point.column as u32,
+            },
+            end: Position {
+                line: r.end_point.row as u32,
+                character: r.end_point.column as u32,
+            },
+        }
     }
 }
 
@@ -532,17 +495,6 @@ impl ParsedCode {
                 Rc::new(Item {
                     name: name.to_owned(),
                     kind: ItemKind::Keyword(comp.to_owned()),
-                    range: Range {
-                        start: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                        end: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                    },
-                    url: None,
                     ..Default::default()
                 })
             }));
@@ -757,16 +709,7 @@ impl Server {
                             if url.path().ends_with(include_path) {
                                 break Some(Location {
                                     uri: url.clone(),
-                                    range: Range {
-                                        start: Position {
-                                            line: 0,
-                                            character: 0,
-                                        },
-                                        end: Position {
-                                            line: 0,
-                                            character: 0,
-                                        },
-                                    },
+                                    range: Range::default(),
                                 });
                             }
                         } else {
@@ -1056,14 +999,8 @@ impl Server {
             Ok(size) => {
                 if size > 0 {
                     code = code.replace("#include <", "");
-                    let result = vec![TextEdit {
-                        range: Range {
-                            start: Position {
-                                line: 0,
-                                character: 0,
-                            },
-                            end: to_position(file.borrow().tree.root_node().end_position()),
-                        },
+                    let result = [TextEdit {
+                        range: file.borrow().tree.root_node().lsp_range(),
                         new_text: code.to_owned(),
                     }];
 
@@ -1107,10 +1044,7 @@ impl Server {
         let mut diags: Vec<_> = error_nodes(pc.borrow().tree.walk())
             .into_iter()
             .map(|node| Diagnostic {
-                range: Range {
-                    start: to_position(node.start_position()),
-                    end: to_position(node.end_position()),
-                },
+                range: node.lsp_range(),
                 severity: Some(DiagnosticSeverity::ERROR),
                 message: if node.is_missing() {
                     format!("missing {}", node.kind())
@@ -1132,13 +1066,11 @@ impl Server {
                 // let text = node_text(&bpc.code, &node);
 
                 if kind.is_include_statement() && bpc.get_include_url(&node).is_none() {
-                    let subnode = node.child(1).unwrap();
-                    let mut start = to_position(subnode.start_position());
-                    start.character += 1;
-                    let mut end = to_position(subnode.end_position());
-                    end.character -= 1;
+                    let mut range = node.child(1).unwrap().lsp_range();
+                    range.start.character += 1;
+                    range.end.character -= 1;
                     diags.push(Diagnostic {
-                        range: Range { start, end },
+                        range,
                         severity: Some(DiagnosticSeverity::ERROR),
                         message: "file not found!".to_owned(),
                         ..Default::default()
