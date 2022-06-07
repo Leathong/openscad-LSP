@@ -1262,17 +1262,13 @@ impl Server {
                     }
                 }
 
-                if node.prev_sibling().is_none() {
+                if !should_continue || node.prev_sibling().is_none() {
                     node = parent.unwrap();
                     parent = node.parent();
                     break;
                 } else {
                     node = node.prev_sibling().unwrap();
                 }
-            }
-
-            if !should_continue {
-                break;
             }
         }
 
