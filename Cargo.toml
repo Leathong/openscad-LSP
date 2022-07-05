@@ -22,3 +22,5 @@ tree-sitter-openscad = "0.4.0"
 linked-hash-map = "0.5.4"
 shellexpand = "2.1.0"
 clap = {features = ["derive"], version = "3.1.17"}
+lazy_static = "1.4.0"
+regex = "*"

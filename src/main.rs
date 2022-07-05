@@ -12,6 +12,7 @@ use std::{
     vec,
 };
 
+use lazy_static::lazy_static;
 use linked_hash_map::LinkedHashMap;
 use lsp_server::{Connection, ExtractError, Message, Request, RequestId, Response, ResponseError};
 use lsp_types::{
@@ -30,6 +31,7 @@ use lsp_types::{
     TextDocumentContentChangeEvent, TextDocumentSyncCapability, TextDocumentSyncKind, TextEdit,
     Url,
 };
+use regex::Regex;
 use serde::Deserialize;
 use serde_json::json;
 use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
@@ -249,7 +251,7 @@ impl Item {
             _ => format!("```scad\n{}\n```", label),
         };
         if let Some(doc) = &self.doc {
-            label = format!("{}\n---\n```scad\n{}\n```", label, doc);
+            label = format!("{}\n---\n\n{}\n", label, doc);
         }
         // print!("{}", &label);
         label
@@ -451,16 +453,43 @@ impl ParsedCode {
         self.gen_items();
     }
 
+    fn extract_doc(&self, doc: Option<String>) -> Option<String> {
+        lazy_static! {
+            static ref DOC_RE: Regex =
+                Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(^\s*\*+/)|(^\s*\*+)").unwrap();
+        };
+
+        doc.as_ref().map(|doc| {
+            DOC_RE
+                .replace_all(doc, "")
+                .replace(' ', "\u{00a0}")
+                .replace('\n', "  \n")
+        })
+    }
+
     fn gen_items(&mut self) {
         let mut cursor: TreeCursor = self.tree.walk();
-        let mut ret = vec![];
+        let mut ret: Vec<Item> = vec![];
         let mut inc = vec![];
 
         let mut doc: Option<String> = None;
         let mut doc_node: Option<Node> = None;
+        let mut last_code_line: usize = 0;
+
         for_each_child(&mut cursor, |cursor| {
             let node = &cursor.node();
             if node.kind().is_comment() {
+                if last_code_line > 0 && node.start_position().row == last_code_line {
+                    let last = ret.last_mut().unwrap();
+                    if last.doc.is_none() {
+                        let doc_str = node_text(&self.code, node);
+                        last.doc = self.extract_doc(Some(doc_str.to_owned()));
+                        last.label = Some(last.make_label());
+                        last.hover = Some(last.make_hover());
+                    }
+                    return;
+                }
+
                 if doc_node.is_some()
                     && node.end_position().row - doc_node.unwrap().end_position().row <= 1
                 {
@@ -475,10 +504,11 @@ impl ParsedCode {
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
                     item.url = Some(self.url.clone());
-                    item.doc = doc.take();
+                    item.doc = self.extract_doc(doc.take());
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
-                    ret.push(Rc::new(item));
+                    last_code_line = item.range.start.line as usize;
+                    ret.push(item);
                 } else if node.kind().is_include_statement() {
                     self.get_include_url(node).map(|url| {
                         inc.push(url);
@@ -491,15 +521,19 @@ impl ParsedCode {
         });
 
         if self.is_builtin {
-            ret.extend(KEYWORDS.iter().map(|&(name, comp)| {
-                Rc::new(Item {
-                    name: name.to_owned(),
-                    kind: ItemKind::Keyword(comp.to_owned()),
-                    ..Default::default()
-                })
+            ret.extend(KEYWORDS.iter().map(|&(name, comp)| Item {
+                name: name.to_owned(),
+                kind: ItemKind::Keyword(comp.to_owned()),
+                ..Default::default()
             }));
         }
-        self.root_items = Some(ret);
+
+        let mut items = vec![];
+        for item in ret {
+            items.push(Rc::new(item));
+        }
+
+        self.root_items = Some(items);
         self.includes = Some(inc);
     }
 
