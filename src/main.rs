@@ -453,18 +453,16 @@ impl ParsedCode {
         self.gen_items();
     }
 
-    fn extract_doc(&self, doc: Option<String>) -> Option<String> {
+    fn extract_doc(&self, doc: &str) -> String {
         lazy_static! {
             static ref DOC_RE: Regex =
                 Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(^\s*\*+/)|(^\s*\*+)").unwrap();
         };
 
-        doc.as_ref().map(|doc| {
-            DOC_RE
-                .replace_all(doc, "")
-                .replace(' ', "\u{00a0}")
-                .replace('\n', "  \n")
-        })
+        DOC_RE
+            .replace_all(doc, "")
+            .replace(' ', "\u{00a0}")
+            .replace('\n', "  \n")
     }
 
     fn gen_items(&mut self) {
@@ -481,12 +479,20 @@ impl ParsedCode {
             if node.kind().is_comment() {
                 if last_code_line > 0 && node.start_position().row == last_code_line {
                     let last = ret.last_mut().unwrap();
-                    if last.doc.is_none() {
-                        let doc_str = node_text(&self.code, node);
-                        last.doc = self.extract_doc(Some(doc_str.to_owned()));
-                        last.label = Some(last.make_label());
-                        last.hover = Some(last.make_hover());
+                    let doc_str = node_text(&self.code, node);
+                    let newdoc = self.extract_doc(doc_str);
+
+                    if last.doc.is_some() {
+                        last.doc.as_mut().unwrap().push_str("  \n");
+                        last.doc.as_mut().unwrap().push_str(&newdoc);
+                    } else {
+                        let mut doc = "".to_owned();
+                        doc.push_str("  \n");
+                        doc.push_str(&newdoc);
+                        last.doc = Some(doc);
                     }
+                    last.label = Some(last.make_label());
+                    last.hover = Some(last.make_hover());
                     return;
                 }
 
@@ -504,7 +510,10 @@ impl ParsedCode {
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
                     item.url = Some(self.url.clone());
-                    item.doc = self.extract_doc(doc.take());
+                    item.doc = match &doc {
+                        Some(doc) => Some(self.extract_doc(doc)),
+                        None => None,
+                    };
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
                     last_code_line = item.range.start.line as usize;
