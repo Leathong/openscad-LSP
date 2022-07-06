@@ -1,6 +1,6 @@
 [package]
 name = "openscad-lsp"
-version = "1.0.2"
+version = "1.0.3"
 edition = "2021"
 authors = ["Leathong"]
 description = "A language(LSP) server for OpenSCAD"
@@ -23,4 +23,4 @@ linked-hash-map = "0.5.4"
 shellexpand = "2.1.0"
 clap = {features = ["derive"], version = "3.1.17"}
 lazy_static = "1.4.0"
-regex = "*"
+regex = "1.5.6"
