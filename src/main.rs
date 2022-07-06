@@ -510,10 +510,7 @@ impl ParsedCode {
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
                     item.url = Some(self.url.clone());
-                    item.doc = match &doc {
-                        Some(doc) => Some(self.extract_doc(doc)),
-                        None => None,
-                    };
+                    item.doc = doc.as_ref().map(|doc| self.extract_doc(doc));
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
                     last_code_line = item.range.start.line as usize;
