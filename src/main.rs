@@ -410,36 +410,44 @@ impl ParsedCode {
     }
 
     fn edit(&mut self, events: &[TextDocumentContentChangeEvent]) {
+        let mut old_tree = Some(&mut self.tree);
         for event in events {
-            let range = event.range.unwrap();
-            let start_ofs = find_offset(&self.code, range.start).unwrap();
-            let end_ofs = find_offset(&self.code, range.end).unwrap();
-            self.code.replace_range(start_ofs..end_ofs, &event.text);
+            if let Some(range) = event.range {
+                let start_ofs = find_offset(&self.code, range.start).unwrap();
+                let end_ofs = find_offset(&self.code, range.end).unwrap();
+                self.code.replace_range(start_ofs..end_ofs, &event.text);
 
-            let new_end_position = match event.text.rfind('\n') {
-                Some(ind) => {
-                    let num_newlines = event.text.bytes().filter(|&c| c == b'\n').count();
-                    Point {
-                        row: range.start.line as usize + num_newlines,
-                        column: event.text.len() - ind,
+                let new_end_position = match event.text.rfind('\n') {
+                    Some(ind) => {
+                        let num_newlines = event.text.bytes().filter(|&c| c == b'\n').count();
+                        Point {
+                            row: range.start.line as usize + num_newlines,
+                            column: event.text.len() - ind,
+                        }
                     }
-                }
-                None => Point {
-                    row: range.end.line as usize,
-                    column: range.end.character as usize + event.text.len(),
-                },
-            };
+                    None => Point {
+                        row: range.start.line as usize,
+                        column: range.start.character as usize + event.text.len(),
+                    },
+                };
 
-            self.tree.edit(&InputEdit {
-                start_byte: start_ofs,
-                old_end_byte: end_ofs,
-                new_end_byte: start_ofs + event.text.len(),
-                start_position: to_point(range.start),
-                old_end_position: to_point(range.end),
-                new_end_position,
-            });
+                old_tree.as_mut().unwrap().edit(&InputEdit {
+                    start_byte: start_ofs,
+                    old_end_byte: end_ofs,
+                    new_end_byte: start_ofs + event.text.len(),
+                    start_position: to_point(range.start),
+                    old_end_position: to_point(range.end),
+                    new_end_position,
+                });
+            } else {
+                old_tree = None;
+                self.code = event.text.clone();
+                break;
+            }
         }
-        let new_tree = self.parser.parse(&self.code, Some(&self.tree)).unwrap();
+
+        let old_tree = old_tree.map(|t| &(*t));
+        let new_tree = self.parser.parse(&self.code, old_tree).unwrap();
         self.tree = new_tree;
 
         self.changed = true;
