@@ -216,7 +216,7 @@ struct Item {
     doc: Option<String>,
     hover: Option<String>,
     label: Option<String>,
-    is_builtin: bool
+    is_builtin: bool,
 }
 
 impl Item {
