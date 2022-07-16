@@ -216,6 +216,7 @@ struct Item {
     doc: Option<String>,
     hover: Option<String>,
     label: Option<String>,
+    is_builtin: bool
 }
 
 impl Item {
@@ -464,7 +465,7 @@ impl ParsedCode {
     fn extract_doc(&self, doc: &str) -> String {
         lazy_static! {
             static ref DOC_RE: Regex =
-                Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(^\s*\*+/)|(^\s*\*+)").unwrap();
+                Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(^\s*\*+/)|(^\s* )").unwrap();
         };
 
         DOC_RE
@@ -543,7 +544,8 @@ impl ParsedCode {
         }
 
         let mut items = vec![];
-        for item in ret {
+        for mut item in ret {
+            item.is_builtin = self.is_builtin;
             items.push(Rc::new(item));
         }
 
@@ -736,7 +738,7 @@ impl Server {
                 );
                 let locs = items
                     .iter()
-                    .filter(|item| item.name == name && item.url.is_some())
+                    .filter(|item| item.name == name && item.url.is_some() && !item.is_builtin)
                     .map(|item| Location {
                         uri: item.url.as_ref().unwrap().clone(),
                         range: item.range,
