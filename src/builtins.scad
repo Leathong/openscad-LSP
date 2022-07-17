@@ -6,10 +6,10 @@ module import(file, center=false, dpi=96, convexity=1) {}
 Creates a cube in the first octant. When center is true, the cube is
 centered on the origin. Argument names are optional if given in the
 order shown here.
-
+```
     cube(size = [x,y,z], center = true/false);
-    cube(size =  x ,     center = true/false);
-
+    cube(size =  x ,    center = true/false);
+```
 **parameters**:
 
 **size**
@@ -29,24 +29,28 @@ single value, cube with all sides this length
 **examples**:
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/OpenSCAD_example_Cube.jpg/150px-OpenSCAD_example_Cube.jpg)
+
 ```
     // equivalent scripts for this example
-     cube(size = 18);
-     cube(18);
-     cube([18,18,18]);
-     
-     cube(18,false);
-     cube([18,18,18],false);
-     cube([18,18,18],center=false);
-     cube(size = [18,18,18], center = false);
-     cube(center = false,size = [18,18,18] );
+    cube(size = 18);
+    cube(18);
+    cube([18,18,18]);
+    
+    cube(18,false);
+    cube([18,18,18],false);
+    cube([18,18,18],center=false);
+    cube(size = [18,18,18], center = false);
+    cube(center = false,size = [18,18,18] );
 ```
+
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/OpenSCAD_example_Box.jpg/150px-OpenSCAD_example_Box.jpg)
+
 ```
     // equivalent scripts for this example
-     cube([18,28,8],true);
-     box=[18,28,8];cube(box,true);
+    cube([18,28,8],true);
+    box=[18,28,8];cube(box,true);
 ```
+
  */
 module cube(size, center) {}
 
@@ -111,21 +115,21 @@ details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Feat
 
 ```    
     // equivalent scripts
-     cylinder(h=15, r1=9.5, r2=19.5, center=false);
-     cylinder(  15,    9.5,    19.5, false);
-     cylinder(  15,    9.5,    19.5);
-     cylinder(  15,    9.5, d2=39  );
-     cylinder(  15, d1=19,  d2=39  );
-     cylinder(  15, d1=19,  r2=19.5);
+    cylinder(h=15, r1=9.5, r2=19.5, center=false);
+    cylinder(  15,    9.5,    19.5, false);
+    cylinder(  15,    9.5,    19.5);
+    cylinder(  15,    9.5, d2=39  );
+    cylinder(  15, d1=19,  d2=39  );
+    cylinder(  15, d1=19,  r2=19.5);
 ```
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/OpenSCAD_Cone_15x10x0.jpg/200px-OpenSCAD_Cone_15x10x0.jpg)
 
 ```
     // equivalent scripts
-     cylinder(h=15, r1=10, r2=0, center=true);
-     cylinder(  15,    10,    0,        true);
-     cylinder(h=15, d1=20, d2=0, center=true);
+    cylinder(h=15, r1=10, r2=0, center=true);
+    cylinder(  15,    10,    0,       true);
+    cylinder(h=15, d1=20, d2=0, center=true);
 ```
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/OpenSCAD_Cylinder_20x10_false.jpg/112px-OpenSCAD_Cylinder_20x10_false.jpg)
@@ -137,7 +141,7 @@ details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Feat
     center = true
 
 ```
-// equivalent scripts
+    // equivalent scripts
     cylinder(h=20, r=10, center=true);
     cylinder(  20,   10, 10,true);
     cylinder(  20, d=20, center=true);
@@ -164,9 +168,9 @@ objects. A few examples are show here:
     <!-- -->
 ```
     scripts for these examples
-     cylinder(20,20,20,$fn=3);
-     cylinder(20,20,00,$fn=4);
-     cylinder(20,20,10,$fn=4);
+    cylinder(20,20,20,$fn=3);
+    cylinder(20,20,00,$fn=4);
+    cylinder(20,20,10,$fn=4);
 ```
 **undersized holes**
 
@@ -183,10 +187,10 @@ holes](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/undersized_circular_ob
     <!-- -->
 ```
     script for this example
-     poly_n = 6;
-     color("blue") translate([0, 0, 0.02]) linear_extrude(0.1) circle(10, $fn=poly_n);
-     color("green") translate([0, 0, 0.01]) linear_extrude(0.1) circle(10, $fn=360);
-     color("purple") linear_extrude(0.1) circle(10/cos(180/poly_n), $fn=poly_n);
+    poly_n = 6;
+    color("blue") translate([0, 0, 0.02]) linear_extrude(0.1) circle(10, $fn=poly_n);
+    color("green") translate([0, 0, 0.01]) linear_extrude(0.1) circle(10, $fn=360);
+    color("purple") linear_extrude(0.1) circle(10/cos(180/poly_n), $fn=poly_n);
 ```
 */
 module cylinder(r) {}
@@ -237,7 +241,7 @@ only for correct display of the object in OpenCSG preview mode. It has
 no effect on the polyhedron rendering. For display problems, setting it
 to 10 should work fine for most cases.
 ```
-     default values: polyhedron(); yields: polyhedron(points = undef, faces = undef, convexity = 1);
+    default values: polyhedron(); yields: polyhedron(points = undef, faces = undef, convexity = 1);
 ```
 It is arbitrary which point you start with, but all faces must have
 points ordered in **clockwise** direction when looking at each face from
@@ -290,15 +294,14 @@ CubePoints = [
 ```
 **Example 2** A square base pyramid:
 
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad-polyhedron-squarebasepyramid.png">![](https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad-polyhedron-squarebasepyramid.png">![](https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png)</a>
 
 A simple polyhedron, square base pyramid
 ```
 polyhedron(
-      points=[ [10,10,0],[10,-10,0],[-10,-10,0],[-10,10,0], // the four points at base
+     points=[ [10,10,0],[10,-10,0],[-10,-10,0],[-10,10,0], // the four points at base
                [0,0,10]  ],                                 // the apex point 
-      faces=[ [0,1,4],[1,2,4],[2,3,4],[3,0,4],              // each triangle side
+     faces=[ [0,1,4],[1,2,4],[2,3,4],[3,0,4],              // each triangle side
                   [1,0,3],[2,1,3] ]                         // two triangles for square base
      );
 ```
@@ -311,34 +314,34 @@ polyhedron(
 A polyhedron triangular prism
 ```
 module prism(l, w, h){
-           polyhedron(
-                   points=[[0,0,0], [l,0,0], [l,w,0], [0,w,0], [0,w,h], [l,w,h]],
-                   faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
+          polyhedron(
+                  points=[[0,0,0], [l,0,0], [l,w,0], [0,w,0], [0,w,h], [l,w,h]],
+                  faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
                    );
            
            // preview unfolded (do not include in your function
-           z = 0.08;
-           separation = 2;
-           border = .2;
-           translate([0,w+separation,0])
-               cube([l,w,z]);
-           translate([0,w+separation+w+border,0])
-               cube([l,h,z]);
-           translate([0,w+separation+w+border+h+border,0])
-               cube([l,sqrt(w*w+h*h),z]);
-           translate([l+border,w+separation+w+border+h+border,0])
-               polyhedron(
-                       points=[[0,0,0],[h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[h,0,z],[0,sqrt(w*w+h*h),z]],
-                       faces=[[0,1,2], [3,5,4], [0,3,4,1], [1,4,5,2], [2,5,3,0]]
+          z = 0.08;
+          separation = 2;
+          border = .2;
+          translate([0,w+separation,0])
+              cube([l,w,z]);
+          translate([0,w+separation+w+border,0])
+              cube([l,h,z]);
+          translate([0,w+separation+w+border+h+border,0])
+              cube([l,sqrt(w*w+h*h),z]);
+          translate([l+border,w+separation+w+border+h+border,0])
+              polyhedron(
+                      points=[[0,0,0],[h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[h,0,z],[0,sqrt(w*w+h*h),z]],
+                      faces=[[0,1,2], [3,5,4], [0,3,4,1], [1,4,5,2], [2,5,3,0]]
                        );
-           translate([0-border,w+separation+w+border+h+border,0])
-               polyhedron(
-                       points=[[0,0,0],[0-h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[0-h,0,z],[0,sqrt(w*w+h*h),z]],
-                       faces=[[1,0,2],[5,3,4],[0,1,4,3],[1,2,5,4],[2,0,3,5]]
+          translate([0-border,w+separation+w+border+h+border,0])
+              polyhedron(
+                      points=[[0,0,0],[0-h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[0-h,0,z],[0,sqrt(w*w+h*h),z]],
+                      faces=[[1,0,2],[5,3,4],[0,1,4,3],[1,2,5,4],[2,0,3,5]]
                        );
            }
        
-       prism(10, 5, 3);
+      prism(10, 5, 3);
 ```
 #### Debugging polyhedra
 
@@ -406,13 +409,13 @@ Below you can see the code and the picture of such a problematic
 polyhedron, the bad polygons (faces or compositions of faces) are in
 pink.
 ```
-// Bad polyhedron
+    // Bad polyhedron
     polyhedron
         (points = [
                [0, -10, 60], [0, 10, 60], [0, 10, 0], [0, -10, 0], [60, -10, 60], [60, 10, 60], 
                [10, -10, 50], [10, 10, 50], [10, 10, 30], [10, -10, 30], [30, -10, 50], [30, 10, 50]
                ], 
-         faces = [
+        faces = [
               [0,2,3],   [0,1,2],  [0,4,5],  [0,5,1],   [5,4,2],  [2,4,3],
                       [6,8,9],  [6,7,8],  [6,10,11], [6,11,7], [10,8,11],
               [10,9,8], [0,3,9],  [9,0,6], [10,6, 0],  [0,4,10],
@@ -432,7 +435,7 @@ polyhedron
                [0, -10, 60], [0, 10, 60], [0, 10, 0], [0, -10, 0], [60, -10, 60], [60, 10, 60], 
                [10, -10, 50], [10, 10, 50], [10, 10, 30], [10, -10, 30], [30, -10, 50], [30, 10, 50]
                ], 
-         faces = [
+        faces = [
               [0,3,2],  [0,2,1],  [4,0,5],  [5,0,1],  [5,2,4],  [4,2,3],
                       [6,8,9],  [6,7,8],  [6,10,11],[6,11,7], [10,8,11],
               [10,9,8], [3,0,9],  [9,0,6],  [10,6, 0],[0,4,10],
@@ -471,8 +474,7 @@ If you place your left hand on the face with your fingers curled in the
 direction of the order of the points, your thumb should point outward.
 If your thumb points inward, you need to reverse the winding order.
 
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad-bad-polyhedron-annotated.png">![](https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad-bad-polyhedron-annotated.png">![](https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png)</a>
 
 Polyhedron with badly oriented polygons
 
@@ -545,7 +547,7 @@ Resolution
 
 <!-- -->
 ```
-     default values:  sphere();   yields:   sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+    default values:  sphere();   yields:   sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
 ```
 **Usage Examples**
 ```
@@ -563,8 +565,7 @@ Resolution
     // does not have as many small triangles on the poles of the sphere
     sphere(2, $fa=5, $fs=0.1); 
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_sphere_in_different_sizes.png">![](https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_sphere_in_different_sizes.png">![](https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png)</a>
 */
 module sphere(rad) {}
 
@@ -608,10 +609,10 @@ details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Feat
 
 Equivalent scripts for this example
 ```
-     circle(10);
-     circle(r=10);
-     circle(d=20);
-     circle(d=2+9*2);
+    circle(10);
+    circle(r=10);
+    circle(d=20);
+    circle(d=2+9*2);
 ```
 #### Ellipses
 
@@ -621,14 +622,12 @@ An ellipse can be created from a circle by using either `scale()` or
 `resize()` to make the x and y dimensions unequal. See [OpenSCAD User
 Manual/Transformations](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations "OpenSCAD User Manual/Transformations")
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenScad_Ellipse_from_circle.jpg">![](https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg)</a>
-<a
-href="//commons.wikimedia.org/wiki/File:OpenScad_Ellipse_from_circle_top_view.jpg">![](https://upload.wikimedia.org/wikipedia/commons/8/8e/OpenScad_Ellipse_from_circle_top_view.jpg)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenScad_Ellipse_from_circle.jpg">![](https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenScad_Ellipse_from_circle_top_view.jpg">![](https://upload.wikimedia.org/wikipedia/commons/8/8e/OpenScad_Ellipse_from_circle_top_view.jpg)</a>
 ```
     // equivalent scripts for this example
-     resize([30,10])circle(d=20);
-     scale([1.5,.5])circle(d=20);
+    resize([30,10])circle(d=20);
+    scale([1.5,.5])circle(d=20);
 ```
 #### Regular Polygons
 ------------------------------------------------------------------------
@@ -637,39 +636,38 @@ A regular polygon of 3 or more sides can be created by using `circle()`
 with $fn set to the number of sides. The following two pieces of code
 are equivalent.
 ```
-     circle(r=1, $fn=4);
+    circle(r=1, $fn=4);
 
-     module regular_polygon(order = 4, r=1){
-         angles=[ for (i = [0:order-1]) i*(360/order) ];
-         coords=[ for (th=angles) [r*cos(th), r*sin(th)] ];
-         polygon(coords);
-     }
-     regular_polygon();
+    module regular_polygon(order = 4, r=1){
+        angles=[ for (i = [0:order-1]) i*(360/order) ];
+        coords=[ for (th=angles) [r*cos(th), r*sin(th)] ];
+        polygon(coords);
+    }
+    regular_polygon();
 ```
 These result in the following shapes, where the polygon is inscribed
 within the circle with all sides (and angles) equal. One corner points
 to the positive x direction. For irregular shapes see the polygon
 primitive below.
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_regular_polygon_using_circle.jpg">![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_regular_polygon_using_circle.jpg">![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg)</a>
 ```
     script for these examples
-     translate([-42,  0]){circle(20,$fn=3);%circle(20,$fn=90);}
-     translate([  0,  0]) circle(20,$fn=4);
-     translate([ 42,  0]) circle(20,$fn=5);
-     translate([-42,-42]) circle(20,$fn=6);
-     translate([  0,-42]) circle(20,$fn=8);
-     translate([ 42,-42]) circle(20,$fn=12);
+    translate([-42,  0]){circle(20,$fn=3);%circle(20,$fn=90);}
+    translate([  0,  0]) circle(20,$fn=4);
+    translate([ 42,  0]) circle(20,$fn=5);
+    translate([-42,-42]) circle(20,$fn=6);
+    translate([  0,-42]) circle(20,$fn=8);
+    translate([ 42,-42]) circle(20,$fn=12);
      
-     color("black"){
-         translate([-42,  0,1])text("3",7,,center);
-         translate([  0,  0,1])text("4",7,,center);
-         translate([ 42,  0,1])text("5",7,,center);
-         translate([-42,-42,1])text("6",7,,center);
-         translate([  0,-42,1])text("8",7,,center);
-         translate([ 42,-42,1])text("12",7,,center);
-     }
+    color("black"){
+        translate([-42,  0,1])text("3",7,,center);
+        translate([  0,  0,1])text("4",7,,center);
+        translate([ 42,  0,1])text("5",7,,center);
+        translate([-42,-42,1])text("6",7,,center);
+        translate([  0,-42,1])text("8",7,,center);
+        translate([ 42,-42,1])text("12",7,,center);
+    }
 ```
 */
 module circle(rad) {}
@@ -720,32 +718,30 @@ arbitrary line through the polygon. See below.
 ```
 #### Without holes
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_Polygon_Example_Rhomboid.jpg">![](https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_Polygon_Example_Rhomboid.jpg">![](https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg)</a>
 ```
     // equivalent scripts for this example
-     polygon(points=[[0,0],[100,0],[130,50],[30,50]]);
-     polygon([[0,0],[100,0],[130,50],[30,50]], paths=[[0,1,2,3]]);
-     polygon([[0,0],[100,0],[130,50],[30,50]],[[3,2,1,0]]);
-     polygon([[0,0],[100,0],[130,50],[30,50]],[[1,0,3,2]]);
+    polygon(points=[[0,0],[100,0],[130,50],[30,50]]);
+    polygon([[0,0],[100,0],[130,50],[30,50]], paths=[[0,1,2,3]]);
+    polygon([[0,0],[100,0],[130,50],[30,50]],[[3,2,1,0]]);
+    polygon([[0,0],[100,0],[130,50],[30,50]],[[1,0,3,2]]);
         
-     a=[[0,0],[100,0],[130,50],[30,50]];
-     b=[[3,0,1,2]];
-     polygon(a);
-     polygon(a,b);
-     polygon(a,[[2,3,0,1,2]]);
+    a=[[0,0],[100,0],[130,50],[30,50]];
+    b=[[3,0,1,2]];
+    polygon(a);
+    polygon(a,b);
+    polygon(a,[[2,3,0,1,2]]);
 ```
 #### One hole
 
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad-polygon-example1.png">![](https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad-polygon-example1.png">![](https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png)</a>
 ```
     // equivalent scripts for this example
-     polygon(points=[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]], paths=[[0,1,2],[3,4,5]],convexity=10);
+    polygon(points=[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]], paths=[[0,1,2],[3,4,5]],convexity=10);
 
-     triangle_points =[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]];
-     triangle_paths =[[0,1,2],[3,4,5]];
-     polygon(triangle_points,triangle_paths,10);
+    triangle_points =[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]];
+    triangle_paths =[[0,1,2],[3,4,5]];
+    polygon(triangle_points,triangle_paths,10);
 ```
 The 1st path vector, \[0,1,2\], selects the points,
 \[0,0\],\[100,0\],\[0,100\], for the primary shape. The 2nd path vector,
@@ -758,8 +754,7 @@ primary, it leaves a shape with a hole.
 
 \[Note: Requires version 2015.03\] (for use of `concat()`)
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_romboid_with_holes.jpg">![](https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_romboid_with_holes.jpg">![](https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg)</a>
 ```
           //example polygon with multiple holes
     a0 = [[0,0],[100,0],[130,50],[30,50]];     // main
@@ -782,60 +777,60 @@ href="//commons.wikimedia.org/wiki/File:OpenSCAD_romboid_with_holes.jpg">![](htt
 
 ![](https://upload.wikimedia.org/wikipedia/commons/e/e0/Example_openscad_3dshape.png)
 ```
-       translate([0,-20,10]) {
-           rotate([90,180,90]) {
-               linear_extrude(50) {
-                   polygon(
-                       points = [
+      translate([0,-20,10]) {
+          rotate([90,180,90]) {
+              linear_extrude(50) {
+                  polygon(
+                      points = [
                           //x,y
                            /*
-                                      O  .
+                                     O  .
                            *\/
                            [-2.8,0],
                            /*
-                                    O__X  .
+                                   O__X  .
                            *\/
                            [-7.8,0],
                            /*
-                                  O
+                                 O
                                    \
-                                    X__X  .
+                                   X__X  .
                            *\/
                            [-15.3633,10.30],
                            /*
-                                  X_______._____O
+                                 X_______._____O
                                    \         
-                                    X__X  .
+                                   X__X  .
                            *\/
                            [15.3633,10.30],
                            /*
-                                  X_______._______X
+                                 X_______._______X
                                    \             /
-                                    X__X  .     O
+                                   X__X  .    O
                            *\/
                            [7.8,0],
                            /*
-                                  X_______._______X
+                                 X_______._______X
                                    \             /
-                                    X__X  .  O__X
+                                   X__X  .  O__X
                            *\/
                            [2.8,0],
                            /*
-                               X__________.__________X
+                              X__________.__________X
                                 \                   /
-                                 \              O  /
+                                 \             O  /
                                   \            /  /
                                    \          /  /
-                                    X__X  .  X__X
+                                   X__X  .  X__X
                            *\/
                            [5.48858,5.3],
                            /*
-                               X__________.__________X
+                              X__________.__________X
                                 \                   /
                                  \   O__________X  /
                                   \            /  /
                                    \          /  /
-                                    X__X  .  X__X
+                                   X__X  .  X__X
                            *\/
                            [-5.48858,5.3],
                                        ]
@@ -889,21 +884,21 @@ single value, square with both sides this length
 ![](https://upload.wikimedia.org/wikipedia/commons/d/d3/OpenScad_Square_10_x_10.jpg)
 ```
     // equivalent scripts for this example
-     square(size = 10);
-     square(10);
-     square([10,10]);
+    square(size = 10);
+    square(10);
+    square([10,10]);
      .
-     square(10,false);
-     square([10,10],false);
-     square([10,10],center=false);
-     square(size = [10, 10], center = false);
-     square(center = false,size = [10, 10] );
+    square(10,false);
+    square([10,10],false);
+    square([10,10],center=false);
+    square(size = [10, 10], center = false);
+    square(center = false,size = [10, 10] );
 ```
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenScad_Square_20x10.jpg/150px-OpenScad_Square_20x10.jpg)
 ```
     // equivalent scripts for this example
-     square([20,10],true);
-     a=[20,10];square(a,true);
+    square([20,10],true);
+    a=[20,10];square(a,true);
 ```
 */
 module square(size) {}
@@ -1003,11 +998,11 @@ string with the following escape codes;
 
 The null character (NUL) is mapped to the space character (SP).
 ```
-     assert(version() == [2019, 5, 0]);
-     assert(ord(" ") == 32);
-     assert(ord("\x00") == 32);
-     assert(ord("\u0000") == 32);
-     assert(ord("\U000000") == 32);
+    assert(version() == [2019, 5, 0]);
+    assert(ord(" ") == 32);
+    assert(ord("\x00") == 32);
+    assert(ord("\u0000") == 32);
+    assert(ord("\U000000") == 32);
 ```
 **Example**
 
@@ -1024,8 +1019,7 @@ name and the font style for each available font. For reference, the
 dialog also displays the location of the font file. You can drag a font
 in the font list, into the editor window to use in the text() statement.
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_font_list_dialog.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_font_list_dialog.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png)</a>
 
 <a href="/wiki/File:OpenSCAD_font_list_dialog.png"></a>
 
@@ -1046,7 +1040,7 @@ Supported font file formats are
 <a href="https://en.wikipedia.org/wiki/OpenType">OpenType</a> Fonts (\*.otf). The files need to be
 registered with use\<\>.
 ```
-     use <ttf/paratype-serif/PTF55F.ttf>
+    use <ttf/paratype-serif/PTF55F.ttf>
 ```
 After the registration, the font is listed in the font list dialog, so
 in case logical name of a font is unknown, it can be looked up as it was
@@ -1081,13 +1075,13 @@ Example 2: Result.
 
 square(10);
 ```     
-     translate([15, 15]) {
-       text("OpenSCAD", font = "Liberation Sans");
-     }
+    translate([15, 15]) {
+      text("OpenSCAD", font = "Liberation Sans");
+    }
      
-     translate([15, 0]) {
-       text("OpenSCAD", font = "Liberation Sans:style=Bold Italic");
-     }
+    translate([15, 0]) {
+      text("OpenSCAD", font = "Liberation Sans:style=Bold Italic");
+    }
 ```
 ### Alignment
 
@@ -1115,32 +1109,31 @@ bottom
 The text is aligned with the bottom of the bounding box at the given Y
 coordinate.
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_text_align_vertical.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_text_align_vertical.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png)</a>
 
 <a href="/wiki/File:OpenSCAD_text_align_vertical.png"></a>
 
 OpenSCAD vertical text alignment
 ```
 text = "Align";
-     font = "Liberation Sans";
+    font = "Liberation Sans";
      
-     valign = [
+    valign = [
        [  0, "top"],
        [ 40, "center"],
        [ 75, "baseline"],
        [110, "bottom"]
      ];
      
-     for (a = valign) {
-       translate([10, 120 - a[0], 0]) {
-         color("red") cube([135, 1, 0.1]);
-         color("blue") cube([1, 20, 0.1]);
-         linear_extrude(height = 0.5) {
-           text(text = str(text,"_",a[1]), font = font, size = 20, valign = a[1]);
+    for (a = valign) {
+      translate([10, 120 - a[0], 0]) {
+        color("red") cube([135, 1, 0.1]);
+        color("blue") cube([1, 20, 0.1]);
+        linear_extrude(height = 0.5) {
+          text(text = str(text,"_",a[1]), font = font, size = 20, valign = a[1]);
          }
        }
-     }
+    }
 ```
 #### Horizontal alignment
 
@@ -1160,42 +1153,41 @@ right
 The text is aligned with the right of the bounding box at the given X
 coordinate.
 
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_text_align_horizontal.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_text_align_horizontal.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png)</a>
 
 <a href="/wiki/File:OpenSCAD_text_align_horizontal.png"></a>
 
 OpenSCAD horizontal text alignment
 ```
 text = "Align";
-     font = "Liberation Sans";
+    font = "Liberation Sans";
      
-     halign = [
+    halign = [
        [10, "left"],
        [50, "center"],
        [90, "right"]
      ];
      
-     for (a = halign) {
-       translate([140, a[0], 0]) {
-         color("red") cube([115, 2,0.1]);
-         color("blue") cube([2, 20,0.1]);
-         linear_extrude(height = 0.5) {
-           text(text = str(text,"_",a[1]), font = font, size = 20, halign = a[1]);
+    for (a = halign) {
+      translate([140, a[0], 0]) {
+        color("red") cube([115, 2,0.1]);
+        color("blue") cube([2, 20,0.1]);
+        linear_extrude(height = 0.5) {
+          text(text = str(text,"_",a[1]), font = font, size = 20, halign = a[1]);
          }
        }
-     }
+    }
 ```
 ### 3D text
 
 Text can be changed from a 2 dimensional object into a 3D object by
 using the
-[linear_extrude](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_to_3D_Extrusion#Linear_Extrude "OpenSCAD User Manual/2D to 3D Extrusion")
+[linear_extrude](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_to_3D_Extrusion#linear_extrude "OpenSCAD User Manual/2D to 3D Extrusion")
 function.
 ```
     //3d Text Example
     linear_extrude(4)
-        text("Text");
+       text("Text");
 ```
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Openscad_Text_3dText.jpg/220px-Openscad_Text_3dText.jpg)
 
@@ -1241,9 +1233,9 @@ objects cannot be handled correctly. See issue
 <a href="https://github.com/openscad/openscad/issues/1390">#1390</a>.
 
 The available color names are taken from the World Wide Web consortium's
-<a href="http://www.w3.org/TR/css3-color/" >SVG
+<a href="http://www.w3.org/TR/css3-color/">SVG
 color list</a>. A chart of the color names is as follows,  
-<span >*(note that both spellings of grey/gray including
+<span>*(note that both spellings of grey/gray including
 slategrey/slategray etc are valid)*</span>:
 
 <table width="100%">
@@ -1744,10 +1736,10 @@ A 3-D multicolor sine wave
 Here's a code fragment that draws a wavy multicolor object
 ```
 for(i=[0:36]) {
-        for(j=[0:36]) {
-          color( [0.5+sin(10*i)/2, 0.5+sin(10*j)/2, 0.5+sin(10*(i+j))/2] )
-          translate( [i, j, 0] )
-          cube( size = [1, 1, 11+10*cos(10*i)*sin(10*j)] );
+       for(j=[0:36]) {
+         color( [0.5+sin(10*i)/2, 0.5+sin(10*j)/2, 0.5+sin(10*(i+j))/2] )
+         translate( [i, j, 0] )
+         cube( size = [1, 1, 11+10*cos(10*i)*sin(10*j)] );
         }
       }
 ```
@@ -1755,7 +1747,7 @@ for(i=[0:36]) {
 allowing for the RGB components assigned to color to remain within the
 \[0,1\] interval.
 
-*<span ><a href="https://en.wikipedia.org/wiki/Web_colors">Chart based on "Web Colors" from Wikipedia</a></span>*
+*<span><a href="https://en.wikipedia.org/wiki/Web_colors">Chart based on "Web Colors" from Wikipedia</a></span>*
 
 #### Example 2
 
@@ -1763,9 +1755,9 @@ In cases where you want to optionally set a color based on a parameter
 you can use the following trick:
 ```
 module myModule(withColors=false) {
-        c=withColors?"red":undef;
-        color(c) circle(r=10);
-     }
+       c=withColors?"red":undef;
+       color(c) circle(r=10);
+    }
 ```
 Setting the colorname to undef keeps the default colors.
 */
@@ -1780,8 +1772,8 @@ May be used with either 2D or 3D objects, but don't mix them.
 ```
 Usage example:
     difference() {
-        cylinder (h = 4, r=1, center = true, $fn=100);
-        rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+       cylinder (h = 4, r=1, center = true, $fn=100);
+       rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
     }
 ```
 **Note:** It is mandatory that surfaces that are to be removed by a
@@ -1801,24 +1793,24 @@ and 2nd children.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/9/9d/Bollean_Difference_3.jpg)
 ```
-// Usage example for difference of multiple children:
+    // Usage example for difference of multiple children:
     $fn=90;
     difference(){
-                                                cylinder(r=5,h=20,center=true);
-        rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
-        rotate([00,40,-50])                     cylinder(r=2,h=30,center=true);
-        translate([0,0,-10])rotate([00,40,-50]) cylinder(r=1.4,h=30,center=true);
+                                               cylinder(r=5,h=20,center=true);
+       rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
+       rotate([00,40,-50])                    cylinder(r=2,h=30,center=true);
+       translate([0,0,-10])rotate([00,40,-50]) cylinder(r=1.4,h=30,center=true);
     }
        
     // second instance with added union
     translate([10,10,0]){
-        difference(){
-          union(){        // combine 1st and 2nd children
-                                                    cylinder(r=5,h=20,center=true);
-            rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
+       difference(){
+         union(){        // combine 1st and 2nd children
+                                                   cylinder(r=5,h=20,center=true);
+           rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
           }
-          rotate([00,40,-50])                       cylinder(r=2,h=30,center=true);
-          translate([0,0,-10])rotate([00,40,-50])   cylinder(r=1.4,h=30,center=true);
+         rotate([00,40,-50])                      cylinder(r=2,h=30,center=true);
+         translate([0,0,-10])rotate([00,40,-50])   cylinder(r=1.4,h=30,center=true);
         }
     }
 ```
@@ -1839,14 +1831,13 @@ Two cylinders
 
 Convex hull of two cylinders
 
-Displays the <a
-href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Convex_hull_2/Chapter_main.html">convex hull</a> of child nodes.
+Displays the <a href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Convex_hull_2/Chapter_main.html">convex hull</a> of child nodes.
 
 Usage example:
 ```
 hull() {
-        translate([15,10,0]) circle(10);
-        circle(10);
+       translate([15,10,0]) circle(10);
+       circle(10);
     }
 ```
 The Hull of 2D objects uses their projections (shadows) on the xy plane,
@@ -1870,8 +1861,8 @@ May be used with either 2D or 3D objects, but don't mix them.
 ```
 //Usage example:
     intersection() {
-        cylinder (h = 4, r=1, center = true, $fn=100);
-        rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+       cylinder (h = 4, r=1, center = true, $fn=100);
+       rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
     }
 ```
 */
@@ -1944,8 +1935,7 @@ twist direction follows the left hand rule.
     translate([2, 0, 0])
     circle(r = 1);
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:Spring_100x20_in_OpenSCAD.gif">![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif)</a>
+<a href="//commons.wikimedia.org/wiki/File:Spring_100x20_in_OpenSCAD.gif">![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif)</a>
 
 <a href="/wiki/File:Spring_100x20_in_OpenSCAD.gif"></a>
 
@@ -2013,15 +2003,15 @@ not defined, its value is taken from the defined $fn value.
 Scales the 2D shape by this value over the height of the extrusion.
 Scale can be a scalar or a vector:
 ```
-     linear_extrude(height = 10, center = true, convexity = 10, scale=3)
-     translate([2, 0, 0])
-     circle(r = 1);
+    linear_extrude(height = 10, center = true, convexity = 10, scale=3)
+    translate([2, 0, 0])
+    circle(r = 1);
 ```
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Openscad_linext_09.png/400px-Openscad_linext_09.png)
 ```
-     linear_extrude(height = 10, center = true, convexity = 10, scale=[1,5], $fn=100)
-     translate([2, 0, 0])
-     circle(r = 1);
+    linear_extrude(height = 10, center = true, convexity = 10, scale=[1,5], $fn=100)
+    translate([2, 0, 0])
+    circle(r = 1);
 ```
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenScad_linear_extrude_scale_example2.png/400px-OpenScad_linear_extrude_scale_example2.png)
 
@@ -2029,8 +2019,8 @@ Note that if scale is a vector, the resulting side walls may be
 nonplanar. Use `twist=0` and the `slices` parameter to avoid
 <a href="https://github.com/openscad/openscad/issues/1341">asymmetry</a>.
 ```
-     linear_extrude(height=10, scale=[1,0.1], slices=20, twist=0)
-     polygon(points=[[0,0],[20,10],[20,-10]]);
+    linear_extrude(height=10, scale=[1,0.1], slices=20, twist=0)
+    polygon(points=[[0,0],[20,10],[20,-10]]);
 ```
 */
 module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { /* group */ }
@@ -2047,8 +2037,7 @@ A box and a cylinder
 
 Minkowski sum of the box and cylinder
 
-Displays the <a
-href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Minkowski_sum_3/Chapter_main.html">minkowski sum</a> of child nodes.
+Displays the <a href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Minkowski_sum_3/Chapter_main.html">minkowski sum</a> of child nodes.
 
 Usage example:
 
@@ -2067,8 +2056,8 @@ of the objects are summed):
     $fn=50;
     minkowski()
     {
-      cube([10,10,1]);
-      cylinder(r=2,h=1);
+     cube([10,10,1]);
+     cylinder(r=2,h=1);
     }
 ```
 NB: The <u>**origin**</u> of the second object is used for the addition.
@@ -2079,13 +2068,13 @@ negative. The second expands it by +1 in each positive direction, but
 doesn't expand in the negative directions.
 ```
     minkowski() {
-        cube([10, 10, 1]);
-        cylinder(1, center=true);
+       cube([10, 10, 1]);
+       cylinder(1, center=true);
     }
 
     minkowski() {
-        cube([10, 10, 1]);
-        cylinder(1);
+       cube([10, 10, 1]);
+       cylinder(1);
     }
 ```
 **Warning:** for high values of $fn the minkowski sum may end up
@@ -2137,7 +2126,7 @@ module mirror(v) { /* group */ }
 
 /**
 Multiplies the geometry of all child elements with the given
-<a href="https://en.wikipedia.org/wiki/Affine_transformation" >affine transformation</a>
+<a href="https://en.wikipedia.org/wiki/Affine_transformation">affine transformation</a>
 matrix, where the matrix is 4×3 - a vector of 3 row vectors with 4
 elements each, or a 4×4 matrix with the 4th row always forced to
 \[0,0,0,1\].
@@ -2188,11 +2177,11 @@ rotate(\[0,0,45\]) would do.
     angle=45;
     multmatrix(m = [ [cos(angle), -sin(angle), 0, 10],
                      [sin(angle),  cos(angle), 0, 20],
-                     [         0,           0, 1, 30],
-                     [         0,           0, 0,  1]
+                     [        0,          0, 1, 30],
+                     [        0,          0, 0,  1]
                   ]) union() {
-       cylinder(r=10.0,h=10,center=false);
-       cube(size=[10,10,10],center=false);
+      cylinder(r=10.0,h=10,center=false);
+      cube(size=[10,10,10],center=false);
     }
 ```
 The following example demonstrates combining affine transformation
@@ -2206,9 +2195,9 @@ system.
 ```
     y_ang=-35;
     mrot_y = [ [ cos(y_ang), 0,  sin(y_ang), 0],
-               [         0,  1,           0, 0],
+               [        0,  1,          0, 0],
                [-sin(y_ang), 0,  cos(y_ang), 0],
-               [         0,  0,           0, 1]
+               [        0,  0,          0, 1]
              ];
     mtrans_x = [ [1, 0, 0, 40],
                  [0, 1, 0,  0],
@@ -2216,8 +2205,8 @@ system.
                  [0, 0, 0,  1]
                ];
     module Obj() {
-       cylinder(r=10.0,h=10,center=false);
-       cube(size=[10,10,10],center=false);
+      cylinder(r=10.0,h=10,center=false);
+      cube(size=[10,10,10],center=false);
     }
 
     echo(mrot_y*mtrans_x);
@@ -2233,8 +2222,8 @@ transformations.
           [ 0  , 0  , 1  , 0   ],
           [ 0  , 0  , 0  , 1   ] ] ;
     multmatrix(M) {  union() {
-        cylinder(r=10.0,h=10,center=false);
-        cube(size=[10,10,10],center=false); 
+       cylinder(r=10.0,h=10,center=false);
+       cube(size=[10,10,10],center=false); 
     } }
 ```
 This example shows how a vector is transformed with a multmatrix vector,
@@ -2245,10 +2234,10 @@ the cube along a circular path radius=v around the z axis without
 rotating the cube.
 ```
     angle=45;
-     m=[
+    m=[
             [cos(angle), -sin(angle), 0, 0],
             [sin(angle),  cos(angle), 0, 0],
-            [         0,           0, 1, 0]
+            [        0,          0, 1, 0]
        ];
                   
     v=[10,0,0];
@@ -2261,8 +2250,7 @@ rotating the cube.
 
 Learn more about it here:
 
-<a href="https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations"
-    >Affine Transformations</a> on wikipedia
+<a href="https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations">Affine Transformations</a> on wikipedia
 <a href="http://www.senocular.com/flash/tutorials/transformmatrix/">http://www.senocular.com/flash/tutorials/transformmatrix/</a>
 */
 module multmatrix(m) { /* group */ }
@@ -2332,25 +2320,25 @@ offset() operation.
 
 Example 1: Result.
 
-// Example 1
+Example 1
 ```     
     linear_extrude(height = 60, twist = 90, slices = 60) {
-       difference() {
-         offset(r = 10) {
+      difference() {
+        offset(r = 10) {
+         square(20, center = true);
+         }
+        offset(r = 8) {
           square(20, center = true);
          }
-         offset(r = 8) {
-           square(20, center = true);
-         }
        }
-     }
+    }
 ```
-// Example 2
+Example 2
 ```     
     module fillet(r) {
-       offset(r = -r) {
-         offset(delta = r) {
-           children();
+      offset(r = -r) {
+        offset(delta = r) {
+          children();
          }
        }
     }
@@ -2369,16 +2357,14 @@ considered as well (creating a proper projection).
 
 **Example**: Consider example002.scad, that comes with OpenSCAD.
 
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_2x.png">![](https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_2x.png">![](https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png)</a>
 
 Then you can do a 'cut' projection, which gives you the 'slice' of the
 x-y plane with z=0.
 ```
     projection(cut = true) example002();
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_3x.png">![](https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_3x.png">![](https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png)</a>
 
 You can also do an 'ordinary' projection, which gives a sort of 'shadow'
 of the object onto the xy plane.
@@ -2400,14 +2386,12 @@ Now we can get a side view with projection()
 ```
     projection() translate([0,0,25]) rotate([90,0,0]) example002();
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_5x.png">![](https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png)</a>
+<a href="//commons.wikimedia.org/wiki/File:Openscad_projection_example_5x.png">![](https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png)</a>
 
 Links:
 
 -   <a href="http://svn.clifford.at/openscad/trunk/examples/example021.scad">example021.scad from Clifford Wolf's site</a>.
--   <a
-    href="http://www.gilesbathgate.com/2010/06/extracting-2d-mendel-outlines-using-openscad/">More complicated example</a> from Giles
+-   <a     href="http://www.gilesbathgate.com/2010/06/extracting-2d-mendel-outlines-using-openscad/">More complicated example</a> from Giles
     Bathgate's blog
 */
 module projection() { /* group */ }
@@ -2452,8 +2436,7 @@ Usage Example:
     // resize the sphere to extend 30 in x, 60 in y, and 10 in the z directions.
     resize(newsize=[30,60,10]) sphere(r=10);
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_Resize_example_elipse.JPG">![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_Resize_example_elipse.JPG">![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG)</a>
 
 If x,y, or z is 0 then that dimension is left as-is.
 ```
@@ -2524,8 +2507,7 @@ rotate your object 45 degrees around the axis defined by the vector
 ```
     rotate(a=45, v=[1,1,0]) { ... }
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_rotate()_example.JPG">![](https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_rotate()_example.JPG">![](https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG)</a>
 
 Rotate with a *single scalar argument* rotates around the Z axis. This
 is useful in 2D contexts where that is the only axis for rotation. For
@@ -2570,11 +2552,10 @@ x= 10; y = 10; z = 10; // point coordinates of end of cylinder
     c = atan2(y,x);     // azimuthal angle
 
     rotate([0, b, c]) 
-        cylinder(h=length, r=0.5);
+       cylinder(h=length, r=0.5);
     %cube([x,y,z]); // corner of cube should coincide with end of cylinder
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG">![](https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG)</a>
+<a href="//commons.wikimedia.org/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG">![](https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG)</a>
 */
 module rotate(angles) { /* group */ }
 
@@ -2617,7 +2598,7 @@ height is used.
 
 It can not be used to produce a helix or screw threads. (These things
 can be done with
-[linear_extrude()](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language#Linear_Extrude "OpenSCAD User Manual/The OpenSCAD Language")
+[linear_extrude()](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/The_OpenSCAD_Language#linear_extrude "OpenSCAD User Manual/The OpenSCAD Language")
 using the twist parameter.)
 
 The 2D shape **must** lie completely on either the right (recommended)
@@ -2699,18 +2680,18 @@ be modeled .
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hook.png/220px-Hook.png)
 
-<a href="/wiki/File:Hook.png"  ></a>
+<a href="/wiki/File:Hook.png"></a>
 
 OpenSCAD - a hook
 ```
     eps = 0.01;
     translate([eps, 60, 0])
-       rotate_extrude(angle=270, convexity=10)
-           translate([40, 0]) circle(10);
+      rotate_extrude(angle=270, convexity=10)
+          translate([40, 0]) circle(10);
     rotate_extrude(angle=90, convexity=10)
-       translate([20, 0]) circle(10);
+      translate([20, 0]) circle(10);
     translate([20, eps, 0])
-       rotate([90, 0, 0]) cylinder(r=10, h=80+eps);
+      rotate([90, 0, 0]) cylinder(r=10, h=80+eps);
 ```
 #### Extruding a Polygon
 
@@ -2721,13 +2702,11 @@ Here is a simple polygon and its 200 step rotational extrusion. (Note it
 has been rotated 90 degrees to show how the rotation appears; the
 `rotate_extrude()` needs it flat).
 ```
-    rotate([90,0,0])        polygon( points=[[0,0],[2,1],[1,2],[1,3],[3,4],[0,5]] );
+    rotate([90,0,0])       polygon( points=[[0,0],[2,1],[1,2],[1,3],[3,4],[0,5]] );
 
     rotate_extrude($fn=200) polygon( points=[[0,0],[2,1],[1,2],[1,3],[3,4],[0,5]] );
 ```
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg)→<a
-href="//commons.wikimedia.org/wiki/File:Openscad_polygon_extrusion_1.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png)</a>→<a
-href="//commons.wikimedia.org/wiki/File:Openscad_polygon_extrusion_2.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png)</a>
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg)→<a href="//commons.wikimedia.org/wiki/File:Openscad_polygon_extrusion_1.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png)</a>→<a href="//commons.wikimedia.org/wiki/File:Openscad_polygon_extrusion_2.png">![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png)</a>
 
 For more information on polygons, please see: [2D Primitives:
 Polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_Primitives#polygon "OpenSCAD User Manual/2D Primitives").
@@ -2825,10 +2804,9 @@ argument name is optional.
 
     cube(2,center = true); 
     translate([5,0,0]) 
-       sphere(1,center = true);
+      sphere(1,center = true);
 ```
-<a
-href="//commons.wikimedia.org/wiki/File:OpenSCAD_translate()_example.JPG">![](https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG)</a>
+<a href="//commons.wikimedia.org/wiki/File:OpenSCAD_translate()_example.JPG">![](https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG)</a>
 */
 module translate(v) { /* group */ }
 
@@ -2840,10 +2818,10 @@ May be used with either 2D or 3D objects, but don't mix them.
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Openscad_union.jpg/400px-Openscad_union.jpg)
 ```
     //Usage example:
-     union() {
-        cylinder (h = 4, r=1, center = true, $fn=100);
-        rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
-     }
+    union() {
+       cylinder (h = 4, r=1, center = true, $fn=100);
+       rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+    }
 ```
 Remark: union is implicit when not used. But it is mandatory, for
 example, in difference to group first child nodes into one.
@@ -2863,15 +2841,15 @@ example, this is an invalid OpenSCAD program, and will at least lead to
 a warning on most platforms:
 ```
     // Invalid!
-     size = 10;
-     rotation = 17;
-     union() {
-        rotate([rotation, 0, 0])
-           cube(size);
-        rotate([rotation, 0, 0])
-           translate([0, 0, size])
-           cube([2, 3, 4]);
-     }
+    size = 10;
+    rotation = 17;
+    union() {
+       rotate([rotation, 0, 0])
+          cube(size);
+       rotate([rotation, 0, 0])
+          translate([0, 0, size])
+          cube([2, 3, 4]);
+    }
 ```
 The solution is to always use a small value called an epsilon when
 merging adjacent faces like this to guarantee overlap. Note the 0.01 eps
@@ -2879,16 +2857,16 @@ value used in TWO locations, so that the external result is equivalent
 to what was intended:
 ```
     // Correct!
-     size = 10;
-     rotation = 17;
-     eps = 0.01;
-     union() {
-        rotate([rotation, 0, 0])
-           cube(size);
-        rotate([rotation, 0, 0])
-           translate([0, 0, size-eps])
-           cube([2, 3, 4+eps]);
-     }
+    size = 10;
+    rotation = 17;
+    eps = 0.01;
+    union() {
+       rotate([rotation, 0, 0])
+          cube(size);
+       rotate([rotation, 0, 0])
+          translate([0, 0, size-eps])
+          cube([2, 3, 4+eps]);
+    }
 ```
 */
 module union() { /* group */ }
