@@ -54,10 +54,10 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("use", "use <${1:PATH}>;$0"),
 ];
 
-const BUILTIN_PATH: &str = "file://builtin";
-
 const LOG_PREFIX: &str = "[server] ";
 const ERR_PREFIX: &str = "[error] ";
+
+const BUILTIN_PATH: &str = "file://builtin";
 
 macro_rules! log_to_console {
     ($($arg:tt)*) => {
@@ -355,6 +355,7 @@ struct ParsedCode {
     root_items: Option<Vec<Rc<Item>>>,
     includes: Option<Vec<Url>>,
     is_builtin: bool,
+    external_builtin: bool,
     changed: bool,
     libs: Rc<RefCell<Vec<Url>>>,
 }
@@ -409,6 +410,7 @@ impl ParsedCode {
             root_items: None,
             includes: None,
             is_builtin: false,
+            external_builtin: false,
             libs,
             changed: true,
         }
@@ -525,7 +527,9 @@ impl ParsedCode {
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
                     item.is_builtin = self.is_builtin;
-                    item.url = Some(self.url.clone());
+                    if !self.is_builtin || self.external_builtin {
+                        item.url = Some(self.url.clone());
+                    }
                     item.doc = doc
                         .as_ref()
                         .map(|doc| self.extract_doc(doc, self.is_builtin));
@@ -747,7 +751,7 @@ impl Server {
                 );
                 let locs = items
                     .iter()
-                    .filter(|item| item.name == name && item.url.is_some() && !item.is_builtin)
+                    .filter(|item| item.name == name && item.url.is_some())
                     .map(|item| Location {
                         uri: item.url.as_ref().unwrap().clone(),
                         range: item.range,
@@ -1463,16 +1467,33 @@ impl Server {
     }
 
     fn new(connection: Connection, args: Cli) -> Self {
+        let builtin_path = PathBuf::from(&args.builtin);
+
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(vec![])),
             connection,
             code: Default::default(),
             args,
         };
-        let code = BUILTINS_SCAD.to_owned();
-        let url = Url::parse(BUILTIN_PATH).unwrap();
-        let rc = instance.insert_code(url, code);
+        let mut code = BUILTINS_SCAD.to_owned();
+        let mut url = Url::parse(BUILTIN_PATH).unwrap();
+
+        let mut external = false;
+        match read_to_string(&builtin_path) {
+            Err(err) => {
+                err_to_console!("read external builtin file error: {:?}", err);
+            }
+            Ok(builtin_str) => {
+                code = builtin_str;
+                url = Url::parse(&format!("file://{}", &builtin_path.to_str().unwrap())).unwrap();
+                external = true;
+            }
+        }
+
+        let rc = instance.insert_code(Url::parse(BUILTIN_PATH).unwrap(), code);
+        rc.borrow_mut().url = url;
         rc.borrow_mut().is_builtin = true;
+        rc.borrow_mut().external_builtin = external;
 
         instance.make_library_locations();
 
@@ -1514,7 +1535,7 @@ impl Server {
                             Err(error) => match error {
                                 ExtractError::MethodMismatch(req) => req,
                                 ExtractError::JsonError { method, error } => {
-                                    err_to_console!("method: {method} error: {error}\n");
+                                    err_to_console!("method: {} error: {}\n", method, error);
                                     return Ok(LoopAction::Continue);
                                 }
                             },
@@ -1543,7 +1564,7 @@ impl Server {
                             Err(error) => match error {
                                 ExtractError::MethodMismatch(noti) => noti,
                                 ExtractError::JsonError { method, error } => {
-                                    err_to_console!("method: {method} error: {error}\n");
+                                    err_to_console!("method: {} error: {}\n", method, error);
                                     return Ok(LoopAction::Exit);
                                 }
                             },
@@ -1601,6 +1622,9 @@ struct Cli {
 
     #[clap(long, default_value_t = String::from("clang-format"), help = "clang format executable file path")]
     fmt_exe: String,
+
+    #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
+    builtin: String,
 
     #[clap(long, help = "use stdio instead of tcp")]
     stdio: bool,

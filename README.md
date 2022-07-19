@@ -44,6 +44,8 @@ USAGE:
     openscad-lsp [OPTIONS]
 
 OPTIONS:
+        --builtin <BUILTIN>        external builtin functions file path, if set, the built-in
+                                   builtin functions file will not be used [default: ]
         --fmt-exe <FMT_EXE>        clang format executable file path [default: clang-format]
         --fmt-style <FMT_STYLE>    LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file
                                    [default: Microsoft]

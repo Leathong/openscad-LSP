@@ -1,3 +1,159 @@
+/**
+Objects are indexed via integers from 0 to $children-1. OpenSCAD sets
+$children to the total number of objects within the scope. Objects
+grouped into a sub scope are treated as one child. [See example of
+separate children](#SeparateChildren) below and [Scope of
+variables](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/General#Scope_of_variables "OpenSCAD User Manual/General").
+Note that `children()`, `echo()` and empty block statements (including
+`if`s) count as `$children` objects, even if no geometry is present (as
+of v2017.12.23).
+
+```scad
+children();
+all children children(index);
+value or variable to select one child children([start  :step
+                                                       :end]);
+select from start to end incremented by step children([start
+   :end]);
+step defaults to 1 or -1 children([vector]);
+selection of several children
+
+```
+
+**Deprecated child() module**
+
+Up to release 2013.06 the now deprecated `child()` module was used
+instead. This can be translated to the new children() according to the
+table:
+
+<table class="wikitable">
+<tbody>
+<tr class="header">
+<th>up to 2013.06</th>
+<th>2014.03 and later</th>
+</tr>
+
+<tr class="odd">
+<td>child()</td>
+<td>children(0)</td>
+</tr>
+<tr class="even">
+<td>child(x)</td>
+<td>children(x)</td>
+</tr>
+<tr class="odd">
+<td>for (a = [0:$children-1]) child(a)</td>
+<td>children([0:$children-1])</td>
+</tr>
+</tbody>
+</table>
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/OpenSCAD_Manual_Modules_Module_move.jpg/220px-OpenSCAD_Manual_Modules_Module_move.jpg width=176.0 height=151.2/></a>
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="internal" title="실제 크기로"></a>
+
+Use all children
+
+*Examples*
+
+```scad
+// Use all children
+
+module move(x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
+  translate([ x, y, z ]) rotate([ rx, ry, rz ]) children();
+}
+
+move(10) cube(10, true);
+move(-10) cube(10, true);
+move(z = 7.07, ry = 45) cube(10, true);
+move(z = -7.07, ry = 45) cube(10, true);
+
+```
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Manual_Modules_Module_lineuo.jpg/220px-OpenSCAD_Manual_Modules_Module_lineuo.jpg width=176.0 height=84.0/></a>
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="internal" title="실제 크기로"></a>
+
+Use only the first child, multiple times
+
+```scad
+// Use only the first child, multiple times
+
+module lineup(num, space) {
+  for (i = [0:num - 1])
+    translate([ space * i, 0, 0 ]) children(0);
+}
+
+lineup(5, 65) {
+  sphere(30);
+  cube(35);
+}
+
+```
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg/400px-OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg width=200.0 height=76.5/></a>
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="internal" title="실제 크기로"></a>
+
+Separate action for each child
+
+```scad
+// Separate action for each child
+
+module SeparateChildren(space) {
+  for (i = [0:
+            1:$children -
+              1]) // step needed in case $children < 2
+    translate([ i * space, 0, 0 ]) {
+      children(i);
+      text(str(i));
+    }
+}
+
+SeparateChildren(-20) {
+  cube(5);                  // 0
+  sphere(5);                // 1
+  translate([ 0, 20, 0 ]) { // 2
+    cube(5);
+    sphere(5);
+  }
+  cylinder(15);  // 3
+  cube(8, true); // 4
+}
+translate([ 0, 40, 0 ]) color("lightblue")
+  SeparateChildren(20) {
+  cube(3, true);
+}
+
+```
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/OpenSCAD_Manual_Modules_Module_MultiRange.jpg/220px-OpenSCAD_Manual_Modules_Module_MultiRange.jpg width=176.0 height=158.4/></a>
+
+<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="internal" title="실제 크기로"></a>
+
+Multiple ranges
+
+```scad
+// Multiple ranges
+module MultiRange() {
+  color("lightblue") children([0:1]);
+  color("lightgreen") children([2:$children - 2]);
+  color("lightpink") children($children - 1);
+}
+
+MultiRange() {
+  cube(5);                  // 0
+  sphere(5);                // 1
+  translate([ 0, 20, 0 ]) { // 2
+    cube(5);
+    sphere(5);
+  }
+  cylinder(15);  // 3
+  cube(8, true); // 4
+}
+
+```
+*/
 module children(index) {}
 
 module echo(msgn) {}
@@ -45,7 +201,8 @@ yields : cube(size = [ 1, 1, 1 ], center = false);
 cube(size = 18);
 cube(18);
 cube([ 18, 18, 18 ]);
-.cube(18, false);
+.
+cube(18, false);
 cube([ 18, 18, 18 ], false);
 cube([ 18, 18, 18 ], center = false);
 cube(size = [ 18, 18, 18 ], center = false);
@@ -4381,7 +4538,6 @@ sign(8.0);
 - 1.0 0.0 1.0
 
 ```
-
 */
 function sign(x) = 0;
 
@@ -4450,7 +4606,6 @@ OpenSCAD Sin Function
 </tr>
 </tbody>
 </table>
-
 */
 function sin(x) = 0;
 
@@ -4606,7 +4761,6 @@ for (i = [0:5]) {
 </tr>
 </tbody>
 </table>
-
 */
 function tan(x) = 0;
 
