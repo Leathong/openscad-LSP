@@ -50,7 +50,22 @@ OPTIONS:
     -h, --help                     Print help information
         --ip <IP>                  [default: 127.0.0.1]
     -p, --port <PORT>              [default: 3245]
+        --stdio                    use stdio instead of tcp
     -V, --version                  Print version information
 ```
 
-If you work with vscode, you can install the extension directly form the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support&ssr=false#overview)
+To change the config during running, you can send notification `workspace/didChangeConfiguration` 
+
+```json
+{
+    "settings": {
+        "openscad": {
+            "search_paths": "libs",
+            "fmt_exe": "fmt_exe",
+            "fmt_style": "fmt_style"
+        }
+    }
+}
+```
+
+If you work with vscode, you can install the extension directly from the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support&ssr=false#overview)

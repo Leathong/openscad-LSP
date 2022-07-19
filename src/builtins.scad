@@ -11,8 +11,9 @@ centered on the origin. Argument names are optional if given in the
 order shown here.
 
 ```scad
-cube(size = [x,y,z], center = true/false);
-cube(size =  x ,     center = true/false);
+cube(size = [ x, y, z ], center = true / false);
+cube(size = x, center = true / false);
+
 ```
 
 **parameters**:
@@ -30,32 +31,36 @@ single value, cube with all sides this length
 **true**, cube is centered at (0,0,0)
 
 ```scad
-default values:  cube();   yields:  cube(size = [1, 1, 1], center = false);
+default values: cube();
+yields : cube(size = [ 1, 1, 1 ], center = false);
+
 ```
 
 **examples**:
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/OpenSCAD_example_Cube.jpg/150px-OpenSCAD_example_Cube.jpg)
+<a href="/wiki/File:OpenSCAD_example_Cube.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/OpenSCAD_example_Cube.jpg/150px-OpenSCAD_example_Cube.jpg width=150 height=143/></a>
 
 ```scad
 // equivalent scripts for this example
 cube(size = 18);
 cube(18);
-cube([18,18,18]);
+cube([ 18, 18, 18 ]);
+.cube(18, false);
+cube([ 18, 18, 18 ], false);
+cube([ 18, 18, 18 ], center = false);
+cube(size = [ 18, 18, 18 ], center = false);
+cube(center = false, size = [ 18, 18, 18 ]);
 
-cube(18,false);
-cube([18,18,18],false);
-cube([18,18,18],center=false);
-cube(size = [18,18,18], center = false);
-cube(center = false,size = [18,18,18] );
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/OpenSCAD_example_Box.jpg/150px-OpenSCAD_example_Box.jpg)
+<a href="/wiki/File:OpenSCAD_example_Box.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/OpenSCAD_example_Box.jpg/150px-OpenSCAD_example_Box.jpg width=150 height=126/></a>
 
 ```scad
 // equivalent scripts for this example
-cube([18,28,8],true);
-box=[18,28,8];cube(box,true);
+cube([ 18, 28, 8 ], true);
+box = [ 18, 28, 8 ];
+cube(box, true);
+
 ```
 */
 module cube(size, center) {}
@@ -79,7 +84,12 @@ shape, a non-zero non-equal value will produce a section of a cone (a
 at [0,0,0], and r2 & d2 define the top width.
 
 ```scad
-cylinder(h = height, r1 = BottomRadius, r2 = TopRadius, center = true/false);
+cylinder(
+  h = height,
+  r1 = BottomRadius,
+  r2 = TopRadius,
+  center = true / false);
+
 ```
 
 **Parameters**
@@ -92,14 +102,11 @@ cylinder(h = height, r1 = BottomRadius, r2 = TopRadius, center = true/false);
 
 **r2** : radius, top of cone.
 
-**d**  : diameter of cylinder. r1 = r2 = d / 2. [Note: Requires version
-2014.03]
+**d**  : diameter of cylinder. r1 = r2 = d / 2. <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.03</span></span>]</span>
 
-**d1** : diameter, bottom of cone. r1 = d1 / 2. [Note: Requires version
-2014.03]
+**d1** : diameter, bottom of cone. r1 = d1 / 2. <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.03</span></span>]</span>
 
-**d2** : diameter, top of cone. r2 = d2 / 2. [Note: Requires version
-2014.03]
+**d2** : diameter, top of cone. r2 = d2 / 2. <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.03</span></span>]</span>
 
 **center**
 
@@ -118,35 +125,46 @@ $fa, $fs and $fn must be named parameters. [click here for more
 details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features "OpenSCAD User Manual/Other Language Features").
 
 ```scad
-defaults: cylinder();  yields: cylinder($fn = 0, $fa = 12, $fs = 2, h = 1, r1 = 1, r2 = 1, center = false);
+defaults : cylinder();
+yields : cylinder(
+           $fn = 0,
+           $fa = 12,
+           $fs = 2,
+           h = 1,
+           r1 = 1,
+           r2 = 1,
+           center = false);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_Cone_15x10x20.jpg/200px-OpenSCAD_Cone_15x10x20.jpg)
+<a href="/wiki/File:OpenSCAD_Cone_15x10x20.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_Cone_15x10x20.jpg/200px-OpenSCAD_Cone_15x10x20.jpg width=160.0 height=130.4/></a>
 
 ```scad
 // equivalent scripts
-cylinder(h=15, r1=9.5, r2=19.5, center=false);
-cylinder(  15,    9.5,    19.5, false);
-cylinder(  15,    9.5,    19.5);
-cylinder(  15,    9.5, d2=39  );
-cylinder(  15, d1=19,  d2=39  );
-cylinder(  15, d1=19,  r2=19.5);
+cylinder(h = 15, r1 = 9.5, r2 = 19.5, center = false);
+cylinder(15, 9.5, 19.5, false);
+cylinder(15, 9.5, 19.5);
+cylinder(15, 9.5, d2 = 39);
+cylinder(15, d1 = 19, d2 = 39);
+cylinder(15, d1 = 19, r2 = 19.5);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/OpenSCAD_Cone_15x10x0.jpg/200px-OpenSCAD_Cone_15x10x0.jpg)
+<a href="/wiki/File:OpenSCAD_Cone_15x10x0.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/OpenSCAD_Cone_15x10x0.jpg/200px-OpenSCAD_Cone_15x10x0.jpg width=160.0 height=123.2/></a>
 
 ```scad
 // equivalent scripts
-cylinder(h=15, r1=10, r2=0, center=true);
-cylinder(  15,    10,    0,        true);
-cylinder(h=15, d1=20, d2=0, center=true);
+cylinder(h = 15, r1 = 10, r2 = 0, center = true);
+cylinder(15, 10, 0, true);
+cylinder(h = 15, d1 = 20, d2 = 0, center = true);
+
 ```
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/OpenSCAD_Cylinder_20x10_false.jpg/112px-OpenSCAD_Cylinder_20x10_false.jpg)
+- <a href="/wiki/File:OpenSCAD_Cylinder_20x10_false.jpg" class="image"     title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/OpenSCAD_Cylinder_20x10_false.jpg/112px-OpenSCAD_Cylinder_20x10_false.jpg width=112 height=120/></a>
 
 center = false
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/OpenSCAD_Cylinder_20x10_true.jpg/100px-OpenSCAD_Cylinder_20x10_true.jpg)
+- <a href="/wiki/File:OpenSCAD_Cylinder_20x10_true.jpg" class="image"     title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/OpenSCAD_Cylinder_20x10_true.jpg/100px-OpenSCAD_Cylinder_20x10_true.jpg width=100 height=120/></a>
 
 center = true
 
@@ -154,11 +172,12 @@ center = true
 
 ```scad
 // equivalent scripts
-cylinder(h=20, r=10, center=true);
-cylinder(  20,   10, 10,true);
-cylinder(  20, d=20, center=true);
-cylinder(  20,r1=10, d2=20, center=true);
-cylinder(  20,r1=10, d2=2*10, center=true);
+cylinder(h = 20, r = 10, center = true);
+cylinder(20, 10, 10, true);
+cylinder(20, d = 20, center = true);
+cylinder(20, r1 = 10, d2 = 20, center = true);
+cylinder(20, r1 = 10, d2 = 2 * 10, center = true);
+
 ```
 
 **use of $fn**
@@ -171,19 +190,20 @@ rendering.
 However, use of small values can produce some interesting non circular
 objects. A few examples are show here:
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/3_sided_fiqure.jpg/120px-3_sided_fiqure.jpg)
+- <a href="/wiki/File:3_sided_fiqure.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/3_sided_fiqure.jpg/120px-3_sided_fiqure.jpg width=120 height=88/></a>
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/4_sided_pyramid.jpg/120px-4_sided_pyramid.jpg)
+- <a href="/wiki/File:4_sided_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/4_sided_pyramid.jpg/120px-4_sided_pyramid.jpg width=120 height=91/></a>
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/4_sided_part_pyramid.jpg/120px-4_sided_part_pyramid.jpg)
+- <a href="/wiki/File:4_sided_part_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/4_sided_part_pyramid.jpg/120px-4_sided_part_pyramid.jpg width=120 height=104/></a>
 
 <!-- -->
 
 ```scad
-scripts for these examples
-cylinder(20,20,20,$fn=3);
-cylinder(20,20,00,$fn=4);
-cylinder(20,20,10,$fn=4);
+// scripts for these examples
+cylinder(20, 20, 20, $fn = 3);
+cylinder(20, 20, 00, $fn = 4);
+cylinder(20, 20, 10, $fn = 4);
+
 ```
 
 **undersized holes**
@@ -196,16 +216,20 @@ hole larger than the true circle, the polygon must lie wholly outside of
 the circle (circumscribed). [Modules for circumscribed
 holes](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/undersized_circular_objects "OpenSCAD User Manual/undersized circular objects")
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/OpenSCAD_Under_size_hole.jpg/120px-OpenSCAD_Under_size_hole.jpg)
+- <a href="/wiki/File:OpenSCAD_Under_size_hole.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/OpenSCAD_Under_size_hole.jpg/120px-OpenSCAD_Under_size_hole.jpg width=120 height=114/></a>
 
 <!-- -->
 
 ```scad
-script for this example
+// script for this example
 poly_n = 6;
-color("blue") translate([0, 0, 0.02]) linear_extrude(0.1) circle(10, $fn=poly_n);
-color("green") translate([0, 0, 0.01]) linear_extrude(0.1) circle(10, $fn=360);
-color("purple") linear_extrude(0.1) circle(10/cos(180/poly_n), $fn=poly_n);
+color("blue") translate([ 0, 0, 0.02 ]) linear_extrude(0.1)
+  circle(10, $fn = poly_n);
+color("green") translate([ 0, 0, 0.01 ]) linear_extrude(0.1)
+  circle(10, $fn = 360);
+color("purple") linear_extrude(0.1)
+  circle(10 / cos(180 / poly_n), $fn = poly_n);
+
 ```
 */
 module cylinder(r) {}
@@ -218,8 +242,15 @@ well as convex features. Curved surfaces are approximated by a series of
 flat surfaces.
 
 ```scad
-polyhedron( points = [ [X0, Y0, Z0], [X1, Y1, Z1], ... ], triangles = [ [P0, P1, P2], ... ], convexity = N);   // before 2014.03
-polyhedron( points = [ [X0, Y0, Z0], [X1, Y1, Z1], ... ], faces = [ [P0, P1, P2, P3, ...], ... ], convexity = N);   // 2014.03 & later
+polyhedron(
+  points = [[X0, Y0, Z0], [X1, Y1, Z1], ...],
+  triangles = [[P0, P1, P2], ...],
+  convexity = N); // before 2014.03
+polyhedron(
+  points = [[X0, Y0, Z0], [X1, Y1, Z1], ...],
+  faces = [[P0, P1, P2, P3, ...], ...],
+  convexity = N); // 2014.03 & later
+
 ```
 
 **Parameters**
@@ -232,14 +263,15 @@ Vector of 3d points or vertices. Each point is in turn a vector,
 Points may be defined in any order. N points are referenced, in the
 order defined, as 0 to N-1.
 
-**triangles** [*Deprecated: **triangles** will be removed in future
-releases. Use **faces** parameter instead*]
+**triangles** [*<span style="font-weight: bold; color: #A00000;">Deprecated:</span>
+**triangles** will be removed in future releases. Use **faces**
+parameter instead*]
 
 Vector of faces that collectively enclose the solid. Each face is a
 vector containing the indices (0 based) of 3 points from the points
 vector.
 
-**faces** [Note: Requires version 2014.03]
+**faces** <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.03</span></span>]</span>
 
 Vector of faces that collectively enclose the solid. Each face is a
 vector containing the indices (0 based) of 3 or more points from the
@@ -260,7 +292,10 @@ no effect on the polyhedron rendering. For display problems, setting it
 to 10 should work fine for most cases.
 
 ```scad
-default values: polyhedron(); yields: polyhedron(points = undef, faces = undef, convexity = 1);
+default values: polyhedron();
+yields
+  : polyhedron(points = undef, faces = undef, convexity = 1);
+
 ```
 
 It is arbitrary which point you start with, but all faces must have
@@ -274,101 +309,135 @@ this on the example below.
 
 **Example 1** Using polyhedron to generate cube( [ 10, 7, 5 ] );
 
-![](https://upload.wikimedia.org/wikipedia/commons/b/b1/Cube_numbers.jpg)
+<a href="/wiki/File:Cube_numbers.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b1/Cube_numbers.jpg width=185.4 height=184.2/></a>
 
 point numbers for cube
 
-![](https://upload.wikimedia.org/wikipedia/commons/d/d0/Cube_flat.jpg)
+<a href="/wiki/File:Cube_flat.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d0/Cube_flat.jpg width=255.5 height=155.0/></a>
 
 unfolded cube faces
 
 ```scad
 CubePoints = [
-[  0,  0,  0 ],  //0
-[ 10,  0,  0 ],  //1
-[ 10,  7,  0 ],  //2
-[  0,  7,  0 ],  //3
-[  0,  0,  5 ],  //4
-[ 10,  0,  5 ],  //5
-[ 10,  7,  5 ],  //6
-[  0,  7,  5 ]]; //7
-  
+  [ 0, 0, 0 ],  // 0
+  [ 10, 0, 0 ], // 1
+  [ 10, 7, 0 ], // 2
+  [ 0, 7, 0 ],  // 3
+  [ 0, 0, 5 ],  // 4
+  [ 10, 0, 5 ], // 5
+  [ 10, 7, 5 ], // 6
+  [ 0, 7, 5 ]
+]; // 7
+
 CubeFaces = [
-[0,1,2,3],  // bottom
-[4,5,1,0],  // front
-[7,6,5,4],  // top
-[5,6,2,1],  // right
-[6,7,3,2],  // back
-[7,4,0,3]]; // left
-  
-polyhedron( CubePoints, CubeFaces );
+  [ 0, 1, 2, 3 ], // bottom
+  [ 4, 5, 1, 0 ], // front
+  [ 7, 6, 5, 4 ], // top
+  [ 5, 6, 2, 1 ], // right
+  [ 6, 7, 3, 2 ], // back
+  [ 7, 4, 0, 3 ]
+]; // left
+
+polyhedron(CubePoints, CubeFaces);
+
 ```
 
 ```scad
-equivalent descriptions of the bottom face
-[0,1,2,3],
-[0,1,2,3,0],
-[1,2,3,0],
-[2,3,0,1],
-[3,0,1,2],
-[0,1,2],[2,3,0],   // 2 triangles with no overlap
-[1,2,3],[3,0,1],
-[1,2,3],[0,1,3],
+equivalent descriptions of the bottom face[0, 1, 2, 3],
+  [ 0, 1, 2, 3, 0 ], [ 1, 2, 3, 0 ], [ 2, 3, 0, 1 ],
+  [ 3, 0, 1, 2 ], [ 0, 1, 2 ],
+  [ 2, 3, 0 ], // 2 triangles with no overlap
+  [ 1, 2, 3 ], [ 3, 0, 1 ], [ 1, 2, 3 ], [ 0, 1, 3 ],
+
 ```
 
 **Example 2** A square base pyramid:
 
-![](https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png)
+<a href="/wiki/File:Openscad-polyhedron-squarebasepyramid.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png width=216.0 height=212.4/></a>
 
 A simple polyhedron, square base pyramid
 
 ```scad
 polyhedron(
-points=[ [10,10,0],[10,-10,0],[-10,-10,0],[-10,10,0], // the four points at base
-           [0,0,10]  ],                                 // the apex point 
-faces=[ [0,1,4],[1,2,4],[2,3,4],[3,0,4],              // each triangle side
-              [1,0,3],[2,1,3] ]                         // two triangles for square base
+  points =
+    [
+      [ 10, 10, 0 ], [ 10, -10, 0 ], [ -10, -10, 0 ],
+      [ -10, 10, 0 ], // the four points at base
+      [ 0, 0, 10 ]
+    ], // the apex point
+  faces =
+    [
+      [ 0, 1, 4 ], [ 1, 2, 4 ], [ 2, 3, 4 ],
+      [ 3, 0, 4 ], // each triangle side
+      [ 1, 0, 3 ], [ 2, 1, 3 ]
+    ] // two triangles for square base
 );
+
 ```
 
 **Example 3** A triangular prism:
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Polyhedron_Prism.png/600px-Polyhedron_Prism.png)
+<a href="/wiki/File:Polyhedron_Prism.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Polyhedron_Prism.png/600px-Polyhedron_Prism.png width=300.0 height=107.0/></a>
 
 <a href="/wiki/File:Polyhedron_Prism.png" class="internal" title="Enlarge"></a>
 
 A polyhedron triangular prism
 
 ```scad
-   module prism(l, w, h){
-       polyhedron(
-               points=[[0,0,0], [l,0,0], [l,w,0], [0,w,0], [0,w,h], [l,w,h]],
-               faces=[[0,1,2,3],[5,4,3,2],[0,4,5,1],[0,3,4],[5,2,1]]
-               );
-       
-       // preview unfolded (do not include in your function
-       z = 0.08;
-       separation = 2;
-       border = .2;
-       translate([0,w+separation,0])
-           cube([l,w,z]);
-       translate([0,w+separation+w+border,0])
-           cube([l,h,z]);
-       translate([0,w+separation+w+border+h+border,0])
-           cube([l,sqrt(w*w+h*h),z]);
-       translate([l+border,w+separation+w+border+h+border,0])
-           polyhedron(
-                   points=[[0,0,0],[h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[h,0,z],[0,sqrt(w*w+h*h),z]],
-                   faces=[[0,1,2], [3,5,4], [0,3,4,1], [1,4,5,2], [2,5,3,0]]
-                   );
-       translate([0-border,w+separation+w+border+h+border,0])
-           polyhedron(
-                   points=[[0,0,0],[0-h,0,0],[0,sqrt(w*w+h*h),0], [0,0,z],[0-h,0,z],[0,sqrt(w*w+h*h),z]],
-                   faces=[[1,0,2],[5,3,4],[0,1,4,3],[1,2,5,4],[2,0,3,5]]
-                   );
-       }
-   
-   prism(10, 5, 3);
+module prism(l, w, h) {
+  polyhedron(
+    points =
+      [
+        [ 0, 0, 0 ], [ l, 0, 0 ], [ l, w, 0 ], [ 0, w, 0 ],
+        [ 0, w, h ], [ l, w, h ]
+      ],
+    faces = [
+      [ 0, 1, 2, 3 ], [ 5, 4, 3, 2 ], [ 0, 4, 5, 1 ],
+      [ 0, 3, 4 ], [ 5, 2, 1 ]
+    ]);
+
+  // preview unfolded (do not include in your function
+  z = 0.08;
+  separation = 2;
+  border = .2;
+  translate([ 0, w + separation, 0 ]) cube([ l, w, z ]);
+  translate([ 0, w + separation + w + border, 0 ])
+    cube([ l, h, z ]);
+  translate(
+    [ 0, w + separation + w + border + h + border, 0 ])
+    cube([ l, sqrt(w * w + h * h), z ]);
+  translate([
+    l + border, w + separation + w + border + h + border, 0
+  ])
+    polyhedron(
+      points =
+        [
+          [ 0, 0, 0 ], [ h, 0, 0 ],
+          [ 0, sqrt(w * w + h * h), 0 ], [ 0, 0, z ],
+          [ h, 0, z ], [ 0, sqrt(w * w + h * h), z ]
+        ],
+      faces = [
+        [ 0, 1, 2 ], [ 3, 5, 4 ], [ 0, 3, 4, 1 ],
+        [ 1, 4, 5, 2 ], [ 2, 5, 3, 0 ]
+      ]);
+  translate([
+    0 - border, w + separation + w + border + h + border, 0
+  ])
+    polyhedron(
+      points =
+        [
+          [ 0, 0, 0 ], [ 0 - h, 0, 0 ],
+          [ 0, sqrt(w * w + h * h), 0 ], [ 0, 0, z ],
+          [ 0 - h, 0, z ], [ 0, sqrt(w * w + h * h), z ]
+        ],
+      faces = [
+        [ 1, 0, 2 ], [ 5, 3, 4 ], [ 0, 1, 4, 3 ],
+        [ 1, 2, 5, 4 ], [ 2, 0, 3, 5 ]
+      ]);
+}
+
+prism(10, 5, 3);
+
 ```
 
 #### Debugging polyhedra
@@ -404,18 +473,19 @@ points for an individual face. Note that a solid is not shown, only the
 faces. If using F12, all faces have one pink side. Commenting some faces
 helps also to show any internal face.
 
-![](https://upload.wikimedia.org/wikipedia/commons/9/9e/Cube_2_face.jpg)
+<a href="/wiki/File:Cube_2_face.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9e/Cube_2_face.jpg width=183 height=132/></a>
 
 example 1 showing only 2 faces
 
 ```scad
-CubeFaces = [
-/* [0,1,2,3],  // bottom
-   [4,5,1,0],  // front *\/
-   [7,6,5,4],  // top
-/* [5,6,2,1],  // right
-   [6,7,3,2],  // back *\/
-   [7,4,0,3]]; // left
+    CubeFaces = [
+    /* [0,1,2,3],  // bottom
+       [4,5,1,0],  // front *\/
+       [7,6,5,4],  // top
+    /* [5,6,2,1],  // right
+       [6,7,3,2],  // back *\/
+       [7,4,0,3]]; // left
+
 ```
 
 After defining a polyhedron, its preview may seem correct. The
@@ -443,41 +513,53 @@ pink.
 
 ```scad
 // Bad polyhedron
-polyhedron
-    (points = [
-           [0, -10, 60], [0, 10, 60], [0, 10, 0], [0, -10, 0], [60, -10, 60], [60, 10, 60], 
-           [10, -10, 50], [10, 10, 50], [10, 10, 30], [10, -10, 30], [30, -10, 50], [30, 10, 50]
-           ], 
-     faces = [
-          [0,2,3],   [0,1,2],  [0,4,5],  [0,5,1],   [5,4,2],  [2,4,3],
-                  [6,8,9],  [6,7,8],  [6,10,11], [6,11,7], [10,8,11],
-          [10,9,8], [0,3,9],  [9,0,6], [10,6, 0],  [0,4,10],
-                  [3,9,10], [3,10,4], [1,7,11],  [1,11,5], [1,7,8],  
-                  [1,8,2],  [2,8,11], [2,11,5]
-          ]
-     );
+polyhedron(
+  points =
+    [
+      [ 0, -10, 60 ], [ 0, 10, 60 ], [ 0, 10, 0 ],
+      [ 0, -10, 0 ], [ 60, -10, 60 ], [ 60, 10, 60 ],
+      [ 10, -10, 50 ], [ 10, 10, 50 ], [ 10, 10, 30 ],
+      [ 10, -10, 30 ], [ 30, -10, 50 ], [ 30, 10, 50 ]
+    ],
+  faces = [
+    [ 0, 2, 3 ],  [ 0, 1, 2 ],   [ 0, 4, 5 ],
+    [ 0, 5, 1 ],  [ 5, 4, 2 ],   [ 2, 4, 3 ],
+    [ 6, 8, 9 ],  [ 6, 7, 8 ],   [ 6, 10, 11 ],
+    [ 6, 11, 7 ], [ 10, 8, 11 ], [ 10, 9, 8 ],
+    [ 0, 3, 9 ],  [ 9, 0, 6 ],   [ 10, 6, 0 ],
+    [ 0, 4, 10 ], [ 3, 9, 10 ],  [ 3, 10, 4 ],
+    [ 1, 7, 11 ], [ 1, 11, 5 ],  [ 1, 7, 8 ],
+    [ 1, 8, 2 ],  [ 2, 8, 11 ],  [ 2, 11, 5 ]
+  ]);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/f/f2/Openscad-bad-polyhedron.png)
+<a href="/wiki/File:Openscad-bad-polyhedron.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/Openscad-bad-polyhedron.png width=212.4 height=197.4/></a>
 
 Polyhedron with badly oriented polygons
 
 A correct polyhedron would be the following:
 
 ```scad
-polyhedron
-    (points = [
-           [0, -10, 60], [0, 10, 60], [0, 10, 0], [0, -10, 0], [60, -10, 60], [60, 10, 60], 
-           [10, -10, 50], [10, 10, 50], [10, 10, 30], [10, -10, 30], [30, -10, 50], [30, 10, 50]
-           ], 
-     faces = [
-          [0,3,2],  [0,2,1],  [4,0,5],  [5,0,1],  [5,2,4],  [4,2,3],
-                  [6,8,9],  [6,7,8],  [6,10,11],[6,11,7], [10,8,11],
-          [10,9,8], [3,0,9],  [9,0,6],  [10,6, 0],[0,4,10],
-                  [3,9,10], [3,10,4], [1,7,11], [1,11,5], [1,8,7],  
-                  [2,8,1],  [8,2,11], [5,11,2]
-          ]
-     );
+polyhedron(
+  points =
+    [
+      [ 0, -10, 60 ], [ 0, 10, 60 ], [ 0, 10, 0 ],
+      [ 0, -10, 0 ], [ 60, -10, 60 ], [ 60, 10, 60 ],
+      [ 10, -10, 50 ], [ 10, 10, 50 ], [ 10, 10, 30 ],
+      [ 10, -10, 30 ], [ 30, -10, 50 ], [ 30, 10, 50 ]
+    ],
+  faces = [
+    [ 0, 3, 2 ],  [ 0, 2, 1 ],   [ 4, 0, 5 ],
+    [ 5, 0, 1 ],  [ 5, 2, 4 ],   [ 4, 2, 3 ],
+    [ 6, 8, 9 ],  [ 6, 7, 8 ],   [ 6, 10, 11 ],
+    [ 6, 11, 7 ], [ 10, 8, 11 ], [ 10, 9, 8 ],
+    [ 3, 0, 9 ],  [ 9, 0, 6 ],   [ 10, 6, 0 ],
+    [ 0, 4, 10 ], [ 3, 9, 10 ],  [ 3, 10, 4 ],
+    [ 1, 7, 11 ], [ 1, 11, 5 ],  [ 1, 8, 7 ],
+    [ 2, 8, 1 ],  [ 8, 2, 11 ],  [ 5, 11, 2 ]
+  ]);
+
 ```
 
 Beginner's tip  
@@ -510,15 +592,18 @@ If you place your left hand on the face with your fingers curled in the
 direction of the order of the points, your thumb should point outward.
 If your thumb points inward, you need to reverse the winding order.
 
-![](https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png)
+<a href="/wiki/File:Openscad-bad-polyhedron-annotated.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png width=235.8 height=213.0/></a>
 
 Polyhedron with badly oriented polygons
 
 Succinct description of a 'Polyhedron'
 
 ```scad
-* Points define all of the points/vertices in the shape.
-* Faces is a list of flat polygons that connect up the points/vertices. 
+*Points define all of the points /
+  vertices in the shape.* Faces is a list of flat polygons
+    that connect up the points /
+  vertices.
+
 ```
 
 Each point, in the point list, is defined with a 3-tuple x,y,z position
@@ -542,23 +627,32 @@ two or more points have the same coordinates they are considered the
 same polyhedron vertex. So, the following polyhedron:
 
 ```scad
-points = [[ 0, 0, 0], [10, 0, 0], [ 0,10, 0],
-          [ 0, 0, 0], [10, 0, 0], [ 0,10, 0],
-          [ 0,10, 0], [10, 0, 0], [ 0, 0,10],
-          [ 0, 0, 0], [ 0, 0,10], [10, 0, 0],
-          [ 0, 0, 0], [ 0,10, 0], [ 0, 0,10]];
-polyhedron(points, [[0,1,2], [3,4,5], [6,7,8], [9,10,11], [12,13,14]]);
+points = [
+  [ 0, 0, 0 ], [ 10, 0, 0 ], [ 0, 10, 0 ], [ 0, 0, 0 ],
+  [ 10, 0, 0 ], [ 0, 10, 0 ], [ 0, 10, 0 ], [ 10, 0, 0 ],
+  [ 0, 0, 10 ], [ 0, 0, 0 ], [ 0, 0, 10 ], [ 10, 0, 0 ],
+  [ 0, 0, 0 ], [ 0, 10, 0 ], [ 0, 0, 10 ]
+];
+polyhedron(points, [
+  [ 0, 1, 2 ], [ 3, 4, 5 ], [ 6, 7, 8 ], [ 9, 10, 11 ],
+  [ 12, 13, 14 ]
+]);
+
 ```
 
 define the same tetrahedron as:
 
 ```scad
-points = [[0,0,0], [0,10,0], [10,0,0], [0,0,10]];
-polyhedron(points, [[0,2,1], [0,1,3], [1,2,3], [0,3,2]]);
+points =
+  [ [ 0, 0, 0 ], [ 0, 10, 0 ], [ 10, 0, 0 ], [ 0, 0, 10 ] ];
+polyhedron(points, [
+  [ 0, 2, 1 ], [ 0, 1, 3 ], [ 1, 2, 3 ], [ 0, 3, 2 ]
+]);
+
 ```
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Primitive_Solids&oldid=4040599>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Primitive_Solids&amp;oldid=4040599"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Primitive_Solids&amp;oldid=4040599</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -595,7 +689,9 @@ Resolution
 <!-- -->
 
 ```scad
-default values:  sphere();   yields:   sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+default values: sphere();
+yields : sphere($fn = 0, $fa = 12, $fs = 2, r = 1);
+
 ```
 
 **Usage Examples**
@@ -607,20 +703,24 @@ sphere(r = 10);
 sphere(d = 2);
 sphere(d = 10);
 sphere(d = 20);
+
 ```
 
 ```scad
 // this creates a high resolution sphere with a 2mm radius
-sphere(2, $fn=100); 
+sphere(2, $fn = 100);
+
 ```
 
 ```scad
-// also creates a 2mm high resolution sphere but this one 
+// also creates a 2mm high resolution sphere but this one
 // does not have as many small triangles on the poles of the sphere
-sphere(2, $fa=5, $fs=0.1); 
+sphere(2, $fa = 5, $fs = 0.1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png)
+<a href="/wiki/File:OpenSCAD_sphere_in_different_sizes.png" class="image"
+title="Sample OpenSCAD spheres, showing clearly the difference in scale."><img src=https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png width=479.5 height=253.0/></a>
 */
 module sphere(rad) {}
 
@@ -630,7 +730,8 @@ Creates a circle at the origin. All parameters, except r, **must** be
 named.
 
 ```scad
-circle(r=radius | d=diameter);
+circle(r = radius | d = diameter);
+
 ```
 
 **Parameters**
@@ -645,8 +746,10 @@ These examples exceed the resolution of a 3d printer as well as of the
 display screen.
 
 ```scad
-scale([1/100, 1/100, 1/100]) circle(200); // create a high resolution circle with a radius of 2.
-circle(2, $fn=50);                        // Another way.
+scale([ 1 / 100, 1 / 100, 1 / 100 ]) circle(
+  200); // create a high resolution circle with a radius of 2.
+circle(2, $fn = 50); // Another way.
+
 ```
 
 **d**  : circle diameter (only available in versions later than
@@ -664,18 +767,21 @@ for more
 details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Features "OpenSCAD User Manual/Other Language Features").
 
 ```scad
-defaults:  circle(); yields:  circle($fn = 0, $fa = 12, $fs = 2, r = 1);
+defaults : circle();
+yields : circle($fn = 0, $fa = 12, $fs = 2, r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/f/fc/OpenSCAD_Circle_10.jpg)
+<a href="/wiki/File:OpenSCAD_Circle_10.jpg" class="image" title="circle for user manual description"><img src=https://upload.wikimedia.org/wikipedia/commons/f/fc/OpenSCAD_Circle_10.jpg width=146 height=104/></a>
 
 Equivalent scripts for this example
 
 ```scad
 circle(10);
-circle(r=10);
-circle(d=20);
-circle(d=2+9*2);
+circle(r = 10);
+circle(d = 20);
+circle(d = 2 + 9 * 2);
+
 ```
 
 #### Ellipses
@@ -686,13 +792,15 @@ An ellipse can be created from a circle by using either `scale()` or
 `resize()` to make the x and y dimensions unequal. See [OpenSCAD User
 Manual/Transformations](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations "OpenSCAD User Manual/Transformations")
 
-![](https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg)
-![](https://upload.wikimedia.org/wikipedia/commons/8/8e/OpenScad_Ellipse_from_circle_top_view.jpg)
+<a href="/wiki/File:OpenScad_Ellipse_from_circle.jpg" class="image" title="Ellipse from circle"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg width=194 height=83/></a>
+<a href="/wiki/File:OpenScad_Ellipse_from_circle_top_view.jpg" class="image"
+title="Ellipse from circle top view"><img src=https://upload.wikimedia.org/wikipedia/commons/8/8e/OpenScad_Ellipse_from_circle_top_view.jpg width=199 height=91/></a>
 
 ```scad
 // equivalent scripts for this example
-resize([30,10])circle(d=20);
-scale([1.5,.5])circle(d=20);
+resize([ 30, 10 ]) circle(d = 20);
+scale([ 1.5, .5 ]) circle(d = 20);
+
 ```
 
 #### Regular Polygons
@@ -704,16 +812,18 @@ with $fn set to the number of sides. The following two pieces of code
 are equivalent.
 
 ```scad
-circle(r=1, $fn=4);
+circle(r = 1, $fn = 4);
+
 ```
 
 ```scad
-module regular_polygon(order = 4, r=1){
-     angles=[ for (i = [0:order-1]) i*(360/order) ];
-     coords=[ for (th=angles) [r*cos(th), r*sin(th)] ];
-     polygon(coords);
+module regular_polygon(order = 4, r = 1) {
+  angles = [for (i = [0:order - 1]) i * (360 / order)];
+  coords = [for (th = angles)[r * cos(th), r * sin(th)]];
+  polygon(coords);
 }
 regular_polygon();
+
 ```
 
 These result in the following shapes, where the polygon is inscribed
@@ -721,25 +831,29 @@ within the circle with all sides (and angles) equal. One corner points
 to the positive x direction. For irregular shapes see the polygon
 primitive below.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg)
+<a href="/wiki/File:OpenSCAD_regular_polygon_using_circle.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg width=180.0 height=121.2/></a>
 
 ```scad
-script for these examples
-translate([-42,  0]){circle(20,$fn=3);%circle(20,$fn=90);}
-translate([  0,  0]) circle(20,$fn=4);
-translate([ 42,  0]) circle(20,$fn=5);
-translate([-42,-42]) circle(20,$fn=6);
-translate([  0,-42]) circle(20,$fn=8);
-translate([ 42,-42]) circle(20,$fn=12);
- 
-color("black"){
-     translate([-42,  0,1])text("3",7,,center);
-     translate([  0,  0,1])text("4",7,,center);
-     translate([ 42,  0,1])text("5",7,,center);
-     translate([-42,-42,1])text("6",7,,center);
-     translate([  0,-42,1])text("8",7,,center);
-     translate([ 42,-42,1])text("12",7,,center);
+// script for these examples
+translate([ -42, 0 ]) {
+  circle(20, $fn = 3);
+  % circle(20, $fn = 90);
 }
+translate([ 0, 0 ]) circle(20, $fn = 4);
+translate([ 42, 0 ]) circle(20, $fn = 5);
+translate([ -42, -42 ]) circle(20, $fn = 6);
+translate([ 0, -42 ]) circle(20, $fn = 8);
+translate([ 42, -42 ]) circle(20, $fn = 12);
+
+color("black") {
+  translate([ -42, 0, 1 ]) text("3", 7, , center);
+  translate([ 0, 0, 1 ]) text("4", 7, , center);
+  translate([ 42, 0, 1 ]) text("5", 7, , center);
+  translate([ -42, -42, 1 ]) text("6", 7, , center);
+  translate([ 0, -42, 1 ]) text("8", 7, , center);
+  translate([ 42, -42, 1 ]) text("12", 7, , center);
+}
+
 ```
 */
 module circle(rad) {}
@@ -753,7 +867,11 @@ includes irregular shapes with both concave and convex edges. In
 addition it can place holes within that shape.
 
 ```scad
-polygon(points = [ [x, y], ... ], paths = [ [p1, p2, p3..], ...], convexity = N);
+polygon(
+  points = [[x, y], ...],
+  paths = [[p1, p2, p3..], ...],
+  convexity = N);
+
 ```
 
 Parameters
@@ -790,38 +908,61 @@ Integer number of "inward" curves, ie. expected path crossings of an
 arbitrary line through the polygon. See below.
 
 ```scad
-defaults:   polygon();  yields:  polygon(points = undef, paths = undef, convexity = 1);
+defaults : polygon();
+yields
+  : polygon(points = undef, paths = undef, convexity = 1);
+
 ```
 
 #### Without holes
 
-![](https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg)
+<a href="/wiki/File:OpenSCAD_Polygon_Example_Rhomboid.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg width=199.8 height=129.6/></a>
 
 ```scad
 // equivalent scripts for this example
-polygon(points=[[0,0],[100,0],[130,50],[30,50]]);
-polygon([[0,0],[100,0],[130,50],[30,50]], paths=[[0,1,2,3]]);
-polygon([[0,0],[100,0],[130,50],[30,50]],[[3,2,1,0]]);
-polygon([[0,0],[100,0],[130,50],[30,50]],[[1,0,3,2]]);
-    
-a=[[0,0],[100,0],[130,50],[30,50]];
-b=[[3,0,1,2]];
+polygon(points = [
+  [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ]
+]);
+polygon(
+  [ [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ] ],
+  paths = [[ 0, 1, 2, 3 ]]);
+polygon([ [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ] ], [[
+          3, 2, 1, 0
+        ]]);
+polygon([ [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ] ], [[
+          1, 0, 3, 2
+        ]]);
+
+a = [ [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ] ];
+b = [[ 3, 0, 1, 2 ]];
 polygon(a);
-polygon(a,b);
-polygon(a,[[2,3,0,1,2]]);
+polygon(a, b);
+polygon(a, [[ 2, 3, 0, 1, 2 ]]);
+
 ```
 
 #### One hole
 
-![](https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png)
+<a href="/wiki/File:Openscad-polygon-example1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png width=190.2 height=176.4/></a>
 
 ```scad
 // equivalent scripts for this example
-polygon(points=[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]], paths=[[0,1,2],[3,4,5]],convexity=10);
+polygon(
+  points =
+    [
+      [ 0, 0 ], [ 100, 0 ], [ 0, 100 ], [ 10, 10 ],
+      [ 80, 10 ], [ 10, 80 ]
+    ],
+  paths = [ [ 0, 1, 2 ], [ 3, 4, 5 ] ],
+  convexity = 10);
 
-triangle_points =[[0,0],[100,0],[0,100],[10,10],[80,10],[10,80]];
-triangle_paths =[[0,1,2],[3,4,5]];
-polygon(triangle_points,triangle_paths,10);
+triangle_points = [
+  [ 0, 0 ], [ 100, 0 ], [ 0, 100 ], [ 10, 10 ], [ 80, 10 ],
+  [ 10, 80 ]
+];
+triangle_paths = [ [ 0, 1, 2 ], [ 3, 4, 5 ] ];
+polygon(triangle_points, triangle_paths, 10);
+
 ```
 
 The 1st path vector, [0,1,2], selects the points,
@@ -833,95 +974,103 @@ primary, it leaves a shape with a hole.
 
 #### Multi hole
 
-[Note: Requires version 2015.03] (for use of `concat()`)
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span> (for use of
+`concat()`)
 
-![](https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg)
+<a href="/wiki/File:OpenSCAD_romboid_with_holes.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg width=197.4 height=88.2/></a>
 
 ```scad
-      //example polygon with multiple holes
-a0 = [[0,0],[100,0],[130,50],[30,50]];     // main
-b0 = [1,0,3,2];
-a1 = [[20,20],[40,20],[30,30]];            // hole 1
-b1 = [4,5,6];
-a2 = [[50,20],[60,20],[40,30]];            // hole 2
-b2 = [7,8,9];
-a3 = [[65,10],[80,10],[80,40],[65,40]];    // hole 3
-b3 = [10,11,12,13];
-a4 = [[98,10],[115,40],[85,40],[85,10]];   // hole 4
-b4 = [14,15,16,17];
-a  = concat (a0,a1,a2,a3,a4);
-b  = [b0,b1,b2,b3,b4];
-polygon(a,b);
-      //alternate 
-polygon(a,[b0,b1,b2,b3,b4]);
+// example polygon with multiple holes
+a0 =
+  [ [ 0, 0 ], [ 100, 0 ], [ 130, 50 ], [ 30, 50 ] ]; // main
+b0 = [ 1, 0, 3, 2 ];
+a1 = [ [ 20, 20 ], [ 40, 20 ], [ 30, 30 ] ]; // hole 1
+b1 = [ 4, 5, 6 ];
+a2 = [ [ 50, 20 ], [ 60, 20 ], [ 40, 30 ] ]; // hole 2
+b2 = [ 7, 8, 9 ];
+a3 = [
+  [ 65, 10 ], [ 80, 10 ], [ 80, 40 ], [ 65, 40 ]
+]; // hole 3
+b3 = [ 10, 11, 12, 13 ];
+a4 = [
+  [ 98, 10 ], [ 115, 40 ], [ 85, 40 ], [ 85, 10 ]
+]; // hole 4
+b4 = [ 14, 15, 16, 17 ];
+a = concat(a0, a1, a2, a3, a4);
+b = [ b0, b1, b2, b3, b4 ];
+polygon(a, b);
+// alternate
+polygon(a, [ b0, b1, b2, b3, b4 ]);
+
 ```
 
 #### Extruding a 3D shape from a polygon
 
-![](https://upload.wikimedia.org/wikipedia/commons/e/e0/Example_openscad_3dshape.png)
+<a href="/wiki/File:Example_openscad_3dshape.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/e/e0/Example_openscad_3dshape.png width=505.0 height=335.0/></a>
 
 ```scad
-   translate([0,-20,10]) {
-       rotate([90,180,90]) {
-           linear_extrude(50) {
-               polygon(
-                   points = [
-                      //x,y
-                       /*
-                                  O  .
-                       *\/
-                       [-2.8,0],
-                       /*
-                                O__X  .
-                       *\/
-                       [-7.8,0],
-                       /*
-                              O
-                               \
-                                X__X  .
-                       *\/
-                       [-15.3633,10.30],
-                       /*
-                              X_______._____O
-                               \         
-                                X__X  .
-                       *\/
-                       [15.3633,10.30],
-                       /*
-                              X_______._______X
-                               \             /
-                                X__X  .     O
-                       *\/
-                       [7.8,0],
-                       /*
-                              X_______._______X
-                               \             /
-                                X__X  .  O__X
-                       *\/
-                       [2.8,0],
-                       /*
-                           X__________.__________X
-                            \                   /
-                             \              O  /
-                              \            /  /
-                               \          /  /
-                                X__X  .  X__X
-                       *\/
-                       [5.48858,5.3],
-                       /*
-                           X__________.__________X
-                            \                   /
-                             \   O__________X  /
-                              \            /  /
-                               \          /  /
-                                X__X  .  X__X
-                       *\/
-                       [-5.48858,5.3],
-                                   ]
-                               );
-                           }
+translate([ 0, -20, 10 ]) {
+  rotate([ 90, 180, 90 ]) {
+    linear_extrude(50) {
+                   polygon(
+                       points = [
+                          //x,y
+                           /*
+                                      O  .
+                           *\/
+                           [-2.8,0],
+                           /*
+                                    O__X  .
+                           *\/
+                           [-7.8,0],
+                           /*
+                                  O
+                                   \
+                                    X__X  .
+                           *\/
+                           [-15.3633,10.30],
+                           /*
+                                  X_______._____O
+                                   \         
+                                    X__X  .
+                           *\/
+                           [15.3633,10.30],
+                           /*
+                                  X_______._______X
+                                   \             /
+                                    X__X  .     O
+                           *\/
+                           [7.8,0],
+                           /*
+                                  X_______._______X
+                                   \             /
+                                    X__X  .  O__X
+                           *\/
+                           [2.8,0],
+                           /*
+                               X__________.__________X
+                                \                   /
+                                 \              O  /
+                                  \            /  /
+                                   \          /  /
+                                    X__X  .  X__X
+                           *\/
+                           [5.48858,5.3],
+                           /*
+                               X__________.__________X
+                                \                   /
+                                 \   O__________X  /
+                                  \            /  /
+                                   \          /  /
+                                    X__X  .  X__X
+                           *\/
+                           [-5.48858,5.3],
+                                       ]
+                                   );
+                               }
+           }
        }
-   }
+
 ```
 
 #### convexity
@@ -931,7 +1080,7 @@ The convexity parameter specifies the maximum number of front sides
 parameter is needed only for correct display of the object in OpenCSG
 preview mode and has no effect on the polyhedron rendering.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg)
+<a href="/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
 
 This image shows a 2D shape with a convexity of 2, as the ray indicated
 in red crosses the 2D shapes outside⇒inside (or inside⇒outside) a
@@ -947,8 +1096,9 @@ true the square is centered on the origin. Argument names are optional
 if given in the order shown here.
 
 ```scad
-square(size = [x, y], center = true/false);
-square(size =  x    , center = true/false);
+square(size = [ x, y ], center = true / false);
+square(size = x, center = true / false);
+
 ```
 
 **parameters**:
@@ -966,32 +1116,36 @@ single value, square with both sides this length
 **true**, square is centered at (0,0)
 
 ```scad
-default values:  square();   yields:  square(size = [1, 1], center = false);
+default values: square();
+yields : square(size = [ 1, 1 ], center = false);
+
 ```
 
 **examples**:
 
-![](https://upload.wikimedia.org/wikipedia/commons/d/d3/OpenScad_Square_10_x_10.jpg)
+<a href="/wiki/File:OpenScad_Square_10_x_10.jpg" class="image" title="10x10 square"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d3/OpenScad_Square_10_x_10.jpg width=150 height=99/></a>
 
 ```scad
 // equivalent scripts for this example
 square(size = 10);
 square(10);
-square([10,10]);
-.
-square(10,false);
-square([10,10],false);
-square([10,10],center=false);
-square(size = [10, 10], center = false);
-square(center = false,size = [10, 10] );
+square([ 10, 10 ]);
+.square(10, false);
+square([ 10, 10 ], false);
+square([ 10, 10 ], center = false);
+square(size = [ 10, 10 ], center = false);
+square(center = false, size = [ 10, 10 ]);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenScad_Square_20x10.jpg/150px-OpenScad_Square_20x10.jpg)
+<a href="/wiki/File:OpenScad_Square_20x10.jpg" class="image" title="OpenScad square 20x10"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenScad_Square_20x10.jpg/150px-OpenScad_Square_20x10.jpg width=150 height=87/></a>
 
 ```scad
 // equivalent scripts for this example
-square([20,10],true);
-a=[20,10];square(a,true);
+square([ 20, 10 ], true);
+a = [ 20, 10 ];
+square(a, true);
+
 ```
 */
 module square(size) {}
@@ -1002,7 +1156,7 @@ module surface(file, center=false, invert=false, convexity=1) {}
 The `text` module creates text as a 2D geometric object, using fonts
 installed on the local system or provided as separate font file.
 
-[Note: Requires version 2015.03]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
 
 **Parameters**
 
@@ -1069,7 +1223,7 @@ used for subdividing the curved path segments provided by freetype
 
 **Example**
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/OpenSCAD_text%28%29_example.png/220px-OpenSCAD_text%28%29_example.png)
+<a href="/wiki/File:OpenSCAD_text()_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/OpenSCAD_text%28%29_example.png/220px-OpenSCAD_text%28%29_example.png width=176.0 height=45.6/></a>
 
 <a href="/wiki/File:OpenSCAD_text()_example.png" class="internal" title="Enlarge"></a>
 
@@ -1077,6 +1231,7 @@ Example 1: Result.
 
 ```scad
 text("OpenSCAD");
+
 ```
 
 Notes
@@ -1095,17 +1250,19 @@ string with the following escape codes;
 The null character (NUL) is mapped to the space character (SP).
 
 ```scad
-assert(version() == [2019, 5, 0]);
+assert(version() == [ 2019, 5, 0 ]);
 assert(ord(" ") == 32);
 assert(ord("\x00") == 32);
 assert(ord("\u0000") == 32);
 assert(ord("\U000000") == 32);
+
 ```
 
 **Example**
 
 ```scad
-; // 10 euro and a smilie
+t = "\u20AC10 \u263A"; // 10 euro and a smilie
+
 ```
 
 ## Contents
@@ -1127,14 +1284,17 @@ Fonts are specified by their logical font name; in addition a style
 parameter can be added to select a specific font style like "**bold**"
 or "*italic*", such as:
 
+```scad
+font = "Liberation Sans:style=Bold Italic"
 
+```
 
 The font list dialog (available under Help > Font List) shows the font
 name and the font style for each available font. For reference, the
 dialog also displays the location of the font file. You can drag a font
 in the font list, into the editor window to use in the text() statement.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png)
+<a href="/wiki/File:OpenSCAD_font_list_dialog.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png width=200.0 height=115.5/></a>
 
 <a href="/wiki/File:OpenSCAD_font_list_dialog.png" class="internal" title="Enlarge"></a>
 
@@ -1156,7 +1316,8 @@ Supported font file formats are
 registered with use<>.
 
 ```scad
-use <ttf/paratype-serif/PTF55F.ttf>
+use<ttf / paratype - serif / PTF55F.ttf>
+
 ```
 
 After the registration, the font is listed in the font list dialog, so
@@ -1168,14 +1329,24 @@ list the system configured fonts on command line using the fontconfig
 tools in a format similar to the GUI dialog.
 
 ```scad
-$ fc-list -f "%-60{{%{family[0]}%{:style[0]=}}}%{file}\n" | sort
+$ fc - list -
+    f "%-60{{%{family[0]}%{:style[0]=}}}%{file}\n" |
+  sort
 
-...
-Liberation Mono:style=Bold Italic /usr/share/fonts/truetype/liberation2/LiberationMono-BoldItalic.ttf
-Liberation Mono:style=Bold        /usr/share/fonts/truetype/liberation2/LiberationMono-Bold.ttf
-Liberation Mono:style=Italic      /usr/share/fonts/truetype/liberation2/LiberationMono-Italic.ttf
-Liberation Mono:style=Regular     /usr/share/fonts/truetype/liberation2/LiberationMono-Regular.ttf
-...
+  ... Liberation Mono : style =
+  Bold Italic / usr / share / fonts / truetype /
+    liberation2 / LiberationMono -
+  BoldItalic.ttf Liberation Mono : style =
+    Bold / usr / share / fonts / truetype / liberation2 /
+      LiberationMono -
+    Bold.ttf Liberation Mono : style =
+      Italic / usr / share / fonts / truetype /
+        liberation2 / LiberationMono -
+      Italic.ttf Liberation Mono : style =
+        Regular / usr / share / fonts / truetype /
+          liberation2 / LiberationMono -
+        Regular.ttf...
+
 ```
 
 Under windows font are in register base. To get a file with the name of
@@ -1185,7 +1356,7 @@ the police use the command line :
 
 **Example**
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/OpenSCAD_text%28%29_font_style_example.png/220px-OpenSCAD_text%28%29_font_style_example.png)
+<a href="/wiki/File:OpenSCAD_text()_font_style_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/OpenSCAD_text%28%29_font_style_example.png/220px-OpenSCAD_text%28%29_font_style_example.png width=176.0 height=68.8/></a>
 
 <a href="/wiki/File:OpenSCAD_text()_font_style_example.png" class="internal" title="Enlarge"></a>
 
@@ -1193,14 +1364,16 @@ Example 2: Result.
 
 ```scad
 square(10);
- 
-translate([15, 15]) {
-   text("OpenSCAD", font = "Liberation Sans");
+
+translate([ 15, 15 ]) {
+  text("OpenSCAD", font = "Liberation Sans");
 }
- 
-translate([15, 0]) {
-   text("OpenSCAD", font = "Liberation Sans:style=Bold Italic");
+
+translate([ 15, 0 ]) {
+  text(
+    "OpenSCAD", font = "Liberation Sans:style=Bold Italic");
 }
+
 ```
 
 ### Alignment
@@ -1229,7 +1402,7 @@ bottom
 The text is aligned with the bottom of the bounding box at the given Y
 coordinate.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png)
+<a href="/wiki/File:OpenSCAD_text_align_vertical.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png width=176.0 height=120.0/></a>
 
 <a href="/wiki/File:OpenSCAD_text_align_vertical.png" class="internal" title="Enlarge"></a>
 
@@ -1238,23 +1411,24 @@ OpenSCAD vertical text alignment
 ```scad
 text = "Align";
 font = "Liberation Sans";
- 
+
 valign = [
-   [  0, "top"],
-   [ 40, "center"],
-   [ 75, "baseline"],
-   [110, "bottom"]
+  [ 0, "top" ], [ 40, "center" ], [ 75, "baseline" ],
+  [ 110, "bottom" ]
 ];
- 
+
 for (a = valign) {
-   translate([10, 120 - a[0], 0]) {
-     color("red") cube([135, 1, 0.1]);
-     color("blue") cube([1, 20, 0.1]);
-     linear_extrude(height = 0.5) {
-       text(text = str(text,"_",a[1]), font = font, size = 20, valign = a[1]);
-     }
-   }
+  translate([ 10, 120 - a[0], 0 ]) {
+    color("red") cube([ 135, 1, 0.1 ]);
+    color("blue") cube([ 1, 20, 0.1 ]);
+    linear_extrude(height = 0.5) {
+      text(
+        text = str(text, "_", a[1]), font = font, size = 20,
+        valign = a[1]);
+    }
+  }
 }
+
 ```
 
 #### Horizontal alignment
@@ -1275,7 +1449,7 @@ right
 The text is aligned with the right of the bounding box at the given X
 coordinate.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png)
+<a href="/wiki/File:OpenSCAD_text_align_horizontal.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png width=176.0 height=84.8/></a>
 
 <a href="/wiki/File:OpenSCAD_text_align_horizontal.png" class="internal" title="Enlarge"></a>
 
@@ -1284,22 +1458,22 @@ OpenSCAD horizontal text alignment
 ```scad
 text = "Align";
 font = "Liberation Sans";
- 
-halign = [
-   [10, "left"],
-   [50, "center"],
-   [90, "right"]
-];
- 
+
+halign =
+  [ [ 10, "left" ], [ 50, "center" ], [ 90, "right" ] ];
+
 for (a = halign) {
-   translate([140, a[0], 0]) {
-     color("red") cube([115, 2,0.1]);
-     color("blue") cube([2, 20,0.1]);
-     linear_extrude(height = 0.5) {
-       text(text = str(text,"_",a[1]), font = font, size = 20, halign = a[1]);
-     }
-   }
+  translate([ 140, a[0], 0 ]) {
+    color("red") cube([ 115, 2, 0.1 ]);
+    color("blue") cube([ 2, 20, 0.1 ]);
+    linear_extrude(height = 0.5) {
+      text(
+        text = str(text, "_", a[1]), font = font, size = 20,
+        halign = a[1]);
+    }
+  }
 }
+
 ```
 
 ### 3D text
@@ -1310,19 +1484,19 @@ using the
 function.
 
 ```scad
-//3d Text Example
-linear_extrude(4)
-    text("Text");
+// 3d Text Example
+linear_extrude(4) text("Text");
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Openscad_Text_3dText.jpg/220px-Openscad_Text_3dText.jpg)
+<a href="/wiki/File:Openscad_Text_3dText.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Openscad_Text_3dText.jpg/220px-Openscad_Text_3dText.jpg width=176.0 height=123.2/></a>
 
 <a href="/wiki/File:Openscad_Text_3dText.jpg" class="internal" title="Enlarge"></a>
 
 3D text example
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&oldid=4055228>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4055228"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4055228</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -1341,10 +1515,12 @@ specified.
 #### Function signature:
 
 ```scad
-color( c = [r, g, b, a] ) { ... }
-color( c = [r, g, b], alpha = 1.0 ) { ... }
-color( "#hexvalue" ) { ... }
-color( "colorname", 1.0 ) { ... }
+color(c = [ r, g, b, a ]){
+  ...} color(c = [ r, g, b ], alpha = 1.0){
+  ...} color("#hexvalue"){...} color("colorname", 1.0) {
+  ...
+}
+
 ```
 
 Note that the `r, g, b, a` values are limited to floating point values
@@ -1353,29 +1529,30 @@ in the range **[0,1]** rather than the more traditional integers { 0
 {0 ... 255} with appropriate scaling:
 `color([ R/255, G/255, B/255 ]) { ... } `
 
-[Note: Requires version 2011.12] Colors can also be defined by name
-(case **in**sensitive). For example, to create a red sphere, you can
-write `color("red") sphere(5);`. Alpha is specified as an extra
-parameter for named colors: `color("Blue",0.5) cube(5);`
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2011.12</span></span>]</span> Colors can
+also be defined by name (case **in**sensitive). For example, to create a
+red sphere, you can write `color("red") sphere(5);`. Alpha is specified
+as an extra parameter for named colors: `color("Blue",0.5) cube(5);`
 
-[Note: Requires version 2019.05] Hex values can be given in 4 formats,
-`#rgb`, `#rgba`, `#rrggbb` and `#rrggbbaa`. If the alpha value is given
-in both the hex value and as separate alpha parameter, the alpha
-parameter takes precedence.
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span> Hex values can
+be given in 4 formats, `#rgb`, `#rgba`, `#rrggbb` and `#rrggbbaa`. If
+the alpha value is given in both the hex value and as separate alpha
+parameter, the alpha parameter takes precedence.
 
 **Warning:** alpha processing (transparency) is order-sensitive.
 Transparent objects must be listed after non-transparent objects to
 display them correctly. Some combinations involving multiple transparent
 objects cannot be handled correctly. See issue
-<a href="https://github.com/openscad/openscad/issues/1390" class="external text">#1390</a>.
+<a href="https://github.com/openscad/openscad/issues/1390" class="external text" rel="nofollow">#1390</a>.
 
 The available color names are taken from the World Wide Web consortium's
-<a href="http://www.w3.org/TR/css3-color/" class="external text">SVG
-color list</a>. A chart of the color names is as follows,  
+<a href="http://www.w3.org/TR/css3-color/" class="external text" rel="nofollow">SVG color list</a>. A chart of the color names is as
+follows,  
 <span class="small">*(note that both spellings of grey/gray including
 slategrey/slategray etc are valid)*</span>:
 
-<table width="100%">
+<table data-cellpadding="4" style="font-size:90%;border-style:solid;border-color:black;border-width:1px;"
+width="100%">
 <colgroup>
 <col style="width: 20%" />
 <col style="width: 20%" />
@@ -1384,477 +1561,533 @@ slategrey/slategray etc are valid)*</span>:
 <col style="width: 20%" />
 </colgroup>
 <tbody>
-<tr class="odd">
+<tr class="odd" data-valign="top">
 <td width="20%"><table width="100%">
 <tbody>
 <tr class="odd">
-<td><strong>Purples</strong></td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Purples</strong></td>
+</tr>
+<tr class="even" style="background:lavender;color:black">
+<td style="text-align: center;">Lavender</td>
+</tr>
+<tr class="odd" style="background:thistle;color:black">
+<td style="text-align: center;">Thistle</td>
+</tr>
+<tr class="even" style="background:plum;color:black">
+<td style="text-align: center;">Plum</td>
+</tr>
+<tr class="odd" style="background:violet;color:black">
+<td style="text-align: center;">Violet</td>
+</tr>
+<tr class="even" style="background:orchid;color:black">
+<td style="text-align: center;">Orchid</td>
+</tr>
+<tr class="odd" style="background:fuchsia;color:white">
+<td style="text-align: center;">Fuchsia</td>
+</tr>
+<tr class="even" style="background:Magenta;color:white">
+<td style="text-align: center;">Magenta</td>
+</tr>
+<tr class="odd" style="background:mediumorchid;color:white">
+<td style="text-align: center;">MediumOrchid</td>
+</tr>
+<tr class="even" style="background:mediumpurple;color:white">
+<td style="text-align: center;">MediumPurple</td>
+</tr>
+<tr class="odd" style="background:#9966CC;color:white">
+<td style="text-align: center;">BlueViolet</td>
+</tr>
+<tr class="even" style="background:darkviolet;color:white">
+<td style="text-align: center;">DarkViolet</td>
+</tr>
+<tr class="odd" style="background:darkorchid;color:white">
+<td style="text-align: center;">DarkOrchid</td>
+</tr>
+<tr class="even" style="background:darkmagenta;color:white">
+<td style="text-align: center;">DarkMagenta</td>
+</tr>
+<tr class="odd" style="background:purple;color:white">
+<td style="text-align: center;">Purple</td>
+</tr>
+<tr class="even" style="background:indigo;color:white">
+<td style="text-align: center;">Indigo</td>
+</tr>
+<tr class="odd" style="background:darkslateblue;color:white">
+<td style="text-align: center;">DarkSlateBlue</td>
+</tr>
+<tr class="even" style="background:slateblue;color:white">
+<td style="text-align: center;">SlateBlue</td>
+</tr>
+<tr class="odd" style="background:mediumslateblue;color:white">
+<td style="text-align: center;">MediumSlateBlue</td>
 </tr>
 <tr class="even">
-<td>Lavender</td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Pinks</strong></td>
 </tr>
-<tr class="odd">
-<td>Thistle</td>
+<tr class="odd" style="background:pink;color:black">
+<td style="text-align: center;">Pink</td>
 </tr>
-<tr class="even">
-<td>Plum</td>
+<tr class="even" style="background:lightpink;color:black">
+<td style="text-align: center;">LightPink</td>
 </tr>
-<tr class="odd">
-<td>Violet</td>
+<tr class="odd" style="background:hotpink;color:white">
+<td style="text-align: center;">HotPink</td>
 </tr>
-<tr class="even">
-<td>Orchid</td>
+<tr class="even" style="background:deeppink;color:white">
+<td style="text-align: center;">DeepPink</td>
 </tr>
-<tr class="odd">
-<td>Fuchsia</td>
+<tr class="odd" style="background:mediumvioletred;color:white">
+<td style="text-align: center;">MediumVioletRed</td>
 </tr>
-<tr class="even">
-<td>Magenta</td>
-</tr>
-<tr class="odd">
-<td>MediumOrchid</td>
-</tr>
-<tr class="even">
-<td>MediumPurple</td>
-</tr>
-<tr class="odd">
-<td>BlueViolet</td>
-</tr>
-<tr class="even">
-<td>DarkViolet</td>
-</tr>
-<tr class="odd">
-<td>DarkOrchid</td>
-</tr>
-<tr class="even">
-<td>DarkMagenta</td>
-</tr>
-<tr class="odd">
-<td>Purple</td>
-</tr>
-<tr class="even">
-<td>Indigo</td>
-</tr>
-<tr class="odd">
-<td>DarkSlateBlue</td>
-</tr>
-<tr class="even">
-<td>SlateBlue</td>
-</tr>
-<tr class="odd">
-<td>MediumSlateBlue</td>
-</tr>
-<tr class="even">
-<td><strong>Pinks</strong></td>
-</tr>
-<tr class="odd">
-<td>Pink</td>
-</tr>
-<tr class="even">
-<td>LightPink</td>
-</tr>
-<tr class="odd">
-<td>HotPink</td>
-</tr>
-<tr class="even">
-<td>DeepPink</td>
-</tr>
-<tr class="odd">
-<td>MediumVioletRed</td>
-</tr>
-<tr class="even">
-<td>PaleVioletRed</td>
+<tr class="even" style="background:palevioletred;color:white">
+<td style="text-align: center;">PaleVioletRed</td>
 </tr>
 </tbody>
 </table></td>
 <td width="20%"><table width="100%">
 <tbody>
 <tr class="odd">
-<td><strong>Blues</strong></td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Blues</strong></td>
+</tr>
+<tr class="even" style="background:aqua;color:black">
+<td style="text-align: center;">Aqua</td>
+</tr>
+<tr class="odd" style="background:cyan;color:black">
+<td style="text-align: center;">Cyan</td>
+</tr>
+<tr class="even" style="background:lightcyan;color:black">
+<td style="text-align: center;">LightCyan</td>
+</tr>
+<tr class="odd" style="background:paleturquoise;color:black">
+<td style="text-align: center;">PaleTurquoise</td>
+</tr>
+<tr class="even" style="background:aquamarine;color:black">
+<td style="text-align: center;">Aquamarine</td>
+</tr>
+<tr class="odd" style="background:turquoise;color:black">
+<td style="text-align: center;">Turquoise</td>
+</tr>
+<tr class="even" style="background:mediumturquoise;color:black">
+<td style="text-align: center;">MediumTurquoise</td>
+</tr>
+<tr class="odd" style="background:darkturquoise;color:white">
+<td style="text-align: center;">DarkTurquoise</td>
+</tr>
+<tr class="even" style="background:cadetblue;color:white">
+<td style="text-align: center;">CadetBlue</td>
+</tr>
+<tr class="odd" style="background:steelblue;color:white">
+<td style="text-align: center;">SteelBlue</td>
+</tr>
+<tr class="even" style="background:lightsteelblue;color:black">
+<td style="text-align: center;">LightSteelBlue</td>
+</tr>
+<tr class="odd" style="background:powderblue;color:black">
+<td style="text-align: center;">PowderBlue</td>
+</tr>
+<tr class="even" style="background:lightblue;color:black">
+<td style="text-align: center;">LightBlue</td>
+</tr>
+<tr class="odd" style="background:skyblue;color:black">
+<td style="text-align: center;">SkyBlue</td>
+</tr>
+<tr class="even" style="background:lightskyblue;color:black">
+<td style="text-align: center;">LightSkyBlue</td>
+</tr>
+<tr class="odd" style="background:deepskyblue;color:white">
+<td style="text-align: center;">DeepSkyBlue</td>
+</tr>
+<tr class="even" style="background:dodgerblue;color:white">
+<td style="text-align: center;">DodgerBlue</td>
+</tr>
+<tr class="odd" style="background:cornflowerblue;color:white">
+<td style="text-align: center;">CornflowerBlue</td>
+</tr>
+<tr class="even" style="background:royalblue;color:white">
+<td style="text-align: center;">RoyalBlue</td>
+</tr>
+<tr class="odd" style="background:blue;color:white">
+<td style="text-align: center;">Blue</td>
+</tr>
+<tr class="even" style="background:mediumblue;color:white">
+<td style="text-align: center;">MediumBlue</td>
+</tr>
+<tr class="odd" style="background:darkblue;color:white">
+<td style="text-align: center;">DarkBlue</td>
+</tr>
+<tr class="even" style="background:navy;color:white">
+<td style="text-align: center;">Navy</td>
+</tr>
+<tr class="odd" style="background:midnightblue;color:white">
+<td style="text-align: center;">MidnightBlue</td>
 </tr>
 <tr class="even">
-<td>Aqua</td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Reds</strong></td>
 </tr>
-<tr class="odd">
-<td>Cyan</td>
+<tr class="odd" style="background:indianred;color:white">
+<td style="text-align: center;">IndianRed</td>
 </tr>
-<tr class="even">
-<td>LightCyan</td>
+<tr class="even" style="background:lightcoral;color:black">
+<td style="text-align: center;">LightCoral</td>
 </tr>
-<tr class="odd">
-<td>PaleTurquoise</td>
+<tr class="odd" style="background:salmon;color:black">
+<td style="text-align: center;">Salmon</td>
 </tr>
-<tr class="even">
-<td>Aquamarine</td>
+<tr class="even" style="background:darksalmon;color:black">
+<td style="text-align: center;">DarkSalmon</td>
 </tr>
-<tr class="odd">
-<td>Turquoise</td>
+<tr class="odd" style="background:lightsalmon;color:black">
+<td style="text-align: center;">LightSalmon</td>
 </tr>
-<tr class="even">
-<td>MediumTurquoise</td>
+<tr class="even" style="background:red;color:white">
+<td style="text-align: center;">Red</td>
 </tr>
-<tr class="odd">
-<td>DarkTurquoise</td>
+<tr class="odd" style="background:crimson;color:white;color:white">
+<td style="text-align: center;">Crimson</td>
 </tr>
-<tr class="even">
-<td>CadetBlue</td>
+<tr class="even" style="background:fireBrick;color:white">
+<td style="text-align: center;">FireBrick</td>
 </tr>
-<tr class="odd">
-<td>SteelBlue</td>
-</tr>
-<tr class="even">
-<td>LightSteelBlue</td>
-</tr>
-<tr class="odd">
-<td>PowderBlue</td>
-</tr>
-<tr class="even">
-<td>LightBlue</td>
-</tr>
-<tr class="odd">
-<td>SkyBlue</td>
-</tr>
-<tr class="even">
-<td>LightSkyBlue</td>
-</tr>
-<tr class="odd">
-<td>DeepSkyBlue</td>
-</tr>
-<tr class="even">
-<td>DodgerBlue</td>
-</tr>
-<tr class="odd">
-<td>CornflowerBlue</td>
-</tr>
-<tr class="even">
-<td>RoyalBlue</td>
-</tr>
-<tr class="odd">
-<td>Blue</td>
-</tr>
-<tr class="even">
-<td>MediumBlue</td>
-</tr>
-<tr class="odd">
-<td>DarkBlue</td>
-</tr>
-<tr class="even">
-<td>Navy</td>
-</tr>
-<tr class="odd">
-<td>MidnightBlue</td>
-</tr>
-<tr class="even">
-<td><strong>Reds</strong></td>
-</tr>
-<tr class="odd">
-<td>IndianRed</td>
-</tr>
-<tr class="even">
-<td>LightCoral</td>
-</tr>
-<tr class="odd">
-<td>Salmon</td>
-</tr>
-<tr class="even">
-<td>DarkSalmon</td>
-</tr>
-<tr class="odd">
-<td>LightSalmon</td>
-</tr>
-<tr class="even">
-<td>Red</td>
-</tr>
-<tr class="odd">
-<td>Crimson</td>
-</tr>
-<tr class="even">
-<td>FireBrick</td>
-</tr>
-<tr class="odd">
-<td>DarkRed</td>
+<tr class="odd" style="background:darkred;color:white">
+<td style="text-align: center;">DarkRed</td>
 </tr>
 </tbody>
 </table></td>
 <td width="20%"><table width="100%">
 <tbody>
 <tr class="odd">
-<td><strong>Greens</strong></td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Greens</strong></td>
 </tr>
-<tr class="even">
-<td>GreenYellow</td>
+<tr class="even" style="background:greenyellow;color:black">
+<td style="text-align: center;">GreenYellow</td>
 </tr>
-<tr class="odd">
-<td>Chartreuse</td>
+<tr class="odd" style="background:chartreuse;color:black">
+<td style="text-align: center;">Chartreuse</td>
 </tr>
-<tr class="even">
-<td>LawnGreen</td>
+<tr class="even" style="background:lawngreen;color:black">
+<td style="text-align: center;">LawnGreen</td>
 </tr>
-<tr class="odd">
-<td>Lime</td>
+<tr class="odd" style="background:lime;color:black">
+<td style="text-align: center;">Lime</td>
 </tr>
-<tr class="even">
-<td>LimeGreen</td>
+<tr class="even" style="background:limegreen;color:black">
+<td style="text-align: center;">LimeGreen</td>
 </tr>
-<tr class="odd">
-<td>PaleGreen</td>
+<tr class="odd" style="background:palegreen;color:black">
+<td style="text-align: center;">PaleGreen</td>
 </tr>
-<tr class="even">
-<td>LightGreen</td>
+<tr class="even" style="background:lightgreen;color:black">
+<td style="text-align: center;">LightGreen</td>
 </tr>
-<tr class="odd">
-<td>MediumSpringGreen</td>
+<tr class="odd" style="background:mediumspringgreen;color:black">
+<td style="text-align: center;">MediumSpringGreen</td>
 </tr>
-<tr class="even">
-<td>SpringGreen</td>
+<tr class="even" style="background:springgreen;color:black">
+<td style="text-align: center;">SpringGreen</td>
 </tr>
-<tr class="odd">
-<td>MediumSeaGreen</td>
+<tr class="odd" style="background:mediumseagreen;color:white">
+<td style="text-align: center;">MediumSeaGreen</td>
 </tr>
-<tr class="even">
-<td>SeaGreen</td>
+<tr class="even" style="background:seagreen;color:white">
+<td style="text-align: center;">SeaGreen</td>
 </tr>
-<tr class="odd">
-<td>ForestGreen</td>
+<tr class="odd" style="background:forestgreen;color:white">
+<td style="text-align: center;">ForestGreen</td>
 </tr>
-<tr class="even">
-<td>Green</td>
+<tr class="even" style="background:green;color:white">
+<td style="text-align: center;">Green</td>
 </tr>
-<tr class="odd">
-<td>DarkGreen</td>
+<tr class="odd" style="background:darkgreen;color:white">
+<td style="text-align: center;">DarkGreen</td>
 </tr>
-<tr class="even">
-<td>YellowGreen</td>
+<tr class="even" style="background:yellowgreen;color:black">
+<td style="text-align: center;">YellowGreen</td>
 </tr>
-<tr class="odd">
-<td>OliveDrab</td>
+<tr class="odd" style="background:olivedrab;color:white">
+<td style="text-align: center;">OliveDrab</td>
 </tr>
-<tr class="even">
-<td>Olive</td>
+<tr class="even" style="background:olive;color:white">
+<td style="text-align: center;">Olive</td>
 </tr>
-<tr class="odd">
-<td>DarkOliveGreen</td>
+<tr class="odd" style="background:darkolivegreen;color:white">
+<td style="text-align: center;">DarkOliveGreen</td>
 </tr>
-<tr class="even">
-<td>MediumAquamarine</td>
+<tr class="even" style="background:mediumaquamarine;color:black">
+<td style="text-align: center;">MediumAquamarine</td>
 </tr>
-<tr class="odd">
-<td>DarkSeaGreen</td>
+<tr class="odd" style="background:darkseagreen;color:black">
+<td style="text-align: center;">DarkSeaGreen</td>
 </tr>
-<tr class="even">
-<td>LightSeaGreen</td>
+<tr class="even" style="background:lightseagreen;color:white">
+<td style="text-align: center;">LightSeaGreen</td>
 </tr>
-<tr class="odd">
-<td>DarkCyan</td>
+<tr class="odd" style="background:darkcyan;color:white">
+<td style="text-align: center;">DarkCyan</td>
 </tr>
-<tr class="even">
-<td>Teal</td>
-</tr>
-<tr class="odd">
-<td><strong>Oranges</strong></td>
-</tr>
-<tr class="even">
-<td>LightSalmon</td>
+<tr class="even" style="background:teal;color:white">
+<td style="text-align: center;">Teal</td>
 </tr>
 <tr class="odd">
-<td>Coral</td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Oranges</strong></td>
 </tr>
-<tr class="even">
-<td>Tomato</td>
+<tr class="even" style="background:lightsalmon;color:black">
+<td style="text-align: center;">LightSalmon</td>
 </tr>
-<tr class="odd">
-<td>OrangeRed</td>
+<tr class="odd" style="background:coral;color:white">
+<td style="text-align: center;">Coral</td>
 </tr>
-<tr class="even">
-<td>DarkOrange</td>
+<tr class="even" style="background:tomato;color:white">
+<td style="text-align: center;">Tomato</td>
 </tr>
-<tr class="odd">
-<td>Orange</td>
+<tr class="odd" style="background:orangered;color:white">
+<td style="text-align: center;">OrangeRed</td>
+</tr>
+<tr class="even" style="background:darkorange;color:white">
+<td style="text-align: center;">DarkOrange</td>
+</tr>
+<tr class="odd" style="background:orange;color:white">
+<td style="text-align: center;">Orange</td>
 </tr>
 </tbody>
 </table></td>
 <td width="20%"><table width="100%">
 <tbody>
 <tr class="odd">
-<td><strong>Yellows</strong></td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Yellows</strong></td>
 </tr>
-<tr class="even">
-<td>Gold</td>
+<tr class="even" style="background:gold;color:black">
+<td style="text-align: center;">Gold</td>
 </tr>
-<tr class="odd">
-<td>Yellow</td>
+<tr class="odd" style="background:yellow;color:black">
+<td style="text-align: center;">Yellow</td>
 </tr>
-<tr class="even">
-<td>LightYellow</td>
+<tr class="even" style="background:lightyellow;color:black">
+<td style="text-align: center;">LightYellow</td>
 </tr>
-<tr class="odd">
-<td>LemonChiffon</td>
+<tr class="odd" style="background:lemonchiffon;color:black">
+<td style="text-align: center;">LemonChiffon</td>
 </tr>
-<tr class="even">
-<td>LightGoldenrodYellow</td>
+<tr class="even" style="background:lightgoldenrodyellow;color:black">
+<td style="text-align: center;">LightGoldenrodYellow</td>
 </tr>
-<tr class="odd">
-<td>PapayaWhip</td>
+<tr class="odd" style="background:papayawhip;color:black">
+<td style="text-align: center;">PapayaWhip</td>
 </tr>
-<tr class="even">
-<td>Moccasin</td>
+<tr class="even" style="background:moccasin;color:black">
+<td style="text-align: center;">Moccasin</td>
 </tr>
-<tr class="odd">
-<td>PeachPuff</td>
+<tr class="odd" style="background:peachpuff;color:black">
+<td style="text-align: center;">PeachPuff</td>
 </tr>
-<tr class="even">
-<td>PaleGoldenrod</td>
+<tr class="even" style="background:palegoldenrod;color:black">
+<td style="text-align: center;">PaleGoldenrod</td>
 </tr>
-<tr class="odd">
-<td>Khaki</td>
+<tr class="odd" style="background:khaki;color:black">
+<td style="text-align: center;">Khaki</td>
 </tr>
-<tr class="even">
-<td>DarkKhaki</td>
-</tr>
-<tr class="odd">
-<td><strong>Browns</strong></td>
-</tr>
-<tr class="even">
-<td>Cornsilk</td>
+<tr class="even" style="background:darkkhaki;color:black">
+<td style="text-align: center;">DarkKhaki</td>
 </tr>
 <tr class="odd">
-<td>BlanchedAlmond</td>
+<td style="text-align: center; background: whitesmoke; color: slategray;"><strong>Browns</strong></td>
 </tr>
-<tr class="even">
-<td>Bisque</td>
+<tr class="even" style="background:cornsilk;color:black">
+<td style="text-align: center;">Cornsilk</td>
 </tr>
-<tr class="odd">
-<td>NavajoWhite</td>
+<tr class="odd" style="background:blanchedalmond;color:black">
+<td style="text-align: center;">BlanchedAlmond</td>
 </tr>
-<tr class="even">
-<td>Wheat</td>
+<tr class="even" style="background:bisque;color:black">
+<td style="text-align: center;">Bisque</td>
 </tr>
-<tr class="odd">
-<td>BurlyWood</td>
+<tr class="odd" style="background:navajowhite;color:black">
+<td style="text-align: center;">NavajoWhite</td>
 </tr>
-<tr class="even">
-<td>Tan</td>
+<tr class="even" style="background:wheat;color:black">
+<td style="text-align: center;">Wheat</td>
 </tr>
-<tr class="odd">
-<td>RosyBrown</td>
+<tr class="odd" style="background:burlywood;color:black">
+<td style="text-align: center;">BurlyWood</td>
 </tr>
-<tr class="even">
-<td>SandyBrown</td>
+<tr class="even" style="background:tan;color:black">
+<td style="text-align: center;">Tan</td>
 </tr>
-<tr class="odd">
-<td>Goldenrod</td>
+<tr class="odd" style="background:rosybrown;color:black">
+<td style="text-align: center;">RosyBrown</td>
 </tr>
-<tr class="even">
-<td>DarkGoldenrod</td>
+<tr class="even" style="background:sandybrown;color:black">
+<td style="text-align: center;">SandyBrown</td>
 </tr>
-<tr class="odd">
-<td>Peru</td>
+<tr class="odd" style="background:goldenrod;color:black">
+<td style="text-align: center;">Goldenrod</td>
 </tr>
-<tr class="even">
-<td>Chocolate</td>
+<tr class="even" style="background:darkgoldenrod;color:white">
+<td style="text-align: center;">DarkGoldenrod</td>
 </tr>
-<tr class="odd">
-<td>SaddleBrown</td>
+<tr class="odd" style="background:Peru;color:white">
+<td style="text-align: center;">Peru</td>
 </tr>
-<tr class="even">
-<td>Sienna</td>
+<tr class="even" style="background:chocolate;color:white">
+<td style="text-align: center;">Chocolate</td>
 </tr>
-<tr class="odd">
-<td>Brown</td>
+<tr class="odd" style="background:saddlebrown;color:white">
+<td style="text-align: center;">SaddleBrown</td>
 </tr>
-<tr class="even">
-<td>Maroon</td>
+<tr class="even" style="background:sienna;color:white">
+<td style="text-align: center;">Sienna</td>
+</tr>
+<tr class="odd" style="background:brown;color:white">
+<td style="text-align: center;">Brown</td>
+</tr>
+<tr class="even" style="background:maroon;color:white">
+<td style="text-align: center;">Maroon</td>
 </tr>
 </tbody>
 </table></td>
 <td width="20%"><table width="100%">
 <tbody>
-<tr class="odd">
+<tr class="odd" style="background:whitesmoke;color:slategray;text-align:center">
 <td><strong>Whites</strong></td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:white;">
 <td>White</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:snow;">
 <td>Snow</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:honeydew;">
 <td>Honeydew</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:mintcream;">
 <td>MintCream</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:azure;">
 <td>Azure</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:aliceblue;">
 <td>AliceBlue</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:ghostwhite;">
 <td>GhostWhite</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:whitesmoke;">
 <td>WhiteSmoke</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:seashell;">
 <td>Seashell</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:beige;">
 <td>Beige</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:oldlace;">
 <td>OldLace</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:floralwhite;">
 <td>FloralWhite</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:ivory;">
 <td>Ivory</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:antiquewhite;">
 <td>AntiqueWhite</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:linen;">
 <td>Linen</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:lavenderblush;">
 <td>LavenderBlush</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:mistyrose;">
 <td>MistyRose</td>
+<td></td>
+<td></td>
 </tr>
 <tr class="odd">
-<td><strong>Grays</strong></td>
+<td colspan="3" style="text-align: center; background: whitesmoke; color: slategray;"><strong>Grays</strong></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:gainsboro;color:black">
 <td>Gainsboro</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:lightgrey;color:black">
 <td>LightGrey</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:silver;color:black">
 <td>Silver</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:darkgray;color:black">
 <td>DarkGray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:gray;color:black">
 <td>Gray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:dimgray;color:white">
 <td>DimGray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:lightslategray;color:white">
 <td>LightSlateGray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:slategray;color:white">
 <td>SlateGray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="even">
+<tr class="even" style="background:darkslategray;color:white">
 <td>DarkSlateGray</td>
+<td></td>
+<td></td>
 </tr>
-<tr class="odd">
+<tr class="odd" style="background:black;color:white">
 <td>Black</td>
+<td></td>
+<td></td>
 </tr>
 </tbody>
 </table></td>
@@ -1864,7 +2097,7 @@ slategrey/slategray etc are valid)*</span>:
 
 #### Example
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Wavy_multicolor_object.jpg/220px-Wavy_multicolor_object.jpg)
+<a href="/wiki/File:Wavy_multicolor_object.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Wavy_multicolor_object.jpg/220px-Wavy_multicolor_object.jpg width=176.0 height=166.4/></a>
 
 <a href="/wiki/File:Wavy_multicolor_object.jpg" class="internal" title="Enlarge"></a>
 
@@ -1873,13 +2106,18 @@ A 3-D multicolor sine wave
 Here's a code fragment that draws a wavy multicolor object
 
 ```scad
-for(i=[0:36]) {
-    for(j=[0:36]) {
-      color( [0.5+sin(10*i)/2, 0.5+sin(10*j)/2, 0.5+sin(10*(i+j))/2] )
-      translate( [i, j, 0] )
-      cube( size = [1, 1, 11+10*cos(10*i)*sin(10*j)] );
-    }
+for (i = [0:36]) {
+  for (j = [0:36]) {
+    color([
+      0.5 + sin(10 * i) / 2, 0.5 + sin(10 * j) / 2,
+      0.5 + sin(10 * (i + j)) / 2
+    ]) translate([ i, j, 0 ])
+      cube(
+        size =
+          [ 1, 1, 11 + 10 * cos(10 * i) * sin(10 * j) ]);
+  }
 }
+
 ```
 
 ↗ Being that -1<=sin(*x*)<=1 then 0<=(1/2 + sin(*x*)/2)<=1 ,
@@ -1894,10 +2132,11 @@ In cases where you want to optionally set a color based on a parameter
 you can use the following trick:
 
 ```scad
-module myModule(withColors=false) {
-    c=withColors?"red":undef;
-    color(c) circle(r=10);
+module myModule(withColors = false) {
+  c = withColors ? "red" : undef;
+  color(c) circle(r = 10);
 }
+
 ```
 
 Setting the colorname to undef keeps the default colors.
@@ -1909,14 +2148,15 @@ Subtracts the 2nd (and all further) child nodes from the first one
 (logical **and not**).  
 May be used with either 2D or 3D objects, but don't mix them.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Openscad_difference.jpg/400px-Openscad_difference.jpg)
+<a href="/wiki/File:Openscad_difference.jpg" class="image" title="Difference"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Openscad_difference.jpg/400px-Openscad_difference.jpg width=200.0 height=150.0/></a>
 
 ```scad
-Usage example:
-difference() {
-    cylinder (h = 4, r=1, center = true, $fn=100);
-    rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+Usage example : difference() {
+  cylinder(h = 4, r = 1, center = true, $fn = 100);
+  rotate([ 90, 0, 0 ])
+    cylinder(h = 4, r = 0.9, center = true, $fn = 100);
 }
+
 ```
 
 **Note:** It is mandatory that surfaces that are to be removed by a
@@ -1934,29 +2174,36 @@ epsilon value.
 Note, in the second instance, the result of adding a union of the 1st
 and 2nd children.
 
-![](https://upload.wikimedia.org/wikipedia/commons/9/9d/Bollean_Difference_3.jpg)
+<a href="/wiki/File:Bollean_Difference_3.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9d/Bollean_Difference_3.jpg width=180.0 height=184.2/></a>
 
 ```scad
 // Usage example for difference of multiple children:
-$fn=90;
-difference(){
-                                            cylinder(r=5,h=20,center=true);
-    rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
-    rotate([00,40,-50])                     cylinder(r=2,h=30,center=true);
-    translate([0,0,-10])rotate([00,40,-50]) cylinder(r=1.4,h=30,center=true);
+$fn = 90;
+difference() {
+  cylinder(r = 5, h = 20, center = true);
+  rotate([ 00, 140, -45 ]) color("LightBlue")
+    cylinder(r = 2, h = 25, center = true);
+  rotate([ 00, 40, -50 ])
+    cylinder(r = 2, h = 30, center = true);
+  translate([ 0, 0, -10 ]) rotate([ 00, 40, -50 ])
+    cylinder(r = 1.4, h = 30, center = true);
 }
-   
+
 // second instance with added union
-translate([10,10,0]){
-    difference(){
-      union(){        // combine 1st and 2nd children
-                                                cylinder(r=5,h=20,center=true);
-        rotate([00,140,-45]) color("LightBlue") cylinder(r=2,h=25,center=true);
-      }
-      rotate([00,40,-50])                       cylinder(r=2,h=30,center=true);
-      translate([0,0,-10])rotate([00,40,-50])   cylinder(r=1.4,h=30,center=true);
+translate([ 10, 10, 0 ]) {
+  difference() {
+    union() { // combine 1st and 2nd children
+      cylinder(r = 5, h = 20, center = true);
+      rotate([ 00, 140, -45 ]) color("LightBlue")
+        cylinder(r = 2, h = 25, center = true);
     }
+    rotate([ 00, 40, -50 ])
+      cylinder(r = 2, h = 30, center = true);
+    translate([ 0, 0, -10 ]) rotate([ 00, 40, -50 ])
+      cylinder(r = 1.4, h = 30, center = true);
+  }
 }
+
 ```
 */
 module difference() { /* group */ }
@@ -1964,28 +2211,29 @@ module difference() { /* group */ }
 module group() { /* group */ }
 
 /**
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png)
+<a href="/wiki/File:Openscad_hull_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png width=160.0 height=119.2/></a>
 
 <a href="/wiki/File:Openscad_hull_example_1a.png" class="internal" title="Enlarge"></a>
 
 Two cylinders
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Openscad_hull_example_2a.png/200px-Openscad_hull_example_2a.png)
+<a href="/wiki/File:Openscad_hull_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Openscad_hull_example_2a.png/200px-Openscad_hull_example_2a.png width=160.0 height=119.2/></a>
 
 <a href="/wiki/File:Openscad_hull_example_2a.png" class="internal" title="Enlarge"></a>
 
 Convex hull of two cylinders
 
 Displays the <a href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Convex_hull_2/Chapter_main.html"
-class="external text">convex hull</a> of child nodes.
+class="external text" rel="nofollow">convex hull</a> of child nodes.
 
 Usage example:
 
 ```scad
 hull() {
-    translate([15,10,0]) circle(10);
-    circle(10);
+  translate([ 15, 10, 0 ]) circle(10);
+  circle(10);
 }
+
 ```
 
 The Hull of 2D objects uses their projections (shadows) on the xy plane,
@@ -2002,32 +2250,37 @@ When combining transformations, it is a sequential process, but going
 right-to-left. That is
 
 ```scad
-rotate( ... ) translate ( ... ) cube(5) ;
+rotate(...) translate(...) cube(5) ;
+
 ```
 
 would first move the cube, and then move it in an arc (while also
 rotating it by the same angle) at the radius given by the translation.
 
 ```scad
-translate ( ... ) rotate( ... ) cube(5) ;
+translate(...) rotate(...) cube(5) ;
+
 ```
 
 would first rotate the cube and then move it to the offset defined by
 the translate.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Openscad_combined_transform.png/200px-Openscad_combined_transform.png)
+<a href="/wiki/File:Openscad_combined_transform.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Openscad_combined_transform.png/200px-Openscad_combined_transform.png width=160.0 height=172.0/></a>
 
 <a href="/wiki/File:Openscad_combined_transform.png" class="internal" title="Enlarge"></a>
 
 Combine two transforms
 
 ```scad
-color("red")   translate([0,10,0])  rotate([45,0,0])     cube(5);
-color("green") rotate([45,0,0])     translate([0,10,0])  cube(5);
+color("red") translate([ 0, 10, 0 ]) rotate([ 45, 0, 0 ])
+  cube(5);
+color("green") rotate([ 45, 0, 0 ]) translate([ 0, 10, 0 ])
+  cube(5);
+
 ```
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Transformations&oldid=4082820>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Transformations&amp;oldid=4082820"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Transformations&amp;oldid=4082820</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -2043,14 +2296,16 @@ Only the area which is common or shared by **all** children is
 retained.  
 May be used with either 2D or 3D objects, but don't mix them.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Openscad_intersection.jpg/400px-Openscad_intersection.jpg)
+<a href="/wiki/File:Openscad_intersection.jpg" class="image" title="Intersection"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Openscad_intersection.jpg/400px-Openscad_intersection.jpg width=200.0 height=150.0/></a>
 
 ```scad
-//Usage example:
+// Usage example:
 intersection() {
-    cylinder (h = 4, r=1, center = true, $fn=100);
-    rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+  cylinder(h = 4, r = 1, center = true, $fn = 100);
+  rotate([ 90, 0, 0 ])
+    cylinder(h = 4, r = 0.9, center = true, $fn = 100);
 }
+
 ```
 */
 module intersection() { /* group */ }
@@ -2077,7 +2332,17 @@ flared inward or outward.
 #### Usage
 
 ```scad
-linear_extrude(height = 5, center = true, convexity = 10, twist = -fanrot, slices = 20, scale = 1.0, $fn = 16) {...}
+linear_extrude(
+  height = 5,
+  center = true,
+  convexity = 10,
+  twist = -fanrot,
+  slices = 20,
+  scale = 1.0,
+  $fn = 16) {
+  ...
+}
+
 ```
 
 You must use parameter names due to a backward compatibility issue.
@@ -2098,50 +2363,62 @@ Twist is the number of degrees of through which the shape is extruded.
 Setting the parameter twist = 360 extrudes through one revolution. The
 twist direction follows the left hand rule.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Openscad_linext_01.jpg/400px-Openscad_linext_01.jpg)
+<a href="/wiki/File:Openscad_linext_01.jpg" class="image" title="twist = 0"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Openscad_linext_01.jpg/400px-Openscad_linext_01.jpg width=200.0 height=150.0/></a>
 
 **0° of Twist**
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, twist = 0)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  twist = 0) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Openscad_linext_02.jpg/400px-Openscad_linext_02.jpg)
+<a href="/wiki/File:Openscad_linext_02.jpg" class="image" title="twist = -100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Openscad_linext_02.jpg/400px-Openscad_linext_02.jpg width=200.0 height=150.0/></a>
 
 **-100° of Twist**
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, twist = -100)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  twist = -100) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Openscad_linext_03.jpg/400px-Openscad_linext_03.jpg)
+<a href="/wiki/File:Openscad_linext_03.jpg" class="image" title="twist = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Openscad_linext_03.jpg/400px-Openscad_linext_03.jpg width=200.0 height=150.0/></a>
 
 **100° of Twist**
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, twist = 100)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  twist = 100) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif)
+<a href="/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif width=176.0 height=286.4/></a>
 
 <a href="/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="internal" title="Enlarge"></a>
 
 Helical spring, 5x360° plus 8° at each end.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg)
+<a href="/wiki/File:Openscad_linext_04.jpg" class="image" title="twist = -500"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
 
 **-500° of Twist**
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, twist = -500)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  twist = -500) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
 #### Center
@@ -2150,24 +2427,30 @@ It is similar to the parameter center of cylinders. If `center` is false
 the linear extrusion Z range is from 0 to height; if it is true, the
 range is from -height/2 to height/2.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg)
+<a href="/wiki/File:Openscad_linext_04.jpg" class="image" title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
 
 **center = true**
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, twist = -500)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  twist = -500) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Openscad_linext_05.jpg/400px-Openscad_linext_05.jpg)
+<a href="/wiki/File:Openscad_linext_05.jpg" class="image" title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Openscad_linext_05.jpg/400px-Openscad_linext_05.jpg width=200.0 height=150.0/></a>
 
 **center = false**
 
 ```scad
-linear_extrude(height = 10, center = false, convexity = 10, twist = -500)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = false,
+  convexity = 10,
+  twist = -500) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
 #### Mesh Refinement
@@ -2180,12 +2463,16 @@ resulting in smoother twisted geometries. Segments need to be a multiple
 of the polygon's fragments to have an effect (6 or 9.. for a
 circle($fn=3), 8,12.. for a square() ).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Openscad_linext_06.jpg/400px-Openscad_linext_06.jpg)
+<a href="/wiki/File:Openscad_linext_06.jpg" class="image" title="slices = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Openscad_linext_06.jpg/400px-Openscad_linext_06.jpg width=200.0 height=150.0/></a>
 
 ```scad
-linear_extrude(height = 10, center = false, convexity = 10, twist = 360, slices = 100)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = false,
+  convexity = 10,
+  twist = 360,
+  slices = 100) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
 The [special
@@ -2193,12 +2480,16 @@ variables](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Fea
 $fn, $fs and $fa can also be used to improve the output. If slices is
 not defined, its value is taken from the defined $fn value.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Openscad_linext_07.jpg/400px-Openscad_linext_07.jpg)
+<a href="/wiki/File:Openscad_linext_07.jpg" class="image" title="$fn = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Openscad_linext_07.jpg/400px-Openscad_linext_07.jpg width=200.0 height=150.0/></a>
 
 ```scad
-linear_extrude(height = 10, center = false, convexity = 10, twist = 360, $fn = 100)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = false,
+  convexity = 10,
+  twist = 360,
+  $fn = 100) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
 #### Scale
@@ -2207,47 +2498,60 @@ Scales the 2D shape by this value over the height of the extrusion.
 Scale can be a scalar or a vector:
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, scale=3)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  scale = 3) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Openscad_linext_09.png/400px-Openscad_linext_09.png)
+<a href="/wiki/File:Openscad_linext_09.png" class="image" title="OpenScad linear_extrude scale example"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Openscad_linext_09.png/400px-Openscad_linext_09.png width=200.0 height=130.0/></a>
 
 ```scad
-linear_extrude(height = 10, center = true, convexity = 10, scale=[1,5], $fn=100)
-translate([2, 0, 0])
-circle(r = 1);
+linear_extrude(
+  height = 10,
+  center = true,
+  convexity = 10,
+  scale = [ 1, 5 ],
+  $fn = 100) translate([ 2, 0, 0 ]) circle(r = 1);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenScad_linear_extrude_scale_example2.png/400px-OpenScad_linear_extrude_scale_example2.png)
+<a href="/wiki/File:OpenScad_linear_extrude_scale_example2.png" class="image"
+title="OpenScad linear_extrude scale example2"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenScad_linear_extrude_scale_example2.png/400px-OpenScad_linear_extrude_scale_example2.png width=200.0 height=194.0/></a>
 
 Note that if scale is a vector, the resulting side walls may be
 nonplanar. Use `twist=0` and the `slices` parameter to avoid
-<a href="https://github.com/openscad/openscad/issues/1341" class="external text">asymmetry</a>.
+<a href="https://github.com/openscad/openscad/issues/1341" class="external text" rel="nofollow">asymmetry</a>.
 
 ```scad
-linear_extrude(height=10, scale=[1,0.1], slices=20, twist=0)
-polygon(points=[[0,0],[20,10],[20,-10]]);
+linear_extrude(
+  height = 10,
+  scale = [ 1, 0.1 ],
+  slices = 20,
+  twist = 0)
+  polygon(points = [ [ 0, 0 ], [ 20, 10 ], [ 20, -10 ] ]);
+
 ```
 */
 module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { /* group */ }
 
 /**
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png)
+<a href="/wiki/File:Openscad_minkowski_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png width=160.0 height=119.2/></a>
 
 <a href="/wiki/File:Openscad_minkowski_example_1a.png" class="internal" title="Enlarge"></a>
 
 A box and a cylinder
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Openscad_minkowski_example_2a.png/200px-Openscad_minkowski_example_2a.png)
+<a href="/wiki/File:Openscad_minkowski_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Openscad_minkowski_example_2a.png/200px-Openscad_minkowski_example_2a.png width=160.0 height=119.2/></a>
 
 <a href="/wiki/File:Openscad_minkowski_example_2a.png" class="internal" title="Enlarge"></a>
 
 Minkowski sum of the box and cylinder
 
 Displays the <a href="https://www.cgal.org/Manual/latest/doc_html/cgal_manual/Minkowski_sum_3/Chapter_main.html"
-class="external text">minkowski sum</a> of child nodes.
+class="external text" rel="nofollow">minkowski sum</a> of child nodes.
 
 Usage example:
 
@@ -2256,9 +2560,10 @@ ways to do this (for example, see [hull](#hull) below), but minkowski is
 elegant. Take your box, and a cylinder:
 
 ```scad
-$fn=50;
-cube([10,10,1]);
-cylinder(r=2,h=1);
+$fn = 50;
+cube([ 10, 10, 1 ]);
+cylinder(r = 2, h = 1);
+
 ```
 
 Then, do a minkowski sum of them (note that the outer dimensions of the
@@ -2266,12 +2571,12 @@ box are now 10+2+2 = 14 units by 14 units by 2 units high as the heights
 of the objects are summed):
 
 ```scad
-$fn=50;
-minkowski()
-{
-cube([10,10,1]);
-cylinder(r=2,h=1);
+$fn = 50;
+minkowski() {
+  cube([ 10, 10, 1 ]);
+  cylinder(r = 2, h = 1);
 }
+
 ```
 
 NB: The <u>**origin**</u> of the second object is used for the addition.
@@ -2283,16 +2588,18 @@ doesn't expand in the negative directions.
 
 ```scad
 minkowski() {
-    cube([10, 10, 1]);
-    cylinder(1, center=true);
+  cube([ 10, 10, 1 ]);
+  cylinder(1, center = true);
 }
+
 ```
 
 ```scad
 minkowski() {
-    cube([10, 10, 1]);
-    cylinder(1);
+  cube([ 10, 10, 1 ]);
+  cylinder(1);
 }
+
 ```
 
 **Warning:** for high values of $fn the minkowski sum may end up
@@ -2312,7 +2619,10 @@ which to mirror the object.
 #### Function signature:
 
 ```scad
-mirror(v= [x, y, z] ) { ... }
+mirror(v = [ x, y, z ]) {
+  ...
+}
+
 ```
 
 #### Examples
@@ -2320,17 +2630,17 @@ mirror(v= [x, y, z] ) { ... }
 The original is on the right side. Note that mirror doesn't make a copy.
 Like rotate and scale, it changes the object.
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Mirror-x.png/170px-Mirror-x.png)
+- <a href="/wiki/File:Mirror-x.png" class="image"     title="hand(); // original mirror([1,0,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Mirror-x.png/170px-Mirror-x.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,0,0]) hand();`
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mirror-x-y.png/170px-Mirror-x-y.png)
+- <a href="/wiki/File:Mirror-x-y.png" class="image"     title="hand(); // original mirror([1,1,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mirror-x-y.png/170px-Mirror-x-y.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,1,0]) hand();`
 
-- ![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Mirror-x-y-z.png/170px-Mirror-x-y-z.png)
+- <a href="/wiki/File:Mirror-x-y-z.png" class="image"     title="hand(); // original mirror([1,1,1]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Mirror-x-y-z.png/170px-Mirror-x-y-z.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,1,1]) hand();`
@@ -2338,11 +2648,13 @@ Like rotate and scale, it changes the object.
 <!-- -->
 
 ```scad
-rotate([0,0,10]) cube([3,2,1]);
-mirror([1,0,0]) translate([1,0,0]) rotate([0,0,10]) cube([3,2,1]);
+rotate([ 0, 0, 10 ]) cube([ 3, 2, 1 ]);
+mirror([ 1, 0, 0 ]) translate([ 1, 0, 0 ])
+  rotate([ 0, 0, 10 ]) cube([ 3, 2, 1 ]);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG)
+<a href="/wiki/File:OpenSCAD_mirror()_example.JPG" class="image" title="image of the result of the mirror() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG width=195.0 height=184.8/></a>
 */
 module mirror(v) { /* group */ }
 
@@ -2397,15 +2709,17 @@ This example rotates by 45 degrees in the XY plane and translates by
 rotate([0,0,45]) would do.
 
 ```scad
-angle=45;
-multmatrix(m = [ [cos(angle), -sin(angle), 0, 10],
-                 [sin(angle),  cos(angle), 0, 20],
-                 [         0,           0, 1, 30],
-                 [         0,           0, 0,  1]
-              ]) union() {
-   cylinder(r=10.0,h=10,center=false);
-   cube(size=[10,10,10],center=false);
+angle = 45;
+multmatrix(
+  m =
+    [[cos(angle), -sin(angle), 0, 10],
+     [sin(angle), cos(angle), 0, 20],
+     [0, 0, 1, 30],
+     [0, 0, 0, 1]]) union() {
+  cylinder(r = 10.0, h = 10, center = false);
+  cube(size = [ 10, 10, 10 ], center = false);
 }
+
 ```
 
 The following example demonstrates combining affine transformation
@@ -2418,40 +2732,46 @@ correspond to rotation about the other axis in a right-handed coordinate
 system.
 
 ```scad
-y_ang=-35;
-mrot_y = [ [ cos(y_ang), 0,  sin(y_ang), 0],
-           [         0,  1,           0, 0],
-           [-sin(y_ang), 0,  cos(y_ang), 0],
-           [         0,  0,           0, 1]
-         ];
-mtrans_x = [ [1, 0, 0, 40],
-             [0, 1, 0,  0],
-             [0, 0, 1,  0],
-             [0, 0, 0,  1]
-           ];
+y_ang = -35;
+mrot_y =
+  [[cos(y_ang), 0, sin(y_ang), 0],
+   [0, 1, 0, 0],
+   [-sin(y_ang), 0, cos(y_ang), 0],
+   [0, 0, 0, 1]];
+mtrans_x = [
+  [ 1, 0, 0, 40 ], [ 0, 1, 0, 0 ], [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ]
+];
 module Obj() {
-   cylinder(r=10.0,h=10,center=false);
-   cube(size=[10,10,10],center=false);
+  cylinder(r = 10.0, h = 10, center = false);
+  cube(size = [ 10, 10, 10 ], center = false);
 }
 
-echo(mrot_y*mtrans_x);
+echo(mrot_y* mtrans_x);
 Obj();
 multmatrix(mtrans_x) Obj();
-multmatrix(mrot_y * mtrans_x) Obj();
+multmatrix(mrot_y* mtrans_x) Obj();
+
 ```
 
 This example skews a model, which is not possible with the other
 transformations.
 
 ```scad
-M = [ [ 1  , 0  , 0  , 0   ],
-      [ 0  , 1  , 0.7, 0   ],  // The "0.7" is the skew value; pushed along the y axis as z changes.
-      [ 0  , 0  , 1  , 0   ],
-      [ 0  , 0  , 0  , 1   ] ] ;
-multmatrix(M) {  union() {
-    cylinder(r=10.0,h=10,center=false);
-    cube(size=[10,10,10],center=false); 
-} }
+M = [
+  [ 1, 0, 0, 0 ],
+  [
+    0, 1, 0.7, 0
+  ], // The "0.7" is the skew value; pushed along the y axis as z changes.
+  [ 0, 0, 1, 0 ], [ 0, 0, 0, 1 ]
+];
+multmatrix(M) {
+  union() {
+    cylinder(r = 10.0, h = 10, center = false);
+    cube(size = [ 10, 10, 10 ], center = false);
+  }
+}
+
 ```
 
 This example shows how a vector is transformed with a multmatrix vector,
@@ -2462,18 +2782,18 @@ the cube along a circular path radius=v around the z axis without
 rotating the cube.
 
 ```scad
-angle=45;
-m=[
-        [cos(angle), -sin(angle), 0, 0],
-        [sin(angle),  cos(angle), 0, 0],
-        [         0,           0, 1, 0]
-   ];
-              
-v=[10,0,0];
-vm=concat(v,[1]); // need to add [1]
-vtrans=m*vm;
+angle = 45;
+m =
+  [[cos(angle), -sin(angle), 0, 0],
+   [sin(angle), cos(angle), 0, 0],
+   [0, 0, 1, 0]];
+
+v = [ 10, 0, 0 ];
+vm = concat(v, [1]); // need to add [1]
+vtrans = m * vm;
 echo(vtrans);
-translate(vtrans)cube();
+translate(vtrans) cube();
+
 ```
 
 #### More?
@@ -2482,12 +2802,13 @@ Learn more about it here:
 
 -   <a     href="https://en.wikipedia.org/wiki/Transformation_matrix#Affine_transformations"
     class="external text">Affine Transformations</a> on wikipedia
--   <a href="http://www.senocular.com/flash/tutorials/transformmatrix/"     class="external free">http://www.senocular.com/flash/tutorials/transformmatrix/</a>
+-   <a href="http://www.senocular.com/flash/tutorials/transformmatrix/"     class="external free"
+    rel="nofollow">http://www.senocular.com/flash/tutorials/transformmatrix/</a>
 */
 module multmatrix(m) { /* group */ }
 
 /**
-[Note: Requires version 2015.03]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
 
 Offset generates a new 2d interior or exterior outline from an existing
 outline. There are two modes of operation. radial and offset. The offset
@@ -2532,11 +2853,11 @@ Boolean. (default *false*) When using the delta parameter, this flag
 defines if edges should be chamfered (cut off with a straight line) or
 not (extended to their intersection).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/OpenSCAD_offset_join-type_out.svg/350px-OpenSCAD_offset_join-type_out.svg.png)
+<a href="/wiki/File:OpenSCAD_offset_join-type_out.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/OpenSCAD_offset_join-type_out.svg/350px-OpenSCAD_offset_join-type_out.svg.png width=210.0 height=105.0/></a>
 
 Positive r/delta value
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/OpenSCAD_offset_join-type_in.svg/350px-OpenSCAD_offset_join-type_in.svg.png)
+<a href="/wiki/File:OpenSCAD_offset_join-type_in.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/OpenSCAD_offset_join-type_in.svg/350px-OpenSCAD_offset_join-type_in.svg.png width=210.0 height=105.0/></a>
 
 Negative r/delta value
 
@@ -2545,7 +2866,7 @@ offset() operation.
 
 **Examples**
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/OpenSCAD_offset_example.png/220px-OpenSCAD_offset_example.png)
+<a href="/wiki/File:OpenSCAD_offset_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/OpenSCAD_offset_example.png/220px-OpenSCAD_offset_example.png width=176.0 height=132.0/></a>
 
 <a href="/wiki/File:OpenSCAD_offset_example.png" class="internal" title="Enlarge"></a>
 
@@ -2553,29 +2874,25 @@ Example 1: Result.
 
 ```scad
 // Example 1
- 
+
 linear_extrude(height = 60, twist = 90, slices = 60) {
-   difference() {
-     offset(r = 10) {
-      square(20, center = true);
-     }
-     offset(r = 8) {
-       square(20, center = true);
-     }
-   }
+  difference() {
+    offset(r = 10) { square(20, center = true); }
+    offset(r = 8) { square(20, center = true); }
+  }
 }
+
 ```
 
 ```scad
 // Example 2
- 
+
 module fillet(r) {
-   offset(r = -r) {
-     offset(delta = r) {
-       children();
-     }
-   }
+  offset(r = -r) {
+    offset(delta = r) { children(); }
+  }
 }
+
 ```
 */
 module offset(delta, r=0, chamfer=false) { /* group */ }
@@ -2592,25 +2909,27 @@ considered as well (creating a proper projection).
 
 **Example**: Consider example002.scad, that comes with OpenSCAD.
 
-![](https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png)
+<a href="/wiki/File:Openscad_projection_example_2x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png width=241.0 height=143.0/></a>
 
 Then you can do a 'cut' projection, which gives you the 'slice' of the
 x-y plane with z=0.
 
 ```scad
 projection(cut = true) example002();
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png)
+<a href="/wiki/File:Openscad_projection_example_3x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png width=241.0 height=143.0/></a>
 
 You can also do an 'ordinary' projection, which gives a sort of 'shadow'
 of the object onto the xy plane.
 
 ```scad
 projection(cut = false) example002();
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/5/5b/Openscad_example_projection_8x.png)
+<a href="/wiki/File:Openscad_example_projection_8x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/5/5b/Openscad_example_projection_8x.png width=241.0 height=143.0/></a>
 
 **Another Example**
 
@@ -2618,28 +2937,32 @@ You can also use projection to get a 'side view' of an object. Let's
 take example002, and move it up, out of the X-Y plane, and rotate it:
 
 ```scad
-translate([0,0,25]) rotate([90,0,0]) example002();
+translate([ 0, 0, 25 ]) rotate([ 90, 0, 0 ]) example002();
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/c/cd/Openscad_projection_example_4x.png)
+<a href="/wiki/File:Openscad_projection_example_4x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/c/cd/Openscad_projection_example_4x.png width=241.0 height=143.0/></a>
 
 Now we can get a side view with projection()
 
 ```scad
-projection() translate([0,0,25]) rotate([90,0,0]) example002();
+projection() translate([ 0, 0, 25 ]) rotate([ 90, 0, 0 ])
+  example002();
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png)
+<a href="/wiki/File:Openscad_projection_example_5x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png width=241.0 height=143.0/></a>
 
 Links:
 
--   <a href="http://svn.clifford.at/openscad/trunk/examples/example021.scad"     class="external text">example021.scad from Clifford Wolf's site</a>.
+-   <a href="http://svn.clifford.at/openscad/trunk/examples/example021.scad"     class="external text" rel="nofollow">example021.scad from Clifford
+    Wolf's site</a>.
 -   <a     href="http://www.gilesbathgate.com/2010/06/extracting-2d-mendel-outlines-using-openscad/"
-    class="external text">More complicated example</a> from Giles
-    Bathgate's blog
+    class="external text" rel="nofollow">More complicated example</a>
+    from Giles Bathgate's blog
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/3D_to_2D_Projection&oldid=3674389>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/3D_to_2D_Projection&amp;oldid=3674389"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/3D_to_2D_Projection&amp;oldid=3674389</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -2655,11 +2978,13 @@ module projection() { /* group */ }
 OpenSCAD to appear to hang/freeze.
 
 ```scad
-Usage example:
-render(convexity = 1) { ... }
+Usage example : render(convexity = 1) {
+  ...
+}
+
 ```
 
-<table>
+<table data-border="1">
 <tbody>
 <tr class="odd">
 <td>convexity</td>
@@ -2671,15 +2996,15 @@ preview mode and has no effect on the polyhedron rendering.</td>
 </tbody>
 </table>
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg)
+<a href="/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
 
 This image shows a 2D shape with a convexity of 4, as the ray indicated
 in red crosses the 2D shape a maximum of 4 times. The convexity of a 3D
 shape would be determined in a similar way. Setting it to 10 should work
 fine for most cases.
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/CSG_Modelling&oldid=3830886>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/CSG_Modelling&amp;oldid=3830886"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/CSG_Modelling&amp;oldid=3830886</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -2698,16 +3023,18 @@ Usage Example:
 
 ```scad
 // resize the sphere to extend 30 in x, 60 in y, and 10 in the z directions.
-resize(newsize=[30,60,10]) sphere(r=10);
+resize(newsize = [ 30, 60, 10 ]) sphere(r = 10);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG)
+<a href="/wiki/File:OpenSCAD_Resize_example_elipse.JPG" class="image" title="OpenSCAD Resize example ellipse"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG width=200.0 height=172.0/></a>
 
 If x,y, or z is 0 then that dimension is left as-is.
 
 ```scad
 // resize the 1x1x1 cube to 2x2x1
-resize([2,2,0]) cube();
+resize([ 2, 2, 0 ]) cube();
+
 ```
 
 If the 'auto' parameter is set to true, it auto-scales any 0-dimensions
@@ -2715,7 +3042,8 @@ to match. For example.
 
 ```scad
 // resize the 1x2x0.5 cube to 7x14x3.5
-resize([7,0,0], auto=true) cube([1,2,0.5]);
+resize([ 7, 0, 0 ], auto = true) cube([ 1, 2, 0.5 ]);
+
 ```
 
 The 'auto' parameter can also be used if you only wish to auto-scale a
@@ -2723,7 +3051,9 @@ single dimension, and leave the other as-is.
 
 ```scad
 // resize to 10x8x1. Note that the z dimension is left alone.
-resize([10,0,0], auto=[true,true,false]) cube([5,4,1]);
+resize([ 10, 0, 0 ], auto = [ true, true, false ])
+  cube([ 5, 4, 1 ]);
+
 ```
 */
 module resize(newsize) { /* group */ }
@@ -2734,12 +3064,14 @@ around an arbitrary axis. The argument names are optional if the
 arguments are given in the same order as specified.
 
 ```scad
-//Usage:
-rotate(a = deg_a, v = [x, y, z]) { ... }  
-// or
-rotate(deg_a, [x, y, z]) { ... }
-rotate(a = [deg_x, deg_y, deg_z]) { ... }
-rotate([deg_x, deg_y, deg_z]) { ... }
+// Usage:
+rotate(a = deg_a, v = [ x, y, z ]){...} // or
+rotate(deg_a, [ x, y, z ]){
+  ...} rotate(a = [ deg_x, deg_y, deg_z ]){
+  ...} rotate([ deg_x, deg_y, deg_z ]) {
+  ...
+}
+
 ```
 
 The 'a' argument (deg_a) can be an array, as expressed in the later
@@ -2748,13 +3080,20 @@ usage above; when deg_a is an array, the 'v' argument is ignored. Where
 following order: z, y, x. That means the code:
 
 ```scad
-rotate(a=[ax,ay,az]) {...}
+rotate(a = [ ax, ay, az ]) {
+  ...
+}
+
 ```
 
 is equivalent to:
 
 ```scad
-rotate(a=[0,0,az]) rotate(a=[0,ay,0]) rotate(a=[ax,0,0]) {...}
+rotate(a = [ 0, 0, az ]) rotate(a = [ 0, ay, 0 ])
+  rotate(a = [ ax, 0, 0 ]) {
+  ...
+}
+
 ```
 
 The optional argument 'v' is a vector and allows you to set an arbitrary
@@ -2764,13 +3103,19 @@ For example, to flip an object upside-down, you can rotate your object
 180 degrees around the 'y' axis.
 
 ```scad
-rotate(a=[0,180,0]) { ... }
+rotate(a = [ 0, 180, 0 ]) {
+  ...
+}
+
 ```
 
 This is frequently simplified to
 
 ```scad
-rotate([0,180,0]) { ... }
+rotate([ 0, 180, 0 ]) {
+  ...
+}
+
 ```
 
 When specifying a single axis the 'v' argument allows you to specify
@@ -2778,7 +3123,10 @@ which axis is the basis for rotation. For example, the equivalent to the
 above, to rotate just around y
 
 ```scad
-rotate(a=180, v=[0,1,0]) { ... }
+rotate(a = 180, v = [ 0, 1, 0 ]) {
+  ...
+}
+
 ```
 
 When specifying a single axis, 'v' is a
@@ -2788,10 +3136,13 @@ rotate your object 45 degrees around the axis defined by the vector
 [1,1,0],
 
 ```scad
-rotate(a=45, v=[1,1,0]) { ... }
+rotate(a = 45, v = [ 1, 1, 0 ]) {
+  ...
+}
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG)
+<a href="/wiki/File:OpenSCAD_rotate()_example.JPG" class="image" title="image of result of rotate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG width=180.6 height=165.0/></a>
 
 Rotate with a *single scalar argument* rotates around the Z axis. This
 is useful in 2D contexts where that is the only axis for rotation. For
@@ -2799,13 +3150,14 @@ example:
 
 ```scad
 rotate(45) square(10);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/b/b9/Example_2D_Rotate.JPG)
+<a href="/wiki/File:Example_2D_Rotate.JPG" class="image" title="Result of OpenSCAD rotate(45) as 2D render"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b9/Example_2D_Rotate.JPG width=211.8 height=193.2/></a>
 
 ##### Rotation rule help
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png)
+<a href="/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
 
 <a href="/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
 
@@ -2814,7 +3166,8 @@ Right-hand grip rule
 For the case of:
 
 ```scad
-rotate([a, b, c]) { ... };
+rotate([ a, b, c ]){...};
+
 ```
 
 "a" is a rotation about the X axis, from the +Y axis, toward the +Z
@@ -2834,18 +3187,23 @@ appropriately, this is the *spherical coordinate system*.
 So, to construct a cylinder from the origin to some other point (x,y,z):
 
 ```scad
-x= 10; y = 10; z = 10; // point coordinates of end of cylinder
- 
-length = norm([x,y,z]);  // radial distance
-b = acos(z/length); // inclination angle
-c = atan2(y,x);     // azimuthal angle
+x = 10;
+y = 10;
+z = 10; // point coordinates of end of cylinder
 
-rotate([0, b, c]) 
-    cylinder(h=length, r=0.5);
-%cube([x,y,z]); // corner of cube should coincide with end of cylinder
+length = norm([ x, y, z ]); // radial distance
+b = acos(z / length);       // inclination angle
+c = atan2(y, x);            // azimuthal angle
+
+rotate([ 0, b, c ]) cylinder(h = length, r = 0.5);
+% cube([
+  x, y,
+  z
+]); // corner of cube should coincide with end of cylinder
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG)
+<a href="/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG" class="image" title="Example of OpenSCAD Rotate() used as a spherical coordinate system."><img src=https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG width=190.8 height=193.2/></a>
 */
 module rotate(angles) { /* group */ }
 
@@ -2905,10 +3263,13 @@ cause undesired effects.
 #### Usage
 
 ```scad
-rotate_extrude(angle = 360, convexity = 2) {...}
+rotate_extrude(angle = 360, convexity = 2) {
+  ...
+}
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png)
+<a href="/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
 
 <a href="/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
 
@@ -2920,9 +3281,9 @@ You must use parameter names due to a backward compatibility issue.
 setting the convexity parameter (the default is not 10, but 10 is a
 "good" value to try). See explanation further down.
 
-**angle** [Note: Requires version 2019.05] : Defaults to 360.
-Specifies the number of degrees to sweep, starting at the positive X
-axis. The direction of the sweep follows the
+**angle** <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span> : Defaults to
+360. Specifies the number of degrees to sweep, starting at the positive
+X axis. The direction of the sweep follows the
 <a href="https://en.wikipedia.org/wiki/right-hand_rule" class="extiw" title="wikipedia:right-hand rule">Right Hand Rule</a>, hence a negative
 angle sweeps clockwise.
 
@@ -2938,49 +3299,43 @@ details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Feat
 
 #### Examples
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rotate_extrude_wiki_2D.jpg/400px-Rotate_extrude_wiki_2D.jpg)
-
-→![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Openscad_rotext_01.jpg/400px-Openscad_rotext_01.jpg)
+<a href="/wiki/File:Rotate_extrude_wiki_2D.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rotate_extrude_wiki_2D.jpg/400px-Rotate_extrude_wiki_2D.jpg width=200.0 height=151.0/></a>→<a href="/wiki/File:Openscad_rotext_01.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Openscad_rotext_01.jpg/400px-Openscad_rotext_01.jpg width=200.0 height=150.0/></a>
 
 A simple torus can be constructed using a rotational extrude.
 
 ```scad
-rotate_extrude(convexity = 10)
-translate([2, 0, 0])
-circle(r = 1);
+rotate_extrude(convexity = 10) translate([ 2, 0, 0 ])
+  circle(r = 1);
+
 ```
 
 #### Mesh Refinement
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg)
-
-→![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Openscad_rotext_02.jpg/400px-Openscad_rotext_02.jpg)
+<a href="/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="/wiki/File:Openscad_rotext_02.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Openscad_rotext_02.jpg/400px-Openscad_rotext_02.jpg width=200.0 height=150.0/></a>
 
 Increasing the number of fragments composing the 2D shape improves the
 quality of the mesh, but takes longer to render.
 
 ```scad
-rotate_extrude(convexity = 10)
-translate([2, 0, 0])
-circle(r = 1, $fn = 100);
+rotate_extrude(convexity = 10) translate([ 2, 0, 0 ])
+  circle(r = 1, $fn = 100);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg)
-
-→![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Openscad_rotext_03.jpg/400px-Openscad_rotext_03.jpg)
+<a href="/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="/wiki/File:Openscad_rotext_03.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Openscad_rotext_03.jpg/400px-Openscad_rotext_03.jpg width=200.0 height=150.0/></a>
 
 The number of fragments used by the extrusion can also be increased.
 
 ```scad
 rotate_extrude(convexity = 10, $fn = 100)
-translate([2, 0, 0])
-circle(r = 1, $fn = 100);
+  translate([ 2, 0, 0 ]) circle(r = 1, $fn = 100);
+
 ```
 
 Using the parameter angle (with OpenSCAD versions 2016.xx), a hook can
 be modeled .
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hook.png/220px-Hook.png)
+<a href="/wiki/File:Hook.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hook.png/220px-Hook.png width=176.0 height=108.0/></a>
 
 <a href="/wiki/File:Hook.png" class="internal" title="Enlarge"></a>
 
@@ -2988,13 +3343,14 @@ OpenSCAD - a hook
 
 ```scad
 eps = 0.01;
-translate([eps, 60, 0])
-   rotate_extrude(angle=270, convexity=10)
-       translate([40, 0]) circle(10);
-rotate_extrude(angle=90, convexity=10)
-   translate([20, 0]) circle(10);
-translate([20, eps, 0])
-   rotate([90, 0, 0]) cylinder(r=10, h=80+eps);
+translate([ eps, 60, 0 ])
+  rotate_extrude(angle = 270, convexity = 10)
+    translate([ 40, 0 ]) circle(10);
+rotate_extrude(angle = 90, convexity = 10)
+  translate([ 20, 0 ]) circle(10);
+translate([ 20, eps, 0 ]) rotate([ 90, 0, 0 ])
+  cylinder(r = 10, h = 80 + eps);
+
 ```
 
 #### Extruding a Polygon
@@ -3007,16 +3363,20 @@ has been rotated 90 degrees to show how the rotation appears; the
 `rotate_extrude()` needs it flat).
 
 ```scad
-rotate([90,0,0])        polygon( points=[[0,0],[2,1],[1,2],[1,3],[3,4],[0,5]] );
+rotate([ 90, 0, 0 ]) polygon(points = [
+  [ 0, 0 ], [ 2, 1 ], [ 1, 2 ], [ 1, 3 ], [ 3, 4 ], [ 0, 5 ]
+]);
+
 ```
 
 ```scad
-rotate_extrude($fn=200) polygon( points=[[0,0],[2,1],[1,2],[1,3],[3,4],[0,5]] );
+rotate_extrude($fn = 200) polygon(points = [
+  [ 0, 0 ], [ 2, 1 ], [ 1, 2 ], [ 1, 3 ], [ 3, 4 ], [ 0, 5 ]
+]);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg)
-
-→![](https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png)→![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png)
+<a href="/wiki/File:Rotate_extrude_wiki_2D_B.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg width=180.0 height=143.4/></a>→<a href="/wiki/File:Openscad_polygon_extrusion_1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png width=180.0 height=150.6/></a>→<a href="/wiki/File:Openscad_polygon_extrusion_2.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png width=180.0 height=148.8/></a>
 
 For more information on polygons, please see: [2D Primitives:
 Polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_Primitives#polygon "OpenSCAD User Manual/2D Primitives").
@@ -3028,16 +3388,19 @@ Scales its child elements using the specified vector. The argument name
 is optional.
 
 ```scad
-Usage Example:
-scale(v = [x, y, z]) { ... }
+Usage Example : scale(v = [ x, y, z ]) {
+  ...
+}
+
 ```
 
 ```scad
 cube(10);
-translate([15,0,0]) scale([0.5,1,2]) cube(10);
+translate([ 15, 0, 0 ]) scale([ 0.5, 1, 2 ]) cube(10);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG)
+<a href="/wiki/File:OpenSCAD_scale()_example.JPG" class="image" title="Image showing result of scale() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG width=215.4 height=226.8/></a>
 */
 module scale(v) { /* group */ }
 
@@ -3046,17 +3409,19 @@ Translates (moves) its child elements along the specified vector. The
 argument name is optional.
 
 ```scad
-Example:
-translate(v = [x, y, z]) { ... }
+Example : translate(v = [ x, y, z ]) {
+  ...
+}
+
 ```
 
 ```scad
-cube(2,center = true); 
-translate([5,0,0]) 
-   sphere(1,center = true);
+cube(2, center = true);
+translate([ 5, 0, 0 ]) sphere(1, center = true);
+
 ```
 
-![](https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG)
+<a href="/wiki/File:OpenSCAD_translate()_example.JPG" class="image" title="image of result of the translate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG width=231.0 height=191.4/></a>
 */
 module translate(v) { /* group */ }
 
@@ -3065,14 +3430,16 @@ Creates a union of all its child nodes. This is the **sum** of all
 children (logical **or**).  
 May be used with either 2D or 3D objects, but don't mix them.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Openscad_union.jpg/400px-Openscad_union.jpg)
+<a href="/wiki/File:Openscad_union.jpg" class="image" title="Union"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Openscad_union.jpg/400px-Openscad_union.jpg width=200.0 height=150.0/></a>
 
 ```scad
-//Usage example:
+// Usage example:
 union() {
-    cylinder (h = 4, r=1, center = true, $fn=100);
-    rotate ([90,0,0]) cylinder (h = 4, r=0.9, center = true, $fn=100);
+  cylinder(h = 4, r = 1, center = true, $fn = 100);
+  rotate([ 90, 0, 0 ])
+    cylinder(h = 4, r = 0.9, center = true, $fn = 100);
 }
+
 ```
 
 Remark: union is implicit when not used. But it is mandatory, for
@@ -3097,12 +3464,11 @@ a warning on most platforms:
 size = 10;
 rotation = 17;
 union() {
-    rotate([rotation, 0, 0])
-       cube(size);
-    rotate([rotation, 0, 0])
-       translate([0, 0, size])
-       cube([2, 3, 4]);
+  rotate([ rotation, 0, 0 ]) cube(size);
+  rotate([ rotation, 0, 0 ]) translate([ 0, 0, size ])
+    cube([ 2, 3, 4 ]);
 }
+
 ```
 
 The solution is to always use a small value called an epsilon when
@@ -3116,12 +3482,11 @@ size = 10;
 rotation = 17;
 eps = 0.01;
 union() {
-    rotate([rotation, 0, 0])
-       cube(size);
-    rotate([rotation, 0, 0])
-       translate([0, 0, size-eps])
-       cube([2, 3, 4+eps]);
+  rotate([ rotation, 0, 0 ]) cube(size);
+  rotate([ rotation, 0, 0 ]) translate([ 0, 0, size - eps ])
+    cube([ 2, 3, 4 + eps ]);
 }
+
 ```
 */
 module union() { /* group */ }
@@ -3133,9 +3498,11 @@ a signed decimal number.
 **Usage examples:**
 
 ```scad
-abs(-5.0);  returns 5.0
-abs(0);     returns 0.0
-abs(8.0);   returns 8.0
+abs(-5.0);
+returns 5.0 abs(0);
+returns 0.0 abs(8.0);
+returns 8.0
+
 ```
 */
 function abs(x) = 0;
@@ -3176,8 +3543,9 @@ See: <a href="https://en.wikipedia.org/wiki/Atan2" class="extiw" title="w:Atan2"
 **Usage examples:**
 
 ```scad
-atan2(5.0,-5.0);     //result: 135 degrees. atan() would give -45
-atan2(y,x);          //angle between (1,0) and (x,y) = angle around z-axis
+atan2(5.0, -5.0); // result: 135 degrees. atan() would give -45
+atan2(y, x); // angle between (1,0) and (x,y) = angle around z-axis
+
 ```
 
 ## Other Mathematical Functions
@@ -3193,13 +3561,14 @@ necessary.
 See: <a href="https://en.wikipedia.org/wiki/Ceil_function" class="extiw" title="w:Ceil function">Ceil Function</a>
 
 ```scad
-echo(ceil(4.4),ceil(-4.4));     // produces ECHO: 5, -4
+echo(ceil(4.4), ceil(-4.4)); // produces ECHO: 5, -4
+
 ```
 */
 function ceil(x) = 0;
 
 /**
-[Note: Requires version 2015.03]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
 
 Convert numbers to a string containing character with the corresponding
 code. OpenSCAD uses Unicode, so the number is interpreted as Unicode
@@ -3225,13 +3594,14 @@ Convert all code points produced by the range argument to a string.
 **Examples**
 
 ```scad
-echo(chr(65), chr(97));      // ECHO: "A", "a"
-echo(chr(65, 97));           // ECHO: "Aa"
-echo(chr([66, 98]));         // ECHO: "Bb"
-echo(chr([97 : 2 : 102]));   // ECHO: "ace"
-echo(chr(-3));               // ECHO: ""
-echo(chr(9786), chr(9788));  // ECHO: "☺", "☼"
-echo(len(chr(9788)));        // ECHO: 1
+echo(chr(65), chr(97));     // ECHO: "A", "a"
+echo(chr(65, 97));          // ECHO: "Aa"
+echo(chr([ 66, 98 ]));      // ECHO: "Bb"
+echo(chr([97:2:102]));      // ECHO: "ace"
+echo(chr(-3));              // ECHO: ""
+echo(chr(9786), chr(9788)); // ECHO: "☺", "☼"
+echo(len(chr(9788)));       // ECHO: 1
+
 ```
 
 Note: When used with echo() the output to the console for character
@@ -3240,7 +3610,7 @@ codes greater than 127 is platform dependent.
 function chr(x) = 0;
 
 /**
-[Note: Requires version 2015.03]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
 
 Return a new vector that is the result of appending the elements of the
 supplied vectors.
@@ -3252,15 +3622,25 @@ vectors in this case.
 **Usage examples:**
 
 ```scad
-echo(concat("a","b","c","d","e","f"));          // produces ECHO: ["a", "b", "c", "d", "e", "f"]
-echo(concat(["a","b","c"],["d","e","f"]));      // produces ECHO: ["a", "b", "c", "d", "e", "f"]
-echo(concat(1,2,3,4,5,6));                      // produces ECHO: [1, 2, 3, 4, 5, 6]
+echo(concat(
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f")); // produces ECHO: ["a", "b", "c", "d", "e", "f"]
+echo(concat([ "a", "b", "c" ], [
+  "d", "e", "f"
+])); // produces ECHO: ["a", "b", "c", "d", "e", "f"]
+echo(concat(1, 2, 3, 4, 5, 6)); // produces ECHO: [1, 2, 3, 4, 5, 6]
+
 ```
 
 Vector of vectors
 
 ```scad
-echo(concat([ [1],[2] ], [ [3] ]));             // produces ECHO: [[1], [2], [3]]
+echo(concat([ [1], [2] ], [[3]])); // produces ECHO: [[1], [2], [3]]
+
 ```
 
 ***Note:*** All vectors passed to the function lose one nesting level.
@@ -3271,15 +3651,20 @@ fourth point is added to the polygon path, which used to resemble a
 triangle, making it a square now:
 
 ```scad
-polygon(concat([[0,0],[0,5],[5,5]], [[5,0]]));
+polygon(
+  concat([ [ 0, 0 ], [ 0, 5 ], [ 5, 5 ] ], [[ 5, 0 ]]));
+
 ```
 
 Contrast with strings
 
 ```scad
-echo(concat([1,2,3],[4,5,6]));                   // produces ECHO: [1, 2, 3, 4, 5, 6]
-echo(concat("abc","def"));                       // produces ECHO: ["abc", "def"]
-echo(str("abc","def"));                          // produces ECHO: "abcdef"
+echo(concat([ 1, 2, 3 ], [
+  4, 5, 6
+])); // produces ECHO: [1, 2, 3, 4, 5, 6]
+echo(concat("abc", "def")); // produces ECHO: ["abc", "def"]
+echo(str("abc", "def"));    // produces ECHO: "abcdef"
+
 ```
 */
 function concat(args) = 0;
@@ -3290,19 +3675,36 @@ class="extiw" title="w:Cosine">Cosine</a>
 
 **Parameters**
 
+<degrees>  
 Decimal. Angle in degrees.
 
-<strong>Usage Example:</strong>
-```scad
-for(i=[0:36])
-    translate([i*10,0,0])
-        cylinder(r=5,h=cos(i*10)*50+60);
-```
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Cos_Function.png/220px-OpenSCAD_Cos_Function.png)
+<table width="75%">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Usage Example:</strong></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>
+<pre><code>
+for (i = [0:36])
+  translate([ i * 10, 0, 0 ])
+    cylinder(r = 5, h = cos(i * 10) * 50 + 60);
+
+</code></pre>
+</td>
+<td>
+<a href="/wiki/File:OpenSCAD_Cos_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Cos_Function.png/220px-OpenSCAD_Cos_Function.png width=176.0 height=98.4/></a>
 <a href="/wiki/File:OpenSCAD_Cos_Function.png" class="internal" title="Enlarge"></a>
-
-OpenSCAD Cos Function
-
+OpenSCAD Cos Function‎
+</td>
+</tr>
+</tbody>
+</table>
 */
 function cos(x) = 0;
 
@@ -3322,12 +3724,17 @@ vectors not of the same length produces 'undef'.
 **Usage examples:**
 
 ```scad
-echo(cross([2, 3, 4], [5, 6, 7]));     // produces ECHO: [-3, 6, -3]
-echo(cross([2, 1, -3], [0, 4, 5]));    // produces ECHO: [17, -10, 8]
-echo(cross([2, 1], [0, 4]));           // produces ECHO: 8
-echo(cross([1, -3], [4, 5]));          // produces ECHO: 17
-echo(cross([2, 1, -3], [4, 5]));       // produces ECHO: undef
-echo(cross([2, 3, 4], "5"));           // produces ECHO: undef
+echo(cross([ 2, 3, 4 ], [
+  5, 6, 7
+])); // produces ECHO: [-3, 6, -3]
+echo(cross([ 2, 1, -3 ], [
+  0, 4, 5
+])); // produces ECHO: [17, -10, 8]
+echo(cross([ 2, 1 ], [ 0, 4 ]));     // produces ECHO: 8
+echo(cross([ 1, -3 ], [ 4, 5 ]));    // produces ECHO: 17
+echo(cross([ 2, 1, -3 ], [ 4, 5 ])); // produces ECHO: undef
+echo(cross([ 2, 3, 4 ], "5"));       // produces ECHO: undef
+
 ```
 
 For any two vectors *a* and *b* in 2D or in 3D, the following holds:
@@ -3346,7 +3753,8 @@ of x, which is the number e raised to the power x. See:
 <a href="https://en.wikipedia.org/wiki/Exponent" class="extiw" title="w:Exponent">Exponent</a>
 
 ```scad
-echo(exp(1),exp(ln(3)*4));    // produces ECHO: 2.71828, 81
+echo(exp(1), exp(ln(3) * 4)); // produces ECHO: 2.71828, 81
+
 ```
 */
 function exp(x) = 0;
@@ -3359,13 +3767,14 @@ See:
 <a href="https://en.wikipedia.org/wiki/Floor_function" class="extiw" title="w:Floor function">Floor Function</a>
 
 ```scad
-echo(floor(4.4),floor(-4.4));    // produces ECHO: 4, -5
+echo(floor(4.4), floor(-4.4)); // produces ECHO: 4, -5
+
 ```
 */
 function floor(x) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 ```scad
 echo("resulting in true:");
@@ -3378,43 +3787,45 @@ echo(is_bool("test"));
 echo(is_bool(0.1));
 echo(is_bool(1));
 echo(is_bool(10));
-echo(is_bool(0/0)); //nan
-echo(is_bool((1/0)/(1/0)));  //nan
-echo(is_bool(1/0));  //inf
-echo(is_bool(-1/0));  //-inf
+echo(is_bool(0 / 0));             // nan
+echo(is_bool((1 / 0) / (1 / 0))); // nan
+echo(is_bool(1 / 0));             // inf
+echo(is_bool(-1 / 0));            //-inf
 echo(is_bool(undef));
+
 ```
 */
 function is_bool(x) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 ```scad
 echo("returning true");
 echo(is_list([]));
 echo(is_list([1]));
-echo(is_list([1,2]));
+echo(is_list([ 1, 2 ]));
 echo(is_list([true]));
-echo(is_list([1,2,[5,6],"test"]));
+echo(is_list([ 1, 2, [ 5, 6 ], "test" ]));
 echo("--------");
 echo("returning false");
 echo(is_list(1));
-echo(is_list(1/0));
-echo(is_list(((1/0)/(1/0))));
+echo(is_list(1 / 0));
+echo(is_list(((1 / 0) / (1 / 0))));
 echo(is_list("test"));
 echo(is_list(true));
 echo(is_list(false));
 echo("--------");
 echo("causing warnings:");
 echo(is_list());
-echo(is_list(1,2));
+echo(is_list(1, 2));
+
 ```
 */
 function is_list(x) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 ```scad
 echo("a number is a number:");
@@ -3423,12 +3834,12 @@ echo(is_num(1));
 echo(is_num(10));
 
 echo("inf is a number:");
-echo(is_num(+1/0)); //+inf
-echo(is_num(-1/0)); //-inf
+echo(is_num(+1 / 0)); //+inf
+echo(is_num(-1 / 0)); //-inf
 
 echo("nan is not a number:");
-echo(is_num(0/0)); //nan
-echo(is_num((1/0)/(1/0)));  //nan
+echo(is_num(0 / 0));             // nan
+echo(is_num((1 / 0) / (1 / 0))); // nan
 
 echo("resulting in false:");
 echo(is_num([]));
@@ -3436,12 +3847,13 @@ echo(is_num([1]));
 echo(is_num("test"));
 echo(is_num(false));
 echo(is_num(undef));
+
 ```
 */
 function is_num(x) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 ```scad
 echo("resulting in true:");
@@ -3454,17 +3866,18 @@ echo(is_string(10));
 echo(is_string([]));
 echo(is_string([1]));
 echo(is_string(false));
-echo(is_string(0/0)); //nan
-echo(is_string((1/0)/(1/0)));  //nan
-echo(is_string(1/0));  //inf
-echo(is_string(-1/0));  //-inf
+echo(is_string(0 / 0));             // nan
+echo(is_string((1 / 0) / (1 / 0))); // nan
+echo(is_string(1 / 0));             // inf
+echo(is_string(-1 / 0));            //-inf
 echo(is_string(undef));
+
 ```
 */
 function is_string(x) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 is_undef accepts one parameter. If the parameter is undef, this function
 returns true. If the parameter is not undef, it returns false. When
@@ -3475,28 +3888,33 @@ unknown variable 'a'. \`
 The alternative is code like this:
 
 ```scad
-if(a==undef){
-    //code goes here
+if (a == undef) {
+  // code goes here
 }
+
 ```
 
 or
 
 ```scad
-b = (a==undef) ? true : false;
+b = (a == undef) ? true : false;
+
 ```
 
 causes
 
 ```scad
-WARNING: Ignoring unknown variable 'a'.
+WARNING : Ignoring unknown variable 'a'.
+
 ```
 
 is_undef also works for special variables, allowing for things like
 this:
 
 ```scad
-exploded = is_undef($exploded) ? 0 : $exploded; // 1 for exploded view
+exploded =
+  is_undef($exploded) ? 0 : $exploded; // 1 for exploded view
+
 ```
 
 #### legacy support
@@ -3504,7 +3922,8 @@ exploded = is_undef($exploded) ? 0 : $exploded; // 1 for exploded view
 For older openscad version, is_undef can be emulated with
 
 ```scad
-function is_undef ( a ) = (undef == a) ;
+function is_undef(a) = (undef == a);
+
 ```
 
 which of-course causes warning(s), but requires no changes to code
@@ -3516,7 +3935,8 @@ function is_undef(x) = 0;
 returns the number of characters in a text.
 
 ```scad
-echo(len("Hello world"));    // 11
+echo(len("Hello world")); // 11
+
 ```
 */
 /**
@@ -3526,30 +3946,35 @@ vector or a string parameter.
 **Usage examples:**
 
 ```scad
-; len_str1=len(str1);
-echo(str1,len_str1);
+str1 = "abcdef";
+len_str1 = len(str1);
+echo(str1, len_str1);
 
-a=6; len_a=len(a);
-echo(a,len_a);
+a = 6;
+len_a = len(a);
+echo(a, len_a);
 
-array1=[1,2,3,4,5,6,7,8]; len_array1=len(array1);
-echo(array1,len_array1);
+array1 = [ 1, 2, 3, 4, 5, 6, 7, 8 ];
+len_array1 = len(array1);
+echo(array1, len_array1);
 
-array2=[[0,0],[0,1],[1,0],[1,1]]; len_array2=len(array2);
-echo(array2,len_array2);
+array2 = [ [ 0, 0 ], [ 0, 1 ], [ 1, 0 ], [ 1, 1 ] ];
+len_array2 = len(array2);
+echo(array2, len_array2);
 
-len_array2_2=len(array2[2]);
-echo(array2[2],len_array2_2);
+len_array2_2 = len(array2[2]);
+echo(array2[2], len_array2_2);
+
 ```
 
 **Results:**
 
 ```scad
-ECHO: "abcdef", 6
-An error is raised
-ECHO: [1, 2, 3, 4, 5, 6, 7, 8], 8
-ECHO: [[0, 0], [0, 1], [1, 0], [1, 1]], 4
-ECHO: [1, 0], 2
+    ECHO: "abcdef", 6
+    An error is raised
+    ECHO: [1, 2, 3, 4, 5, 6, 7, 8], 8
+    ECHO: [[0, 0], [0, 1], [1, 0], [1, 1]], 4
+    ECHO: [1, 0], 2
 ```
 
 This function allows (e.g.) the parsing of an array, a vector or a
@@ -3558,18 +3983,19 @@ string.
 **Usage examples:**
 
 ```scad
-;
-for (i=[0:len(str2)-1])
-    echo(str("digit ",i+1,"  :  ",str2[i]));
+str2 = "4711";
+for (i = [0:len(str2) - 1])
+  echo(str("digit ", i + 1, "  :  ", str2[i]));
+
 ```
 
 **Results:**
 
 ```scad
-ECHO: "digit 1  :  4"
-ECHO: "digit 2  :  7"
-ECHO: "digit 3  :  1"
-ECHO: "digit 4  :  1"
+    ECHO: "digit 1  :  4"
+    ECHO: "digit 2  :  7"
+    ECHO: "digit 3  :  1"
+    ECHO: "digit 4  :  1"
 ```
 
 Note that the len() function is not defined when a simple variable is
@@ -3583,17 +4009,20 @@ For example
 
 ```scad
 module doIt(size) {
-    if (len(size) == undef) {
-        // size is a number, use it for x,y & z. (or could be undef)
-        do([size,size,size]);
-    } else { 
-        // size is a vector, (could be a string but that would be stupid)
-        do(size);
-    }
+  if (len(size) == undef) {
+    // size is a number, use it for x,y & z. (or could be undef)
+    do
+      ([ size, size, size ]);
+  } else {
+    // size is a vector, (could be a string but that would be stupid)
+    do
+      (size);
+  }
 }
- 
-doIt(5);    // equivalent to [5,5,5]
-doIt([5,5,5]);  // similar to cube(5) v's cube([5,5,5])
+
+doIt(5);           // equivalent to [5,5,5]
+doIt([ 5, 5, 5 ]); // similar to cube(5) v's cube([5,5,5])
+
 ```
 */
 function len(x) = 0;
@@ -3621,35 +4050,49 @@ key
 A lookup key
 
 <key,value> array  
-
 keys and values
-<strong>Notes</strong>
 
+<table width="100%">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Notes</strong>
+<p><br />
 There is a bug in which out-of-range keys return the first value in the
 list. Newer versions of Openscad should use the top or bottom end of the
 table as appropriate instead.</p></td>
-
-<strong>Usage example:</strong>
-- Create a 3D chart made from cylinders of different heights.
-
-```scad
+<td><strong>Usage example:</strong>
+<ul>
+<li>Create a 3D chart made from cylinders of different heights.</li>
+</ul></td>
+</tr>
+<tr class="even">
+<td>
+<pre><code>
 function get_cylinder_h(p) = lookup(p, [
-        [ -200, 5 ],
-        [ -50, 20 ],
-        [ -20, 18 ],
-        [ +80, 25 ],
-        [ +150, 2 ]
+  [ -200, 5 ], [ -50, 20 ], [ -20, 18 ], [ +80, 25 ],
+  [ +150, 2 ]
 ]);
- 
- for (i = [-100:5:+100]) {
-    // echo(i, get_cylinder_h(i));
-    translate([ i, 0, -30 ]) cylinder(r1 = 6, r2 = 2, h = get_cylinder_h(i)*3);
- }
-```
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/OpenSCAD_Lookup_Function.png/220px-OpenSCAD_Lookup_Function.png)
+
+for (i = [-100:5:+100]) {
+  // echo(i, get_cylinder_h(i));
+  translate([ i, 0, -30 ])
+    cylinder(r1 = 6, r2 = 2, h = get_cylinder_h(i) * 3);
+}
+
+</code></pre>
+</td>
+<td>
+<a href="/wiki/File:OpenSCAD_Lookup_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/OpenSCAD_Lookup_Function.png/220px-OpenSCAD_Lookup_Function.png width=176.0 height=101.6/></a>
 <a href="/wiki/File:OpenSCAD_Lookup_Function.png" class="internal" title="Enlarge"></a>
 OpenSCAD Lookup Function
-
+</td>
+</tr>
+</tbody>
+</table>
 */
 function lookup(key, vals) = 0;
 
@@ -3660,30 +4103,28 @@ parameter, returns the maximum element of that vector.
 **Parameters**
 
 ```scad
-max(n,n{,n}...)
-max(vector)
+max(n, n{, n}...) max(vector)
+
 ```
 
 <n>  
 Two or more decimals
 
 <vector>  
-Single vector of decimals [Note: Requires version 2014.06].
+Single vector of decimals <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.06</span></span>]</span>.
 
 **Usage Example:**
 
 ```scad
-max(3.0,5.0)
-max(8.0,3.0,4.0,5.0)
-max([8,3,4,5])
+max(3.0, 5.0) max(8.0, 3.0, 4.0, 5.0) max([ 8, 3, 4, 5 ])
+
 ```
 
 **Results:**
 
 ```scad
-5
-8
-8
+5 8 8
+
 ```
 */
 function max(args) = 0;
@@ -3695,30 +4136,28 @@ parameter, returns the minimum element of that vector.
 **Parameters**
 
 ```scad
-min(n,n{,n}...)
-min(vector)
+min(n, n{, n}...) min(vector)
+
 ```
 
 <n>  
 Two or more decimals
 
 <vector>  
-Single vector of decimals [Note: Requires version 2014.06].
+Single vector of decimals <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2014.06</span></span>]</span>.
 
 **Usage Example:**
 
 ```scad
-min(3.0,5.0)
-min(8.0,3.0,4.0,5.0)
-min([8,3,4,5])
+min(3.0, 5.0) min(8.0, 3.0, 4.0, 5.0) min([ 8, 3, 4, 5 ])
+
 ```
 
 **Results:**
 
 ```scad
-3
-3
-3
+3 3 3
+
 ```
 
 Looking for **mod** - it's not a function, see [modulo operator
@@ -3735,38 +4174,39 @@ elements in the vector or array.
 **Usage examples:**
 
 ```scad
-a=[1,2,3,4];
-;
-c=[];
-;
-e=[[1,2,3,4],[1,2,3],[1,2],[1]];
-echo(norm(a)); //5.47723
-echo(norm(b)); //undef
-echo(norm(c)); //0
-echo(norm(d)); //undef
-echo(norm(e[0])); //5.47723
-echo(norm(e[1])); //3.74166
-echo(norm(e[2])); //2.23607
-echo(norm(e[3])); //1
+a = [ 1, 2, 3, 4 ];
+b = "abcd";
+c = [];
+d = "";
+e = [ [ 1, 2, 3, 4 ], [ 1, 2, 3 ], [ 1, 2 ], [1] ];
+echo(norm(a));    // 5.47723
+echo(norm(b));    // undef
+echo(norm(c));    // 0
+echo(norm(d));    // undef
+echo(norm(e[0])); // 5.47723
+echo(norm(e[1])); // 3.74166
+echo(norm(e[2])); // 2.23607
+echo(norm(e[3])); // 1
+
 ```
 
 **Results:**
 
 ```scad
-ECHO: 5.47723
-ECHO: undef
-ECHO: 0
-ECHO: undef
-ECHO: 5.47723
-ECHO: 3.74166
-ECHO: 2.23607
-ECHO: 1
+    ECHO: 5.47723
+    ECHO: undef
+    ECHO: 0
+    ECHO: undef
+    ECHO: 5.47723
+    ECHO: 3.74166
+    ECHO: 2.23607
+    ECHO: 1
 ```
 */
 function norm(v) = 0;
 
 /**
-[Note: Requires version 2019.05]
+<span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
 
 Convert a character to a number representing the
 <a href="https://en.wikipedia.org/wiki/Unicode" class="external text">Unicode</a>
@@ -3790,9 +4230,10 @@ echo(ord("BCD"));
 echo([for (c = "Hello! 🙂") ord(c)]);
 // ECHO: [72, 101, 108, 108, 111, 33, 32, 128578]
 
-txt="1";
-echo(ord(txt)-48,txt);
+txt = "1";
+echo(ord(txt) - 48, txt);
 // ECHO: 1,"1" // only converts 1 character
+
 ```
 */
 function ord(c) = 0;
@@ -3816,22 +4257,26 @@ Decimal. Exponent.
 
 ```scad
 for (i = [0:5]) {
-    translate([i*25,0,0]) {
-        cylinder(h = pow(2,i)*5, r=10);
-        echo (i, pow(2,i));
-    }
+  translate([ i * 25, 0, 0 ]) {
+    cylinder(h = pow(2, i) * 5, r = 10);
+    echo(i, pow(2, i));
+  }
 }
+
 ```
 
 ```scad
-echo(pow(10,2)); // means 10^2 or 10*10
+echo(pow(10, 2)); // means 10^2 or 10*10
 // result: ECHO: 100
 
-echo(pow(10,3)); // means 10^3 or 10*10*10
+echo(pow(10, 3)); // means 10^3 or 10*10*10
 // result: ECHO: 1000
 
-echo(pow(125,1/3)); // means 125^(0.333...), which calculates the cube root of 125
+echo(pow(
+  125,
+  1 / 3)); // means 125^(0.333...), which calculates the cube root of 125
 // result: ECHO: 5
+
 ```
 */
 function pow(base, exp) = 0;
@@ -3861,23 +4306,25 @@ integer
 
 ```scad
 // get a single number
-single_rand = rands(0,10,1)[0];
+single_rand = rands(0, 10, 1)[0];
 echo(single_rand);
+
 ```
 
 ```scad
 // get a vector of 4 numbers
-seed=42;
-random_vect=rands(5,15,4,seed);
-echo( "Random Vector: ",random_vect);
-sphere(r=5);
-for(i=[0:3]) {
-    rotate(360*i/4) {
-    translate([10+random_vect[i],0,0])
-        sphere(r=random_vect[i]/2);
-    }
+seed = 42;
+random_vect = rands(5, 15, 4, seed);
+echo("Random Vector: ", random_vect);
+sphere(r = 5);
+for (i = [0:3]) {
+  rotate(360 * i / 4) {
+    translate([ 10 + random_vect[i], 0, 0 ])
+      sphere(r = random_vect[i] / 2);
+  }
 }
 // ECHO: "Random Vector: ", [8.7454, 12.9654, 14.5071, 6.83435]
+
 ```
 */
 function rands(min, max, count, seed_value=0) = 0;
@@ -3889,19 +4336,19 @@ respectively, if the numeric input is positive or negative.
 Some examples:  
 
 ```scad
-round(x.5) = x+1.
+    round(x.5) = x+1.
 
-round(x.49) = x.
+    round(x.49) = x.
 
-round(-(x.5)) = -(x+1).
+    round(-(x.5)) = -(x+1).
 
-round(-(x.49)) = -x.
+    round(-(x.49)) = -x.
 
-round(5.4); //-> 5
+    round(5.4); //-> 5
 
-round(5.5); //-> 6
+    round(5.5); //-> 6
 
-round(5.6); //-> 6
+    round(5.6); //-> 6
 
 ```
 */
@@ -3925,15 +4372,16 @@ Decimal. Value to find the sign of.
 sign(-5.0);
 sign(0);
 sign(8.0);
+
 ```
 
 **Results:**
 
 ```scad
--1.0
-0.0
-1.0
+- 1.0 0.0 1.0
+
 ```
+
 */
 function sign(x) = 0;
 
@@ -3943,26 +4391,65 @@ class="extiw" title="w:Trigonometric functions">Sine</a>
 
 **Parameters**
 
-
+<degrees>  
 Decimal. Angle in degrees.
 
-```scad
+<table width="75%">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Usage example 1:</strong></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>
+<pre><code>
 for (i = [0:5]) {
-    echo(360*i/6, sin(360*i/6)*80, cos(360*i/6)*80);
-        translate([sin(360*i/6)*80, cos(360*i/6)*80, 0 ])
-        cylinder(h = 200, r=10);
+  echo(
+    360 * i / 6, sin(360 * i / 6) * 80,
+    cos(360 * i / 6) * 80);
+  translate(
+    [ sin(360 * i / 6) * 80, cos(360 * i / 6) * 80, 0 ])
+    cylinder(h = 200, r = 10);
 }
-```
 
-```scad
-for(i=[0:36])
-    translate([i*10,0,0])
-        cylinder(r=5,h=sin(i*10)*50+60);
-```
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/OpenSCAD_Sin_Function.png/220px-OpenSCAD_Sin_Function.png)
+</code></pre>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<table width="75%">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Usage example 2:</strong></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>
+<pre><code>
+for (i = [0:36])
+  translate([ i * 10, 0, 0 ])
+    cylinder(r = 5, h = sin(i * 10) * 50 + 60);
+
+</code></pre>
+</td>
+<td>
+<a href="/wiki/File:OpenSCAD_Sin_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/OpenSCAD_Sin_Function.png/220px-OpenSCAD_Sin_Function.png width=176.0 height=90.4/></a>
 <a href="/wiki/File:OpenSCAD_Sin_Function.png" class="internal" title="Enlarge"></a>
-
 OpenSCAD Sin Function
+</td>
+</tr>
+</tbody>
+</table>
 
 */
 function sin(x) = 0;
@@ -3973,7 +4460,8 @@ Mathematical **square root** function.
 **Usage Examples:**
 
 ```scad
-translate([sqrt(100),0,0])sphere(100);
+translate([ sqrt(100), 0, 0 ]) sphere(100);
+
 ```
 
 ## Infinities and NaNs
@@ -3986,7 +4474,8 @@ infinity by the special values "Inf" or "-Inf". It also allow
 representation of creatures like sqrt(-1) or 0/0 as "NaN", an
 abbreviation for "Not A Number". Some very nice explanations can be
 found on the web, for example the <a href="http://pubs.opengroup.org/onlinepubs/009695399/basedefs/math.h.html"
-class="external text">Open Group's site on math.h</a> or <a href="https://en.wikipedia.org/wiki/IEEE_754-1985#Representation_of_non-numbers"
+class="external text" rel="nofollow">Open Group's site on math.h</a> or
+<a href="https://en.wikipedia.org/wiki/IEEE_754-1985#Representation_of_non-numbers"
 class="extiw" title="w:IEEE 754-1985">Wikipedia's page on the IEEE 754
 number format</a>. However OpenSCAD is it's own language so it may not
 exactly match everything that happens in C. For example, OpenSCAD uses
@@ -4052,8 +4541,8 @@ late 2015.
 </tbody>
 </table>
 
-Retrieved from
-"<https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Mathematical_Functions&oldid=4070836>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Mathematical_Functions&amp;oldid=4070836"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Mathematical_Functions&amp;oldid=4070836</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -4068,16 +4557,17 @@ Convert all arguments to strings and concatenate.
 **Usage examples:**
 
 ```scad
-number=2;
-echo ("This is ",number,3," and that's it.");
-echo (str("This is ",number,3," and that's it."));
+number = 2;
+echo("This is ", number, 3, " and that's it.");
+echo(str("This is ", number, 3, " and that's it."));
+
 ```
 
 **Results:**
 
 ```scad
-ECHO: "This is ", 2, 3, " and that's it."
-ECHO: "This is 23 and that's it."
+    ECHO: "This is ", 2, 3, " and that's it."
+    ECHO: "This is 23 and that's it."
 ```
 */
 function str(args) = 0;
@@ -4088,17 +4578,35 @@ class="extiw" title="w:Trigonometric functions">Tangent</a>
 
 **Parameters**
 
-  
+<degrees>  
 Decimal. Angle in degrees.
 
-<strong>Usage example:</strong>
-```scad
+<table width="75%">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td><strong>Usage example:</strong></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>
+<pre><code>
 for (i = [0:5]) {
-    echo(360*i/6, tan(360*i/6)*80);
-        translate([tan(360*i/6)*80, 0, 0 ])
-        cylinder(h = 200, r=10);
+  echo(360 * i / 6, tan(360 * i / 6) * 80);
+  translate([ tan(360 * i / 6) * 80, 0, 0 ])
+    cylinder(h = 200, r = 10);
 }
-```
+
+</code></pre>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
 */
 function tan(x) = 0;
 

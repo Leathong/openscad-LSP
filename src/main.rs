@@ -252,7 +252,11 @@ impl Item {
             _ => format!("```scad\n{}\n```", label),
         };
         if let Some(doc) = &self.doc {
-            label = format!("{}\n---\n\n{}\n", label, doc);
+            if self.is_builtin {
+                label = format!("{}\n---\n\n{}\n", label, doc);
+            } else {
+                label = format!("{}\n---\n\n<pre>\n{}\n</pre>\n", label, doc);
+            }
         }
         // print!("{}", &label);
         label
@@ -462,16 +466,18 @@ impl ParsedCode {
         self.gen_items();
     }
 
-    fn extract_doc(&self, doc: &str) -> String {
+    fn extract_doc(&self, doc: &str, builtin: bool) -> String {
         lazy_static! {
             static ref DOC_RE: Regex =
-                Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(^\s*\*+/)|(^\s* )").unwrap();
+                Regex::new(r"(?m)(^\s*//+)|(^\s*/\*+\n?)|(\*+/)|(^\s* )").unwrap();
+            static ref BTI_RE: Regex = Regex::new(r"(?m)(^\s*/\*+\n?)|(\*+/)").unwrap();
         };
 
-        DOC_RE
-            .replace_all(doc, "")
-            .replace(' ', "\u{00a0}")
-            .replace('\n', "  \n")
+        if builtin {
+            BTI_RE.replace_all(doc, "").to_string()
+        } else {
+            DOC_RE.replace_all(doc, "").to_string()
+        }
     }
 
     fn gen_items(&mut self) {
@@ -489,7 +495,7 @@ impl ParsedCode {
                 if last_code_line > 0 && node.start_position().row == last_code_line {
                     let last = ret.last_mut().unwrap();
                     let doc_str = node_text(&self.code, node);
-                    let newdoc = self.extract_doc(doc_str);
+                    let newdoc = self.extract_doc(doc_str, self.is_builtin);
 
                     if last.doc.is_some() {
                         last.doc.as_mut().unwrap().push_str("  \n");
@@ -518,8 +524,11 @@ impl ParsedCode {
                 doc_node = Some(*node);
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
+                    item.is_builtin = self.is_builtin;
                     item.url = Some(self.url.clone());
-                    item.doc = doc.as_ref().map(|doc| self.extract_doc(doc));
+                    item.doc = doc
+                        .as_ref()
+                        .map(|doc| self.extract_doc(doc, self.is_builtin));
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
                     last_code_line = item.range.start.line as usize;
