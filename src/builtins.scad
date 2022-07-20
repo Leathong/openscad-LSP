@@ -156,6 +156,7 @@ MultiRange() {
 */
 module children(index) {}
 
+
 module echo(msgn) {}
 
 module import(file, center=false, dpi=96, convexity=1) {}
@@ -194,7 +195,7 @@ yields : cube(size = [ 1, 1, 1 ], center = false);
 
 **examples**:
 
-<a href="/wiki/File:OpenSCAD_example_Cube.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/OpenSCAD_example_Cube.jpg/150px-OpenSCAD_example_Cube.jpg width=150 height=143/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_example_Cube.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/OpenSCAD_example_Cube.jpg/150px-OpenSCAD_example_Cube.jpg width=150 height=143/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -210,7 +211,7 @@ cube(center = false, size = [ 18, 18, 18 ]);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_example_Box.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/OpenSCAD_example_Box.jpg/150px-OpenSCAD_example_Box.jpg width=150 height=126/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_example_Box.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/OpenSCAD_example_Box.jpg/150px-OpenSCAD_example_Box.jpg width=150 height=126/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -294,7 +295,7 @@ yields : cylinder(
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Cone_15x10x20.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_Cone_15x10x20.jpg/200px-OpenSCAD_Cone_15x10x20.jpg width=160.0 height=130.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cone_15x10x20.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_Cone_15x10x20.jpg/200px-OpenSCAD_Cone_15x10x20.jpg width=160.0 height=130.4/></a>
 
 ```scad
 // equivalent scripts
@@ -307,7 +308,7 @@ cylinder(15, d1 = 19, r2 = 19.5);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Cone_15x10x0.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/OpenSCAD_Cone_15x10x0.jpg/200px-OpenSCAD_Cone_15x10x0.jpg width=160.0 height=123.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cone_15x10x0.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/OpenSCAD_Cone_15x10x0.jpg/200px-OpenSCAD_Cone_15x10x0.jpg width=160.0 height=123.2/></a>
 
 ```scad
 // equivalent scripts
@@ -317,11 +318,11 @@ cylinder(h = 15, d1 = 20, d2 = 0, center = true);
 
 ```
 
-- <a href="/wiki/File:OpenSCAD_Cylinder_20x10_false.jpg" class="image"     title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/OpenSCAD_Cylinder_20x10_false.jpg/112px-OpenSCAD_Cylinder_20x10_false.jpg width=112 height=120/></a>
+- <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cylinder_20x10_false.jpg" class="image"     title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/OpenSCAD_Cylinder_20x10_false.jpg/112px-OpenSCAD_Cylinder_20x10_false.jpg width=112 height=120/></a>
 
 center = false
 
-- <a href="/wiki/File:OpenSCAD_Cylinder_20x10_true.jpg" class="image"     title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/OpenSCAD_Cylinder_20x10_true.jpg/100px-OpenSCAD_Cylinder_20x10_true.jpg width=100 height=120/></a>
+- <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cylinder_20x10_true.jpg" class="image"     title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/OpenSCAD_Cylinder_20x10_true.jpg/100px-OpenSCAD_Cylinder_20x10_true.jpg width=100 height=120/></a>
 
 center = true
 
@@ -347,11 +348,11 @@ rendering.
 However, use of small values can produce some interesting non circular
 objects. A few examples are show here:
 
-- <a href="/wiki/File:3_sided_fiqure.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/3_sided_fiqure.jpg/120px-3_sided_fiqure.jpg width=120 height=88/></a>
+- <a href="https://en.wikibooks.org/wiki/File:3_sided_fiqure.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/3_sided_fiqure.jpg/120px-3_sided_fiqure.jpg width=120 height=88/></a>
 
-- <a href="/wiki/File:4_sided_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/4_sided_pyramid.jpg/120px-4_sided_pyramid.jpg width=120 height=91/></a>
+- <a href="https://en.wikibooks.org/wiki/File:4_sided_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/4_sided_pyramid.jpg/120px-4_sided_pyramid.jpg width=120 height=91/></a>
 
-- <a href="/wiki/File:4_sided_part_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/4_sided_part_pyramid.jpg/120px-4_sided_part_pyramid.jpg width=120 height=104/></a>
+- <a href="https://en.wikibooks.org/wiki/File:4_sided_part_pyramid.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/4_sided_part_pyramid.jpg/120px-4_sided_part_pyramid.jpg width=120 height=104/></a>
 
 <!-- -->
 
@@ -373,7 +374,7 @@ hole larger than the true circle, the polygon must lie wholly outside of
 the circle (circumscribed). [Modules for circumscribed
 holes](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/undersized_circular_objects "OpenSCAD User Manual/undersized circular objects")
 
-- <a href="/wiki/File:OpenSCAD_Under_size_hole.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/OpenSCAD_Under_size_hole.jpg/120px-OpenSCAD_Under_size_hole.jpg width=120 height=114/></a>
+- <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Under_size_hole.jpg"     class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/OpenSCAD_Under_size_hole.jpg/120px-OpenSCAD_Under_size_hole.jpg width=120 height=114/></a>
 
 <!-- -->
 
@@ -466,11 +467,11 @@ this on the example below.
 
 **Example 1** Using polyhedron to generate cube( [ 10, 7, 5 ] );
 
-<a href="/wiki/File:Cube_numbers.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b1/Cube_numbers.jpg width=185.4 height=184.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Cube_numbers.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b1/Cube_numbers.jpg width=185.4 height=184.2/></a>
 
 point numbers for cube
 
-<a href="/wiki/File:Cube_flat.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d0/Cube_flat.jpg width=255.5 height=155.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Cube_flat.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d0/Cube_flat.jpg width=255.5 height=155.0/></a>
 
 unfolded cube faces
 
@@ -510,7 +511,7 @@ equivalent descriptions of the bottom face[0, 1, 2, 3],
 
 **Example 2** A square base pyramid:
 
-<a href="/wiki/File:Openscad-polyhedron-squarebasepyramid.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png width=216.0 height=212.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad-polyhedron-squarebasepyramid.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/db/Openscad-polyhedron-squarebasepyramid.png width=216.0 height=212.4/></a>
 
 A simple polyhedron, square base pyramid
 
@@ -534,9 +535,9 @@ polyhedron(
 
 **Example 3** A triangular prism:
 
-<a href="/wiki/File:Polyhedron_Prism.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Polyhedron_Prism.png/600px-Polyhedron_Prism.png width=300.0 height=107.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Polyhedron_Prism.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Polyhedron_Prism.png/600px-Polyhedron_Prism.png width=300.0 height=107.0/></a>
 
-<a href="/wiki/File:Polyhedron_Prism.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Polyhedron_Prism.png" class="internal" title="Enlarge"></a>
 
 A polyhedron triangular prism
 
@@ -630,7 +631,7 @@ points for an individual face. Note that a solid is not shown, only the
 faces. If using F12, all faces have one pink side. Commenting some faces
 helps also to show any internal face.
 
-<a href="/wiki/File:Cube_2_face.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9e/Cube_2_face.jpg width=183 height=132/></a>
+<a href="https://en.wikibooks.org/wiki/File:Cube_2_face.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9e/Cube_2_face.jpg width=183 height=132/></a>
 
 example 1 showing only 2 faces
 
@@ -691,7 +692,7 @@ polyhedron(
 
 ```
 
-<a href="/wiki/File:Openscad-bad-polyhedron.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/Openscad-bad-polyhedron.png width=212.4 height=197.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad-bad-polyhedron.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/Openscad-bad-polyhedron.png width=212.4 height=197.4/></a>
 
 Polyhedron with badly oriented polygons
 
@@ -749,7 +750,7 @@ If you place your left hand on the face with your fingers curled in the
 direction of the order of the points, your thumb should point outward.
 If your thumb points inward, you need to reverse the winding order.
 
-<a href="/wiki/File:Openscad-bad-polyhedron-annotated.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png width=235.8 height=213.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad-bad-polyhedron-annotated.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7f/Openscad-bad-polyhedron-annotated.png width=235.8 height=213.0/></a>
 
 Polyhedron with badly oriented polygons
 
@@ -876,7 +877,7 @@ sphere(2, $fa = 5, $fs = 0.1);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_sphere_in_different_sizes.png" class="image"
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_sphere_in_different_sizes.png" class="image"
 title="Sample OpenSCAD spheres, showing clearly the difference in scale."><img src=https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png width=479.5 height=253.0/></a>
 */
 module sphere(rad) {}
@@ -929,7 +930,7 @@ yields : circle($fn = 0, $fa = 12, $fs = 2, r = 1);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Circle_10.jpg" class="image" title="circle for user manual description"><img src=https://upload.wikimedia.org/wikipedia/commons/f/fc/OpenSCAD_Circle_10.jpg width=146 height=104/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Circle_10.jpg" class="image" title="circle for user manual description"><img src=https://upload.wikimedia.org/wikipedia/commons/f/fc/OpenSCAD_Circle_10.jpg width=146 height=104/></a>
 
 Equivalent scripts for this example
 
@@ -949,8 +950,8 @@ An ellipse can be created from a circle by using either `scale()` or
 `resize()` to make the x and y dimensions unequal. See [OpenSCAD User
 Manual/Transformations](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Transformations "OpenSCAD User Manual/Transformations")
 
-<a href="/wiki/File:OpenScad_Ellipse_from_circle.jpg" class="image" title="Ellipse from circle"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg width=194 height=83/></a>
-<a href="/wiki/File:OpenScad_Ellipse_from_circle_top_view.jpg" class="image"
+<a href="https://en.wikibooks.org/wiki/File:OpenScad_Ellipse_from_circle.jpg" class="image" title="Ellipse from circle"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f9/OpenScad_Ellipse_from_circle.jpg width=194 height=83/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenScad_Ellipse_from_circle_top_view.jpg" class="image"
 title="Ellipse from circle top view"><img src=https://upload.wikimedia.org/wikipedia/commons/8/8e/OpenScad_Ellipse_from_circle_top_view.jpg width=199 height=91/></a>
 
 ```scad
@@ -988,7 +989,7 @@ within the circle with all sides (and angles) equal. One corner points
 to the positive x direction. For irregular shapes see the polygon
 primitive below.
 
-<a href="/wiki/File:OpenSCAD_regular_polygon_using_circle.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg width=180.0 height=121.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_regular_polygon_using_circle.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/OpenSCAD_regular_polygon_using_circle.jpg/300px-OpenSCAD_regular_polygon_using_circle.jpg width=180.0 height=121.2/></a>
 
 ```scad
 // script for these examples
@@ -1073,7 +1074,7 @@ yields
 
 #### Without holes
 
-<a href="/wiki/File:OpenSCAD_Polygon_Example_Rhomboid.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg width=199.8 height=129.6/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Polygon_Example_Rhomboid.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/d/df/OpenSCAD_Polygon_Example_Rhomboid.jpg width=199.8 height=129.6/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -1100,7 +1101,7 @@ polygon(a, [[ 2, 3, 0, 1, 2 ]]);
 
 #### One hole
 
-<a href="/wiki/File:Openscad-polygon-example1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png width=190.2 height=176.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad-polygon-example1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/8/80/Openscad-polygon-example1.png width=190.2 height=176.4/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -1134,7 +1135,7 @@ primary, it leaves a shape with a hole.
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span> (for use of
 `concat()`)
 
-<a href="/wiki/File:OpenSCAD_romboid_with_holes.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg width=197.4 height=88.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_romboid_with_holes.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/f/f2/OpenSCAD_romboid_with_holes.jpg width=197.4 height=88.2/></a>
 
 ```scad
 // example polygon with multiple holes
@@ -1163,7 +1164,7 @@ polygon(a, [ b0, b1, b2, b3, b4 ]);
 
 #### Extruding a 3D shape from a polygon
 
-<a href="/wiki/File:Example_openscad_3dshape.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/e/e0/Example_openscad_3dshape.png width=505.0 height=335.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Example_openscad_3dshape.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/e/e0/Example_openscad_3dshape.png width=505.0 height=335.0/></a>
 
 ```scad
 translate([ 0, -20, 10 ]) {
@@ -1237,7 +1238,7 @@ The convexity parameter specifies the maximum number of front sides
 parameter is needed only for correct display of the object in OpenCSG
 preview mode and has no effect on the polyhedron rendering.
 
-<a href="/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
 
 This image shows a 2D shape with a convexity of 2, as the ray indicated
 in red crosses the 2D shapes outside⇒inside (or inside⇒outside) a
@@ -1280,7 +1281,7 @@ yields : square(size = [ 1, 1 ], center = false);
 
 **examples**:
 
-<a href="/wiki/File:OpenScad_Square_10_x_10.jpg" class="image" title="10x10 square"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d3/OpenScad_Square_10_x_10.jpg width=150 height=99/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenScad_Square_10_x_10.jpg" class="image" title="10x10 square"><img src=https://upload.wikimedia.org/wikipedia/commons/d/d3/OpenScad_Square_10_x_10.jpg width=150 height=99/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -1295,7 +1296,7 @@ square(center = false, size = [ 10, 10 ]);
 
 ```
 
-<a href="/wiki/File:OpenScad_Square_20x10.jpg" class="image" title="OpenScad square 20x10"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenScad_Square_20x10.jpg/150px-OpenScad_Square_20x10.jpg width=150 height=87/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenScad_Square_20x10.jpg" class="image" title="OpenScad square 20x10"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenScad_Square_20x10.jpg/150px-OpenScad_Square_20x10.jpg width=150 height=87/></a>
 
 ```scad
 // equivalent scripts for this example
@@ -1380,9 +1381,9 @@ used for subdividing the curved path segments provided by freetype
 
 **Example**
 
-<a href="/wiki/File:OpenSCAD_text()_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/OpenSCAD_text%28%29_example.png/220px-OpenSCAD_text%28%29_example.png width=176.0 height=45.6/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text()_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/OpenSCAD_text%28%29_example.png/220px-OpenSCAD_text%28%29_example.png width=176.0 height=45.6/></a>
 
-<a href="/wiki/File:OpenSCAD_text()_example.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text()_example.png" class="internal" title="Enlarge"></a>
 
 Example 1: Result.
 
@@ -1451,9 +1452,9 @@ name and the font style for each available font. For reference, the
 dialog also displays the location of the font file. You can drag a font
 in the font list, into the editor window to use in the text() statement.
 
-<a href="/wiki/File:OpenSCAD_font_list_dialog.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png width=200.0 height=115.5/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_font_list_dialog.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/OpenSCAD_font_list_dialog.png/400px-OpenSCAD_font_list_dialog.png width=200.0 height=115.5/></a>
 
-<a href="/wiki/File:OpenSCAD_font_list_dialog.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_font_list_dialog.png" class="internal" title="Enlarge"></a>
 
 OpenSCAD font list dialog
 
@@ -1513,9 +1514,9 @@ the police use the command line :
 
 **Example**
 
-<a href="/wiki/File:OpenSCAD_text()_font_style_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/OpenSCAD_text%28%29_font_style_example.png/220px-OpenSCAD_text%28%29_font_style_example.png width=176.0 height=68.8/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text()_font_style_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/OpenSCAD_text%28%29_font_style_example.png/220px-OpenSCAD_text%28%29_font_style_example.png width=176.0 height=68.8/></a>
 
-<a href="/wiki/File:OpenSCAD_text()_font_style_example.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text()_font_style_example.png" class="internal" title="Enlarge"></a>
 
 Example 2: Result.
 
@@ -1559,9 +1560,9 @@ bottom
 The text is aligned with the bottom of the bounding box at the given Y
 coordinate.
 
-<a href="/wiki/File:OpenSCAD_text_align_vertical.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png width=176.0 height=120.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text_align_vertical.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/OpenSCAD_text_align_vertical.png/220px-OpenSCAD_text_align_vertical.png width=176.0 height=120.0/></a>
 
-<a href="/wiki/File:OpenSCAD_text_align_vertical.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text_align_vertical.png" class="internal" title="Enlarge"></a>
 
 OpenSCAD vertical text alignment
 
@@ -1606,9 +1607,9 @@ right
 The text is aligned with the right of the bounding box at the given X
 coordinate.
 
-<a href="/wiki/File:OpenSCAD_text_align_horizontal.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png width=176.0 height=84.8/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text_align_horizontal.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/OpenSCAD_text_align_horizontal.png/220px-OpenSCAD_text_align_horizontal.png width=176.0 height=84.8/></a>
 
-<a href="/wiki/File:OpenSCAD_text_align_horizontal.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_text_align_horizontal.png" class="internal" title="Enlarge"></a>
 
 OpenSCAD horizontal text alignment
 
@@ -1646,9 +1647,9 @@ linear_extrude(4) text("Text");
 
 ```
 
-<a href="/wiki/File:Openscad_Text_3dText.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Openscad_Text_3dText.jpg/220px-Openscad_Text_3dText.jpg width=176.0 height=123.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_Text_3dText.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Openscad_Text_3dText.jpg/220px-Openscad_Text_3dText.jpg width=176.0 height=123.2/></a>
 
-<a href="/wiki/File:Openscad_Text_3dText.jpg" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_Text_3dText.jpg" class="internal" title="Enlarge"></a>
 
 3D text example
 
@@ -2254,9 +2255,9 @@ width="100%">
 
 #### Example
 
-<a href="/wiki/File:Wavy_multicolor_object.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Wavy_multicolor_object.jpg/220px-Wavy_multicolor_object.jpg width=176.0 height=166.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:Wavy_multicolor_object.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Wavy_multicolor_object.jpg/220px-Wavy_multicolor_object.jpg width=176.0 height=166.4/></a>
 
-<a href="/wiki/File:Wavy_multicolor_object.jpg" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Wavy_multicolor_object.jpg" class="internal" title="Enlarge"></a>
 
 A 3-D multicolor sine wave
 
@@ -2305,7 +2306,7 @@ Subtracts the 2nd (and all further) child nodes from the first one
 (logical **and not**).  
 May be used with either 2D or 3D objects, but don't mix them.
 
-<a href="/wiki/File:Openscad_difference.jpg" class="image" title="Difference"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Openscad_difference.jpg/400px-Openscad_difference.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_difference.jpg" class="image" title="Difference"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Openscad_difference.jpg/400px-Openscad_difference.jpg width=200.0 height=150.0/></a>
 
 ```scad
 Usage example : difference() {
@@ -2331,7 +2332,7 @@ epsilon value.
 Note, in the second instance, the result of adding a union of the 1st
 and 2nd children.
 
-<a href="/wiki/File:Bollean_Difference_3.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9d/Bollean_Difference_3.jpg width=180.0 height=184.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Bollean_Difference_3.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/9/9d/Bollean_Difference_3.jpg width=180.0 height=184.2/></a>
 
 ```scad
 // Usage example for difference of multiple children:
@@ -2368,15 +2369,15 @@ module difference() { /* group */ }
 module group() { /* group */ }
 
 /**
-<a href="/wiki/File:Openscad_hull_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png width=160.0 height=119.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png width=160.0 height=119.2/></a>
 
-<a href="/wiki/File:Openscad_hull_example_1a.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_1a.png" class="internal" title="Enlarge"></a>
 
 Two cylinders
 
-<a href="/wiki/File:Openscad_hull_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Openscad_hull_example_2a.png/200px-Openscad_hull_example_2a.png width=160.0 height=119.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Openscad_hull_example_2a.png/200px-Openscad_hull_example_2a.png width=160.0 height=119.2/></a>
 
-<a href="/wiki/File:Openscad_hull_example_2a.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_2a.png" class="internal" title="Enlarge"></a>
 
 Convex hull of two cylinders
 
@@ -2422,9 +2423,9 @@ translate(...) rotate(...) cube(5) ;
 would first rotate the cube and then move it to the offset defined by
 the translate.
 
-<a href="/wiki/File:Openscad_combined_transform.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Openscad_combined_transform.png/200px-Openscad_combined_transform.png width=160.0 height=172.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_combined_transform.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Openscad_combined_transform.png/200px-Openscad_combined_transform.png width=160.0 height=172.0/></a>
 
-<a href="/wiki/File:Openscad_combined_transform.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_combined_transform.png" class="internal" title="Enlarge"></a>
 
 Combine two transforms
 
@@ -2453,7 +2454,7 @@ Only the area which is common or shared by **all** children is
 retained.  
 May be used with either 2D or 3D objects, but don't mix them.
 
-<a href="/wiki/File:Openscad_intersection.jpg" class="image" title="Intersection"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Openscad_intersection.jpg/400px-Openscad_intersection.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_intersection.jpg" class="image" title="Intersection"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Openscad_intersection.jpg/400px-Openscad_intersection.jpg width=200.0 height=150.0/></a>
 
 ```scad
 // Usage example:
@@ -2520,7 +2521,7 @@ Twist is the number of degrees of through which the shape is extruded.
 Setting the parameter twist = 360 extrudes through one revolution. The
 twist direction follows the left hand rule.
 
-<a href="/wiki/File:Openscad_linext_01.jpg" class="image" title="twist = 0"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Openscad_linext_01.jpg/400px-Openscad_linext_01.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_01.jpg" class="image" title="twist = 0"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Openscad_linext_01.jpg/400px-Openscad_linext_01.jpg width=200.0 height=150.0/></a>
 
 **0° of Twist**
 
@@ -2533,7 +2534,7 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:Openscad_linext_02.jpg" class="image" title="twist = -100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Openscad_linext_02.jpg/400px-Openscad_linext_02.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_02.jpg" class="image" title="twist = -100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Openscad_linext_02.jpg/400px-Openscad_linext_02.jpg width=200.0 height=150.0/></a>
 
 **-100° of Twist**
 
@@ -2546,7 +2547,7 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:Openscad_linext_03.jpg" class="image" title="twist = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Openscad_linext_03.jpg/400px-Openscad_linext_03.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_03.jpg" class="image" title="twist = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Openscad_linext_03.jpg/400px-Openscad_linext_03.jpg width=200.0 height=150.0/></a>
 
 **100° of Twist**
 
@@ -2559,13 +2560,13 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif width=176.0 height=286.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Spring_100x20_in_OpenSCAD.gif/220px-Spring_100x20_in_OpenSCAD.gif width=176.0 height=286.4/></a>
 
-<a href="/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Spring_100x20_in_OpenSCAD.gif" class="internal" title="Enlarge"></a>
 
 Helical spring, 5x360° plus 8° at each end.
 
-<a href="/wiki/File:Openscad_linext_04.jpg" class="image" title="twist = -500"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_04.jpg" class="image" title="twist = -500"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
 
 **-500° of Twist**
 
@@ -2584,7 +2585,7 @@ It is similar to the parameter center of cylinders. If `center` is false
 the linear extrusion Z range is from 0 to height; if it is true, the
 range is from -height/2 to height/2.
 
-<a href="/wiki/File:Openscad_linext_04.jpg" class="image" title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_04.jpg" class="image" title="center = true"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Openscad_linext_04.jpg/400px-Openscad_linext_04.jpg width=200.0 height=150.0/></a>
 
 **center = true**
 
@@ -2597,7 +2598,7 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:Openscad_linext_05.jpg" class="image" title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Openscad_linext_05.jpg/400px-Openscad_linext_05.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_05.jpg" class="image" title="center = false"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Openscad_linext_05.jpg/400px-Openscad_linext_05.jpg width=200.0 height=150.0/></a>
 
 **center = false**
 
@@ -2620,7 +2621,7 @@ resulting in smoother twisted geometries. Segments need to be a multiple
 of the polygon's fragments to have an effect (6 or 9.. for a
 circle($fn=3), 8,12.. for a square() ).
 
-<a href="/wiki/File:Openscad_linext_06.jpg" class="image" title="slices = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Openscad_linext_06.jpg/400px-Openscad_linext_06.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_06.jpg" class="image" title="slices = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Openscad_linext_06.jpg/400px-Openscad_linext_06.jpg width=200.0 height=150.0/></a>
 
 ```scad
 linear_extrude(
@@ -2637,7 +2638,7 @@ variables](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Fea
 $fn, $fs and $fa can also be used to improve the output. If slices is
 not defined, its value is taken from the defined $fn value.
 
-<a href="/wiki/File:Openscad_linext_07.jpg" class="image" title="$fn = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Openscad_linext_07.jpg/400px-Openscad_linext_07.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_07.jpg" class="image" title="$fn = 100"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Openscad_linext_07.jpg/400px-Openscad_linext_07.jpg width=200.0 height=150.0/></a>
 
 ```scad
 linear_extrude(
@@ -2663,7 +2664,7 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:Openscad_linext_09.png" class="image" title="OpenScad linear_extrude scale example"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Openscad_linext_09.png/400px-Openscad_linext_09.png width=200.0 height=130.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_linext_09.png" class="image" title="OpenScad linear_extrude scale example"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Openscad_linext_09.png/400px-Openscad_linext_09.png width=200.0 height=130.0/></a>
 
 ```scad
 linear_extrude(
@@ -2675,7 +2676,7 @@ linear_extrude(
 
 ```
 
-<a href="/wiki/File:OpenScad_linear_extrude_scale_example2.png" class="image"
+<a href="https://en.wikibooks.org/wiki/File:OpenScad_linear_extrude_scale_example2.png" class="image"
 title="OpenScad linear_extrude scale example2"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/OpenScad_linear_extrude_scale_example2.png/400px-OpenScad_linear_extrude_scale_example2.png width=200.0 height=194.0/></a>
 
 Note that if scale is a vector, the resulting side walls may be
@@ -2695,15 +2696,15 @@ linear_extrude(
 module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { /* group */ }
 
 /**
-<a href="/wiki/File:Openscad_minkowski_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png width=160.0 height=119.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png width=160.0 height=119.2/></a>
 
-<a href="/wiki/File:Openscad_minkowski_example_1a.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_1a.png" class="internal" title="Enlarge"></a>
 
 A box and a cylinder
 
-<a href="/wiki/File:Openscad_minkowski_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Openscad_minkowski_example_2a.png/200px-Openscad_minkowski_example_2a.png width=160.0 height=119.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_2a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Openscad_minkowski_example_2a.png/200px-Openscad_minkowski_example_2a.png width=160.0 height=119.2/></a>
 
-<a href="/wiki/File:Openscad_minkowski_example_2a.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_2a.png" class="internal" title="Enlarge"></a>
 
 Minkowski sum of the box and cylinder
 
@@ -2787,17 +2788,17 @@ mirror(v = [ x, y, z ]) {
 The original is on the right side. Note that mirror doesn't make a copy.
 Like rotate and scale, it changes the object.
 
-- <a href="/wiki/File:Mirror-x.png" class="image"     title="hand(); // original mirror([1,0,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Mirror-x.png/170px-Mirror-x.png width=170 height=119/></a>
+- <a href="https://en.wikibooks.org/wiki/File:Mirror-x.png" class="image"     title="hand(); // original mirror([1,0,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Mirror-x.png/170px-Mirror-x.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,0,0]) hand();`
 
-- <a href="/wiki/File:Mirror-x-y.png" class="image"     title="hand(); // original mirror([1,1,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mirror-x-y.png/170px-Mirror-x-y.png width=170 height=119/></a>
+- <a href="https://en.wikibooks.org/wiki/File:Mirror-x-y.png" class="image"     title="hand(); // original mirror([1,1,0]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Mirror-x-y.png/170px-Mirror-x-y.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,1,0]) hand();`
 
-- <a href="/wiki/File:Mirror-x-y-z.png" class="image"     title="hand(); // original mirror([1,1,1]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Mirror-x-y-z.png/170px-Mirror-x-y-z.png width=170 height=119/></a>
+- <a href="https://en.wikibooks.org/wiki/File:Mirror-x-y-z.png" class="image"     title="hand(); // original mirror([1,1,1]) hand();"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Mirror-x-y-z.png/170px-Mirror-x-y-z.png width=170 height=119/></a>
 
 `hand(); // original`  
     `mirror([1,1,1]) hand();`
@@ -2811,7 +2812,7 @@ mirror([ 1, 0, 0 ]) translate([ 1, 0, 0 ])
 
 ```
 
-<a href="/wiki/File:OpenSCAD_mirror()_example.JPG" class="image" title="image of the result of the mirror() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG width=195.0 height=184.8/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_mirror()_example.JPG" class="image" title="image of the result of the mirror() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG width=195.0 height=184.8/></a>
 */
 module mirror(v) { /* group */ }
 
@@ -3010,11 +3011,11 @@ Boolean. (default *false*) When using the delta parameter, this flag
 defines if edges should be chamfered (cut off with a straight line) or
 not (extended to their intersection).
 
-<a href="/wiki/File:OpenSCAD_offset_join-type_out.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/OpenSCAD_offset_join-type_out.svg/350px-OpenSCAD_offset_join-type_out.svg.png width=210.0 height=105.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_offset_join-type_out.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/OpenSCAD_offset_join-type_out.svg/350px-OpenSCAD_offset_join-type_out.svg.png width=210.0 height=105.0/></a>
 
 Positive r/delta value
 
-<a href="/wiki/File:OpenSCAD_offset_join-type_in.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/OpenSCAD_offset_join-type_in.svg/350px-OpenSCAD_offset_join-type_in.svg.png width=210.0 height=105.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_offset_join-type_in.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/OpenSCAD_offset_join-type_in.svg/350px-OpenSCAD_offset_join-type_in.svg.png width=210.0 height=105.0/></a>
 
 Negative r/delta value
 
@@ -3023,9 +3024,9 @@ offset() operation.
 
 **Examples**
 
-<a href="/wiki/File:OpenSCAD_offset_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/OpenSCAD_offset_example.png/220px-OpenSCAD_offset_example.png width=176.0 height=132.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_offset_example.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/OpenSCAD_offset_example.png/220px-OpenSCAD_offset_example.png width=176.0 height=132.0/></a>
 
-<a href="/wiki/File:OpenSCAD_offset_example.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_offset_example.png" class="internal" title="Enlarge"></a>
 
 Example 1: Result.
 
@@ -3066,7 +3067,7 @@ considered as well (creating a proper projection).
 
 **Example**: Consider example002.scad, that comes with OpenSCAD.
 
-<a href="/wiki/File:Openscad_projection_example_2x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png width=241.0 height=143.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_projection_example_2x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/2/2e/Openscad_projection_example_2x.png width=241.0 height=143.0/></a>
 
 Then you can do a 'cut' projection, which gives you the 'slice' of the
 x-y plane with z=0.
@@ -3076,7 +3077,7 @@ projection(cut = true) example002();
 
 ```
 
-<a href="/wiki/File:Openscad_projection_example_3x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png width=241.0 height=143.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_projection_example_3x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/1/13/Openscad_projection_example_3x.png width=241.0 height=143.0/></a>
 
 You can also do an 'ordinary' projection, which gives a sort of 'shadow'
 of the object onto the xy plane.
@@ -3086,7 +3087,7 @@ projection(cut = false) example002();
 
 ```
 
-<a href="/wiki/File:Openscad_example_projection_8x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/5/5b/Openscad_example_projection_8x.png width=241.0 height=143.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_example_projection_8x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/5/5b/Openscad_example_projection_8x.png width=241.0 height=143.0/></a>
 
 **Another Example**
 
@@ -3098,7 +3099,7 @@ translate([ 0, 0, 25 ]) rotate([ 90, 0, 0 ]) example002();
 
 ```
 
-<a href="/wiki/File:Openscad_projection_example_4x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/c/cd/Openscad_projection_example_4x.png width=241.0 height=143.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_projection_example_4x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/c/cd/Openscad_projection_example_4x.png width=241.0 height=143.0/></a>
 
 Now we can get a side view with projection()
 
@@ -3108,7 +3109,7 @@ projection() translate([ 0, 0, 25 ]) rotate([ 90, 0, 0 ])
 
 ```
 
-<a href="/wiki/File:Openscad_projection_example_5x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png width=241.0 height=143.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_projection_example_5x.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/7/7d/Openscad_projection_example_5x.png width=241.0 height=143.0/></a>
 
 Links:
 
@@ -3153,7 +3154,7 @@ preview mode and has no effect on the polyhedron rendering.</td>
 </tbody>
 </table>
 
-<a href="/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_convexity.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Openscad_convexity.jpg/400px-Openscad_convexity.jpg width=200.0 height=150.0/></a>
 
 This image shows a 2D shape with a convexity of 4, as the ray indicated
 in red crosses the 2D shape a maximum of 4 times. The convexity of a 3D
@@ -3184,7 +3185,7 @@ resize(newsize = [ 30, 60, 10 ]) sphere(r = 10);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Resize_example_elipse.JPG" class="image" title="OpenSCAD Resize example ellipse"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG width=200.0 height=172.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Resize_example_elipse.JPG" class="image" title="OpenSCAD Resize example ellipse"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/OpenSCAD_Resize_example_elipse.JPG/400px-OpenSCAD_Resize_example_elipse.JPG width=200.0 height=172.0/></a>
 
 If x,y, or z is 0 then that dimension is left as-is.
 
@@ -3299,7 +3300,7 @@ rotate(a = 45, v = [ 1, 1, 0 ]) {
 
 ```
 
-<a href="/wiki/File:OpenSCAD_rotate()_example.JPG" class="image" title="image of result of rotate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG width=180.6 height=165.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_rotate()_example.JPG" class="image" title="image of result of rotate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/7/77/OpenSCAD_rotate%28%29_example.JPG width=180.6 height=165.0/></a>
 
 Rotate with a *single scalar argument* rotates around the Z axis. This
 is useful in 2D contexts where that is the only axis for rotation. For
@@ -3310,13 +3311,13 @@ rotate(45) square(10);
 
 ```
 
-<a href="/wiki/File:Example_2D_Rotate.JPG" class="image" title="Result of OpenSCAD rotate(45) as 2D render"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b9/Example_2D_Rotate.JPG width=211.8 height=193.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Example_2D_Rotate.JPG" class="image" title="Result of OpenSCAD rotate(45) as 2D render"><img src=https://upload.wikimedia.org/wikipedia/commons/b/b9/Example_2D_Rotate.JPG width=211.8 height=193.2/></a>
 
 ##### Rotation rule help
 
-<a href="/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
 
-<a href="/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
 
 Right-hand grip rule
 
@@ -3360,7 +3361,7 @@ rotate([ 0, b, c ]) cylinder(h = length, r = 0.5);
 
 ```
 
-<a href="/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG" class="image" title="Example of OpenSCAD Rotate() used as a spherical coordinate system."><img src=https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG width=190.8 height=193.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG" class="image" title="Example of OpenSCAD Rotate() used as a spherical coordinate system."><img src=https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG width=190.8 height=193.2/></a>
 */
 module rotate(angles) { /* group */ }
 
@@ -3426,9 +3427,9 @@ rotate_extrude(angle = 360, convexity = 2) {
 
 ```
 
-<a href="/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Right-hand_grip_rule.svg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Right-hand_grip_rule.svg/220px-Right-hand_grip_rule.svg.png width=176.0 height=176.0/></a>
 
-<a href="/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Right-hand_grip_rule.svg" class="internal" title="Enlarge"></a>
 
 Right-hand grip rule
 
@@ -3456,7 +3457,7 @@ details,](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Other_Language_Feat
 
 #### Examples
 
-<a href="/wiki/File:Rotate_extrude_wiki_2D.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rotate_extrude_wiki_2D.jpg/400px-Rotate_extrude_wiki_2D.jpg width=200.0 height=151.0/></a>→<a href="/wiki/File:Openscad_rotext_01.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Openscad_rotext_01.jpg/400px-Openscad_rotext_01.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Rotate_extrude_wiki_2D.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Rotate_extrude_wiki_2D.jpg/400px-Rotate_extrude_wiki_2D.jpg width=200.0 height=151.0/></a>→<a href="https://en.wikibooks.org/wiki/File:Openscad_rotext_01.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Openscad_rotext_01.jpg/400px-Openscad_rotext_01.jpg width=200.0 height=150.0/></a>
 
 A simple torus can be constructed using a rotational extrude.
 
@@ -3468,7 +3469,7 @@ rotate_extrude(convexity = 10) translate([ 2, 0, 0 ])
 
 #### Mesh Refinement
 
-<a href="/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="/wiki/File:Openscad_rotext_02.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Openscad_rotext_02.jpg/400px-Openscad_rotext_02.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="https://en.wikibooks.org/wiki/File:Openscad_rotext_02.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Openscad_rotext_02.jpg/400px-Openscad_rotext_02.jpg width=200.0 height=150.0/></a>
 
 Increasing the number of fragments composing the 2D shape improves the
 quality of the mesh, but takes longer to render.
@@ -3479,7 +3480,7 @@ rotate_extrude(convexity = 10) translate([ 2, 0, 0 ])
 
 ```
 
-<a href="/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="/wiki/File:Openscad_rotext_03.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Openscad_rotext_03.jpg/400px-Openscad_rotext_03.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Rotate_extrude_wiki_2D_C.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Rotate_extrude_wiki_2D_C.jpg/380px-Rotate_extrude_wiki_2D_C.jpg width=228.0 height=184.8/></a>→<a href="https://en.wikibooks.org/wiki/File:Openscad_rotext_03.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Openscad_rotext_03.jpg/400px-Openscad_rotext_03.jpg width=200.0 height=150.0/></a>
 
 The number of fragments used by the extrusion can also be increased.
 
@@ -3492,9 +3493,9 @@ rotate_extrude(convexity = 10, $fn = 100)
 Using the parameter angle (with OpenSCAD versions 2016.xx), a hook can
 be modeled .
 
-<a href="/wiki/File:Hook.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hook.png/220px-Hook.png width=176.0 height=108.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Hook.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Hook.png/220px-Hook.png width=176.0 height=108.0/></a>
 
-<a href="/wiki/File:Hook.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:Hook.png" class="internal" title="Enlarge"></a>
 
 OpenSCAD - a hook
 
@@ -3533,7 +3534,7 @@ rotate_extrude($fn = 200) polygon(points = [
 
 ```
 
-<a href="/wiki/File:Rotate_extrude_wiki_2D_B.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg width=180.0 height=143.4/></a>→<a href="/wiki/File:Openscad_polygon_extrusion_1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png width=180.0 height=150.6/></a>→<a href="/wiki/File:Openscad_polygon_extrusion_2.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png width=180.0 height=148.8/></a>
+<a href="https://en.wikibooks.org/wiki/File:Rotate_extrude_wiki_2D_B.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Rotate_extrude_wiki_2D_B.jpg/300px-Rotate_extrude_wiki_2D_B.jpg width=180.0 height=143.4/></a>→<a href="https://en.wikibooks.org/wiki/File:Openscad_polygon_extrusion_1.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Openscad_polygon_extrusion_1.png/300px-Openscad_polygon_extrusion_1.png width=180.0 height=150.6/></a>→<a href="https://en.wikibooks.org/wiki/File:Openscad_polygon_extrusion_2.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Openscad_polygon_extrusion_2.png/300px-Openscad_polygon_extrusion_2.png width=180.0 height=148.8/></a>
 
 For more information on polygons, please see: [2D Primitives:
 Polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_Primitives#polygon "OpenSCAD User Manual/2D Primitives").
@@ -3557,7 +3558,7 @@ translate([ 15, 0, 0 ]) scale([ 0.5, 1, 2 ]) cube(10);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_scale()_example.JPG" class="image" title="Image showing result of scale() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG width=215.4 height=226.8/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_scale()_example.JPG" class="image" title="Image showing result of scale() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG width=215.4 height=226.8/></a>
 */
 module scale(v) { /* group */ }
 
@@ -3578,7 +3579,7 @@ translate([ 5, 0, 0 ]) sphere(1, center = true);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_translate()_example.JPG" class="image" title="image of result of the translate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG width=231.0 height=191.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_translate()_example.JPG" class="image" title="image of result of the translate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG width=231.0 height=191.4/></a>
 */
 module translate(v) { /* group */ }
 
@@ -3587,7 +3588,7 @@ Creates a union of all its child nodes. This is the **sum** of all
 children (logical **or**).  
 May be used with either 2D or 3D objects, but don't mix them.
 
-<a href="/wiki/File:Openscad_union.jpg" class="image" title="Union"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Openscad_union.jpg/400px-Openscad_union.jpg width=200.0 height=150.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:Openscad_union.jpg" class="image" title="Union"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Openscad_union.jpg/400px-Openscad_union.jpg width=200.0 height=150.0/></a>
 
 ```scad
 // Usage example:
@@ -3855,8 +3856,8 @@ for (i = [0:36])
 </code></pre>
 </td>
 <td>
-<a href="/wiki/File:OpenSCAD_Cos_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Cos_Function.png/220px-OpenSCAD_Cos_Function.png width=176.0 height=98.4/></a>
-<a href="/wiki/File:OpenSCAD_Cos_Function.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cos_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Cos_Function.png/220px-OpenSCAD_Cos_Function.png width=176.0 height=98.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cos_Function.png" class="internal" title="Enlarge"></a>
 OpenSCAD Cos Function‎
 </td>
 </tr>
@@ -4243,8 +4244,8 @@ for (i = [-100:5:+100]) {
 </code></pre>
 </td>
 <td>
-<a href="/wiki/File:OpenSCAD_Lookup_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/OpenSCAD_Lookup_Function.png/220px-OpenSCAD_Lookup_Function.png width=176.0 height=101.6/></a>
-<a href="/wiki/File:OpenSCAD_Lookup_Function.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Lookup_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/OpenSCAD_Lookup_Function.png/220px-OpenSCAD_Lookup_Function.png width=176.0 height=101.6/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Lookup_Function.png" class="internal" title="Enlarge"></a>
 OpenSCAD Lookup Function
 </td>
 </tr>
@@ -4599,8 +4600,8 @@ for (i = [0:36])
 </code></pre>
 </td>
 <td>
-<a href="/wiki/File:OpenSCAD_Sin_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/OpenSCAD_Sin_Function.png/220px-OpenSCAD_Sin_Function.png width=176.0 height=90.4/></a>
-<a href="/wiki/File:OpenSCAD_Sin_Function.png" class="internal" title="Enlarge"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Sin_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/OpenSCAD_Sin_Function.png/220px-OpenSCAD_Sin_Function.png width=176.0 height=90.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Sin_Function.png" class="internal" title="Enlarge"></a>
 OpenSCAD Sin Function
 </td>
 </tr>
