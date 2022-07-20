@@ -1439,7 +1439,12 @@ impl Server {
                     return None;
                 }
 
-                if let Ok(uri) = Url::parse(&format!("file://{}", p)) {
+                let mut path = format!("file://{}", p);
+                if !path.ends_with('/') {
+                    path.push('/');
+                }
+
+                if let Ok(uri) = Url::parse(&path) {
                     if let Ok(path) = uri.to_file_path() {
                         if path.exists() {
                             return Some(uri);
