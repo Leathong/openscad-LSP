@@ -13,6 +13,7 @@ Tested with lsp-mode on Emacs on Linux by [@Lenbok](https://github.com/Lenbok).
 Features
 --------
 
+-   builtin fucntion/module documents
 -   code and path auto-completion
 -   jump to definition
 -   code snippets
@@ -20,7 +21,6 @@ Features
 -   document symbols
 -   formatter, utilizing clang-format, you need install it youself, it is not built-in.
 -   hover and suggestion documentation, read from comments before the function/module.</br>
-    If you want to write documentation for the [builtin](src/builtins.scad) function/module, feel free to submit pr.
 
 Build
 ------------
