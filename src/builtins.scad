@@ -48,9 +48,9 @@ table:
 </tbody>
 </table>
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/OpenSCAD_Manual_Modules_Module_move.jpg/220px-OpenSCAD_Manual_Modules_Module_move.jpg width=176.0 height=151.2/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/OpenSCAD_Manual_Modules_Module_move.jpg/220px-OpenSCAD_Manual_Modules_Module_move.jpg width=176.0 height=151.2/></a>
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="internal" title="실제 크기로"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_move.jpg" class="internal" title="Enlarge"></a>
 
 Use all children
 
@@ -70,9 +70,9 @@ move(z = -7.07, ry = 45) cube(10, true);
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Manual_Modules_Module_lineuo.jpg/220px-OpenSCAD_Manual_Modules_Module_lineuo.jpg width=176.0 height=84.0/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Manual_Modules_Module_lineuo.jpg/220px-OpenSCAD_Manual_Modules_Module_lineuo.jpg width=176.0 height=84.0/></a>
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="internal" title="실제 크기로"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_lineuo.jpg" class="internal" title="Enlarge"></a>
 
 Use only the first child, multiple times
 
@@ -91,9 +91,9 @@ lineup(5, 65) {
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg/400px-OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg width=200.0 height=76.5/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg/400px-OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg width=200.0 height=76.5/></a>
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="internal" title="실제 크기로"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_SeparateChildren.jpg" class="internal" title="Enlarge"></a>
 
 Separate action for each child
 
@@ -127,9 +127,9 @@ translate([ 0, 40, 0 ]) color("lightblue")
 
 ```
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/OpenSCAD_Manual_Modules_Module_MultiRange.jpg/220px-OpenSCAD_Manual_Modules_Module_MultiRange.jpg width=176.0 height=158.4/></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/OpenSCAD_Manual_Modules_Module_MultiRange.jpg/220px-OpenSCAD_Manual_Modules_Module_MultiRange.jpg width=176.0 height=158.4/></a>
 
-<a href="/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="internal" title="실제 크기로"></a>
+<a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Manual_Modules_Module_MultiRange.jpg" class="internal" title="Enlarge"></a>
 
 Multiple ranges
 
@@ -155,7 +155,6 @@ MultiRange() {
 ```
 */
 module children(index) {}
-
 
 module echo(msgn) {}
 
@@ -1288,7 +1287,8 @@ yields : square(size = [ 1, 1 ], center = false);
 square(size = 10);
 square(10);
 square([ 10, 10 ]);
-.square(10, false);
+.
+square(10, false);
 square([ 10, 10 ], false);
 square([ 10, 10 ], center = false);
 square(size = [ 10, 10 ], center = false);
@@ -1327,7 +1327,9 @@ size
 Decimal. The generated text has an ascent (height above the baseline) of
 approximately the given value. Default is 10. Different fonts can vary
 somewhat and may not fill the size specified exactly, typically they
-render slightly smaller.
+render slightly smaller. On a metric system a size of 25.4 (1" imperial)
+will correspond to 100pt ⇒ a 12pt font size would be 12×0.254 for metric
+conversion or 0.12 in imperial.
 
 <!-- -->
 
@@ -1589,6 +1591,10 @@ for (a = valign) {
 
 ```
 
+Multi line text is not supported with \`text()\` but translating each
+line size × .72 will result in a leading (line spaceing) of 1 em (em=
+fonts body height or points). 20% (× 1.2) may be added.
+
 #### Horizontal alignment
 
 left  
@@ -1653,8 +1659,8 @@ linear_extrude(4) text("Text");
 
 3D text example
 
-Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4055228"
-dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4055228</a>"
+Retrieved from "<a href="https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4085975"
+dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&amp;oldid=4085975</a>"
 
 [Category](https://en.wikibooks.org/wiki/Special:Categories "Special:Categories"):
 
@@ -2309,7 +2315,8 @@ May be used with either 2D or 3D objects, but don't mix them.
 <a href="https://en.wikibooks.org/wiki/File:Openscad_difference.jpg" class="image" title="Difference"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Openscad_difference.jpg/400px-Openscad_difference.jpg width=200.0 height=150.0/></a>
 
 ```scad
-Usage example : difference() {
+// Usage example:
+difference() {
   cylinder(h = 4, r = 1, center = true, $fn = 100);
   rotate([ 90, 0, 0 ])
     cylinder(h = 4, r = 0.9, center = true, $fn = 100);
@@ -3136,7 +3143,8 @@ module projection() { /* group */ }
 OpenSCAD to appear to hang/freeze.
 
 ```scad
-Usage example : render(convexity = 1) {
+// Usage example:
+render(convexity = 1) {
   ...
 }
 
@@ -3546,7 +3554,8 @@ Scales its child elements using the specified vector. The argument name
 is optional.
 
 ```scad
-Usage Example : scale(v = [ x, y, z ]) {
+// Usage Example:
+scale(v = [ x, y, z ]) {
   ...
 }
 
