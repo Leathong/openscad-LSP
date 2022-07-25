@@ -4,7 +4,7 @@ use lsp_types::Url;
 use tree_sitter::Node;
 
 use crate::{
-    code::ParsedCode,
+    parse_code::ParsedCode,
     response_item::{Item, ItemKind},
     server::{Server, BUILTIN_PATH},
     utils::*,

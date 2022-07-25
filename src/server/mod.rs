@@ -1,5 +1,9 @@
+#[macro_use]
+pub(crate) mod utils;
 pub(crate) mod code_helper;
 pub(crate) mod handler;
+pub(crate) mod parse_code;
+pub(crate) mod response_item;
 
 use std::error::Error;
 use std::fs::read_to_string;
@@ -19,7 +23,7 @@ use lsp_types::{
 
 use serde_json::json;
 
-use crate::code::ParsedCode;
+use crate::parse_code::ParsedCode;
 use crate::utils::*;
 use crate::Cli;
 

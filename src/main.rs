@@ -1,9 +1,6 @@
 #![allow(clippy::option_map_unit_fn)]
 
 #[macro_use]
-mod utils;
-mod code;
-mod response_item;
 mod server;
 
 use clap::Parser;
