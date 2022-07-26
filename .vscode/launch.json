@@ -20,7 +20,8 @@
                 }
             },
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "sourceLanguages": ["rust"]
         },
         {
             "type": "lldb",

@@ -43,7 +43,6 @@ impl Server {
         inc_builtin: bool,
     ) -> Vec<Rc<Item>> {
         let mut result = vec![];
-        let mut start_pos = start_node.start_byte();
         let mut include_vec = vec![];
         if inc_builtin {
             include_vec.push(Url::parse(BUILTIN_PATH).unwrap())
@@ -58,7 +57,7 @@ impl Server {
         let mut parent = start_node.parent();
 
         while parent.is_some() {
-            let should_continue = parent.unwrap().parent().is_some();
+            let is_top_level_node = !parent.unwrap().parent().is_some();
 
             loop {
                 if node.kind().is_include_statement() {
@@ -67,74 +66,62 @@ impl Server {
                     });
                 }
 
-                match node.kind() {
-                    "module_declaration" | "function_declaration" => {
-                        if node.end_byte() > start_pos {
-                            should_process_param = true;
-                            start_pos = code.tree.root_node().end_byte();
-                        }
-                    }
-                    _ => (),
-                }
-
-                if node.start_byte() < start_pos {
-                    if let Some(mut item) = Item::parse(&code.code, &node) {
-                        if should_process_param {
-                            match &item.kind {
-                                ItemKind::Module { params, .. } => {
-                                    should_process_param = false;
-                                    for p in params {
-                                        if comparator(&p.name) {
-                                            result.push(Rc::new(Item {
-                                                name: p.name.clone(),
-                                                kind: ItemKind::Variable,
-                                                range: p.range,
-                                                url: Some(code.url.clone()),
-                                                ..Default::default()
-                                            }));
-                                            if !findall {
-                                                return result;
-                                            }
+                if let Some(mut item) = Item::parse(&code.code, &node) {
+                    if should_process_param {
+                        match &item.kind {
+                            ItemKind::Module { params, .. } => {
+                                for p in params {
+                                    if comparator(&p.name) {
+                                        result.push(Rc::new(Item {
+                                            name: p.name.clone(),
+                                            kind: ItemKind::Variable,
+                                            range: p.range,
+                                            url: Some(code.url.clone()),
+                                            ..Default::default()
+                                        }));
+                                        if !findall {
+                                            return result;
                                         }
                                     }
                                 }
-                                ItemKind::Function(params) => {
-                                    should_process_param = false;
-                                    for p in params {
-                                        if comparator(&p.name) {
-                                            result.push(Rc::new(Item {
-                                                name: p.name.clone(),
-                                                kind: ItemKind::Variable,
-                                                range: p.range,
-                                                url: Some(code.url.clone()),
-                                                ..Default::default()
-                                            }));
-                                            if !findall {
-                                                return result;
-                                            }
-                                        }
-                                    }
-                                }
-                                _ => {}
-                            };
-                        }
-
-                        if should_continue && comparator(&item.name) {
-                            item.url = Some(code.url.clone());
-                            result.push(Rc::new(item));
-                            if !findall {
-                                return result;
                             }
+                            ItemKind::Function(params) => {
+                                for p in params {
+                                    if comparator(&p.name) {
+                                        result.push(Rc::new(Item {
+                                            name: p.name.clone(),
+                                            kind: ItemKind::Variable,
+                                            range: p.range,
+                                            url: Some(code.url.clone()),
+                                            ..Default::default()
+                                        }));
+                                        if !findall {
+                                            return result;
+                                        }
+                                    }
+                                }
+                            }
+                            _ => {}
+                        };
+                    }
+
+                    if !is_top_level_node && comparator(&item.name) {
+                        item.url = Some(code.url.clone());
+                        result.push(Rc::new(item));
+                        if !findall {
+                            return result;
                         }
                     }
                 }
 
-                if !should_continue || node.prev_sibling().is_none() {
+                if is_top_level_node || node.prev_sibling().is_none() {
                     node = parent.unwrap();
                     parent = node.parent();
+                    should_process_param = true;
                     break;
                 } else {
                     node = node.prev_sibling().unwrap();
+                    should_process_param = false;
                 }
             }
         }

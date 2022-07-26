@@ -113,6 +113,7 @@ impl NodeExt for Node<'_> {
 pub(crate) trait KindExt {
     fn is_include_statement(&self) -> bool;
     fn is_comment(&self) -> bool;
+    fn is_callable(&self) -> bool;
 }
 
 impl KindExt for str {
@@ -122,5 +123,9 @@ impl KindExt for str {
 
     fn is_comment(&self) -> bool {
         self == "comment"
+    }
+
+    fn is_callable(&self) -> bool {
+        self == "module_declaration" || self == "function_declaration"
     }
 }
