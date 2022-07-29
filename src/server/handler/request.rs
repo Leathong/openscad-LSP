@@ -179,8 +179,6 @@ impl Server {
         let node = cursor.node();
         let name = node_text(&bfile.code, &node);
 
-        // print!("{:?} {:?}\n", name, &id);
-
         let mut items = self.find_identities(&file.borrow(), &|_| true, &node, true, true);
 
         let kind = node.kind();
@@ -253,8 +251,19 @@ impl Server {
             }
         }
 
-        let result = match kind {
-            "include_path" => CompletionResponse::List(CompletionList {
+        let result = if kind == "include_path"
+            || node
+                .prev_sibling()
+                .map(|sib| {
+                    if sib.kind() == "include" || sib.kind() == "use" {
+                        Some(true)
+                    } else {
+                        None
+                    }
+                })
+                .is_some()
+        {
+            CompletionResponse::List(CompletionList {
                 is_incomplete: true,
                 items: bfile
                     .get_include_completion(&node)
@@ -269,8 +278,9 @@ impl Server {
                         ..Default::default()
                     })
                     .collect(),
-            }),
-            _ => CompletionResponse::List(CompletionList {
+            })
+        } else {
+            CompletionResponse::List(CompletionList {
                 is_incomplete: true,
                 items: items
                     .iter()
@@ -296,7 +306,7 @@ impl Server {
                         ..Default::default()
                     })
                     .collect(),
-            }),
+            })
         };
 
         let result = serde_json::to_value(&result).unwrap();
@@ -388,11 +398,15 @@ impl Server {
             last_pos = node.end_byte();
         });
 
+        let path = uri.to_file_path().unwrap();
+        let path = path.parent().unwrap();
+
         let child = match Command::new(&self.args.fmt_exe)
             .arg(format!("-style={}", self.args.fmt_style))
             .arg("-assume-filename=foo.scad")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
+            .current_dir(path)
             .spawn()
         {
             Ok(res) => res,

@@ -88,6 +88,7 @@ impl Server {
             search_paths: Option<String>,
             fmt_style: Option<String>,
             fmt_exe: Option<String>,
+            default_param: Option<bool>,
         }
 
         #[derive(Deserialize)]
@@ -127,6 +128,10 @@ impl Server {
                 if !fmt_exe.trim().is_empty() && self.args.fmt_exe != fmt_exe {
                     self.args.fmt_exe = fmt_exe;
                 }
+            }
+
+            if let Some(defualt_param) = settings.openscad.default_param {
+                self.args.default_param = defualt_param;
             }
         }
     }

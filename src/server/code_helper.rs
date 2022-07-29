@@ -57,7 +57,7 @@ impl Server {
         let mut parent = start_node.parent();
 
         while parent.is_some() {
-            let is_top_level_node = !parent.unwrap().parent().is_some();
+            let is_top_level_node = parent.unwrap().parent().is_none();
 
             loop {
                 if node.kind().is_include_statement() {

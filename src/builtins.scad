@@ -156,7 +156,7 @@ MultiRange() {
 */
 module children(index) {}
 
-module echo(msgn) {}
+module echo(msg) {}
 
 module import(file, center=false, dpi=96, convexity=1) {}
 
@@ -389,7 +389,7 @@ color("purple") linear_extrude(0.1)
 
 ```
 */
-module cylinder(r) {}
+module cylinder(h, r, center=false) {}
 
 /**
 
@@ -879,7 +879,7 @@ sphere(2, $fa = 5, $fs = 0.1);
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_sphere_in_different_sizes.png" class="image"
 title="Sample OpenSCAD spheres, showing clearly the difference in scale."><img src=https://upload.wikimedia.org/wikipedia/commons/e/ed/OpenSCAD_sphere_in_different_sizes.png width=479.5 height=253.0/></a>
 */
-module sphere(rad) {}
+module sphere(r) {}
 
 /**
 
@@ -1013,7 +1013,7 @@ color("black") {
 
 ```
 */
-module circle(rad) {}
+module circle(r) {}
 
 /**
 
@@ -1244,7 +1244,7 @@ in red crosses the 2D shapes outside⇒inside (or inside⇒outside) a
 maximum of 2 times. The convexity of a 3D shape would be determined in a
 similar way. Setting it to 10 should work fine for most cases.
 */
-module polygon(pts) {}
+module polygon(points, paths, convexity) {}
 
 /**
 
@@ -1306,7 +1306,7 @@ square(a, true);
 
 ```
 */
-module square(size) {}
+module square(size, center=false) {}
 
 module surface(file, center=false, invert=false, convexity=1) {}
 
@@ -1668,7 +1668,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Text&a
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 
 */
-module text(args) {}
+module text(text) {}
 
 /**
 Displays the child elements using the specified RGB color + alpha value.
@@ -2305,7 +2305,7 @@ module myModule(withColors = false) {
 
 Setting the colorname to undef keeps the default colors.
 */
-module color(c) { /* group */ }
+module color(c, alpha=1.0) { flags=0000000000000001; }
 
 /**
 Subtracts the 2nd (and all further) child nodes from the first one
@@ -2371,9 +2371,9 @@ translate([ 10, 10, 0 ]) {
 
 ```
 */
-module difference() { /* group */ }
+module difference() { flags=0000000000000001; }
 
-module group() { /* group */ }
+module group() { flags=0000000000000001; }
 
 /**
 <a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png width=160.0 height=119.2/></a>
@@ -2452,7 +2452,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Transf
 -   [Book:OpenSCAD User
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 */
-module hull() { /* group */ }
+module hull() { flags=0000000000000001; }
 
 /**
 Creates the intersection of all child nodes. This keeps the
@@ -2473,7 +2473,7 @@ intersection() {
 
 ```
 */
-module intersection() { /* group */ }
+module intersection() { flags=0000000000000001; }
 
 /**
 Linear Extrusion is an operation that takes a 2D object as input and
@@ -2700,7 +2700,7 @@ linear_extrude(
 
 ```
 */
-module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { /* group */ }
+module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { flags=0000000000000001; }
 
 /**
 <a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png width=160.0 height=119.2/></a>
@@ -2774,7 +2774,7 @@ example $fn=100 and you combine two cylinders, then it does not just
 perform 200 operations as with two independent cylinders, but 100\*100 =
 10000 operations.
 */
-module minkowski() { /* group */ }
+module minkowski() { flags=0000000000000001; }
 
 /**
 Mirrors the child element on a plane through the origin. The argument to
@@ -2821,7 +2821,7 @@ mirror([ 1, 0, 0 ]) translate([ 1, 0, 0 ])
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_mirror()_example.JPG" class="image" title="image of the result of the mirror() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG width=195.0 height=184.8/></a>
 */
-module mirror(v) { /* group */ }
+module mirror(v) { flags=0000000000000001; }
 
 /**
 Multiplies the geometry of all child elements with the given
@@ -2970,7 +2970,7 @@ Learn more about it here:
 -   <a href="http://www.senocular.com/flash/tutorials/transformmatrix/"     class="external free"
     rel="nofollow">http://www.senocular.com/flash/tutorials/transformmatrix/</a>
 */
-module multmatrix(m) { /* group */ }
+module multmatrix(m) { flags=0000000000000001; }
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
@@ -3060,9 +3060,9 @@ module fillet(r) {
 
 ```
 */
-module offset(delta, r=0, chamfer=false) { /* group */ }
+module offset(delta, r=0, chamfer=false) { flags=0000000000000001; }
 
-module parent_module() { /* group */ }
+module parent_module() { flags=0000000000000001; }
 
 /**
 Using the `projection()` function, you can create 2d drawings from 3d
@@ -3135,7 +3135,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/3D_to_
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 
 */
-module projection() { /* group */ }
+module projection(cut = false) { flags=0000000000000001; }
 
 /**
 **Warning:** Using render, always calculates the CSG model for this tree
@@ -3177,7 +3177,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/CSG_Mo
 -   [Book:OpenSCAD User
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 */
-module render() { /* group */ }
+module render() { flags=0000000000000001; }
 
 /**
 Modifies the size of the child object to match the given x,y, and z.
@@ -3222,7 +3222,7 @@ resize([ 10, 0, 0 ], auto = [ true, true, false ])
 
 ```
 */
-module resize(newsize) { /* group */ }
+module resize(newsize) { flags=0000000000000001; }
 
 /**
 Rotates its child 'a' degrees about the axis of the coordinate system or
@@ -3371,7 +3371,7 @@ rotate([ 0, b, c ]) cylinder(h = length, r = 0.5);
 
 <a href="https://en.wikibooks.org/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG" class="image" title="Example of OpenSCAD Rotate() used as a spherical coordinate system."><img src=https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG width=190.8 height=193.2/></a>
 */
-module rotate(angles) { /* group */ }
+module rotate(a, v) { flags=0000000000000001; }
 
 /**
 Rotational extrusion spins a 2D shape around the Z-axis to form a solid
@@ -3547,7 +3547,7 @@ rotate_extrude($fn = 200) polygon(points = [
 For more information on polygons, please see: [2D Primitives:
 Polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_Primitives#polygon "OpenSCAD User Manual/2D Primitives").
 */
-module rotate_extrude(angle=360, convexity=2) { /* group */ }
+module rotate_extrude(angle=360, convexity=2) { flags=0000000000000001; }
 
 /**
 Scales its child elements using the specified vector. The argument name
@@ -3569,7 +3569,7 @@ translate([ 15, 0, 0 ]) scale([ 0.5, 1, 2 ]) cube(10);
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_scale()_example.JPG" class="image" title="Image showing result of scale() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG width=215.4 height=226.8/></a>
 */
-module scale(v) { /* group */ }
+module scale(v) { flags=0000000000000001; }
 
 /**
 Translates (moves) its child elements along the specified vector. The
@@ -3590,7 +3590,7 @@ translate([ 5, 0, 0 ]) sphere(1, center = true);
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_translate()_example.JPG" class="image" title="image of result of the translate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG width=231.0 height=191.4/></a>
 */
-module translate(v) { /* group */ }
+module translate(v) { flags=0000000000000001; }
 
 /**
 Creates a union of all its child nodes. This is the **sum** of all
@@ -3656,7 +3656,7 @@ union() {
 
 ```
 */
-module union() { /* group */ }
+module union() { flags=0000000000000001; }
 
 /**
 Mathematical **absolute value** function. Returns the positive value of
@@ -3867,7 +3867,7 @@ for (i = [0:36])
 <td>
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cos_Function.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/OpenSCAD_Cos_Function.png/220px-OpenSCAD_Cos_Function.png width=176.0 height=98.4/></a>
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_Cos_Function.png" class="internal" title="Enlarge"></a>
-OpenSCAD Cos Function‎
+OpenSCAD Cos Function
 </td>
 </tr>
 </tbody>
@@ -4774,7 +4774,7 @@ for (i = [0:5]) {
 */
 function tan(x) = 0;
 
-function version() = 0;
+function version() = flags(0000000000000001);
 
 function version_num() = 0;
 

@@ -3,6 +3,8 @@ use tree_sitter::Node;
 
 use crate::utils::*;
 
+use crate::Server;
+
 #[derive(Clone, Debug)]
 pub(crate) struct Param {
     pub name: String,
@@ -35,9 +37,25 @@ impl Param {
     pub(crate) fn make_snippet(params: &[Param]) -> String {
         params
             .iter()
-            .filter_map(|p| p.default.is_none().then(|| &p.name))
+            .filter_map(|p| {
+                if Server::get_server().args.default_param {
+                    Some(p)
+                } else {
+                    p.default.is_none().then(|| p)
+                }
+            })
             .enumerate()
-            .map(|(i, name)| format!("${{{}:{}}}", i + 1, name))
+            .map(|(i, p)| {
+                if Server::get_server().args.default_param {
+                    if let Some(defualt) = &p.default {
+                        format!("{}={}", p.name, defualt)
+                    } else {
+                        format!("{}=${{{}:{}}}", p.name, i + 1, p.name)
+                    }
+                } else {
+                    format!("{}=${{{}:{}}}", p.name, i + 1, p.name)
+                }
+            })
             .collect::<Vec<_>>()
             .join(", ")
     }

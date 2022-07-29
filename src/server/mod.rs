@@ -43,8 +43,55 @@ pub(crate) enum LoopAction {
     Continue,
 }
 
+static mut GLOBAL_SERVER: Option<Server> = None;
+
 // Miscellaneous high-level logic.
 impl Server {
+    pub(crate) fn create_server(connection: Connection, args: Cli) {
+        unsafe {
+            GLOBAL_SERVER = Some(Server::new(connection, args));
+        }
+    }
+
+    pub(crate) fn get_server<'a>() -> &'a mut Server {
+        unsafe {
+            return GLOBAL_SERVER.as_mut().unwrap();
+        }
+    }
+
+    fn new(connection: Connection, args: Cli) -> Self {
+        let builtin_path = PathBuf::from(&args.builtin);
+        let mut instance = Self {
+            library_locations: Rc::new(RefCell::new(vec![])),
+            connection,
+            code: Default::default(),
+            args,
+        };
+        let mut code = BUILTINS_SCAD.to_owned();
+        let mut url = Url::parse(BUILTIN_PATH).unwrap();
+
+        let mut external = false;
+        match read_to_string(&builtin_path) {
+            Err(err) => {
+                err_to_console!("read external builtin file error: {:?}", err);
+            }
+            Ok(builtin_str) => {
+                code = builtin_str;
+                url = Url::parse(&format!("file://{}", &builtin_path.to_str().unwrap())).unwrap();
+                external = true;
+            }
+        }
+
+        let rc = instance.insert_code(Url::parse(BUILTIN_PATH).unwrap(), code);
+        rc.borrow_mut().url = url;
+        rc.borrow_mut().is_builtin = true;
+        rc.borrow_mut().external_builtin = external;
+
+        instance.make_library_locations();
+
+        instance
+    }
+
     pub(crate) fn user_defined_library_locations() -> Vec<String> {
         match env::var("OPENSCADPATH") {
             Ok(path) => env::split_paths(&path)
@@ -127,40 +174,6 @@ impl Server {
 
             eprintln!();
         }
-    }
-
-    pub(crate) fn new(connection: Connection, args: Cli) -> Self {
-        let builtin_path = PathBuf::from(&args.builtin);
-
-        let mut instance = Self {
-            library_locations: Rc::new(RefCell::new(vec![])),
-            connection,
-            code: Default::default(),
-            args,
-        };
-        let mut code = BUILTINS_SCAD.to_owned();
-        let mut url = Url::parse(BUILTIN_PATH).unwrap();
-
-        let mut external = false;
-        match read_to_string(&builtin_path) {
-            Err(err) => {
-                err_to_console!("read external builtin file error: {:?}", err);
-            }
-            Ok(builtin_str) => {
-                code = builtin_str;
-                url = Url::parse(&format!("file://{}", &builtin_path.to_str().unwrap())).unwrap();
-                external = true;
-            }
-        }
-
-        let rc = instance.insert_code(Url::parse(BUILTIN_PATH).unwrap(), code);
-        rc.borrow_mut().url = url;
-        rc.borrow_mut().is_builtin = true;
-        rc.borrow_mut().external_builtin = external;
-
-        instance.make_library_locations();
-
-        instance
     }
 
     pub(crate) fn notify(&self, notif: lsp_server::Notification) {

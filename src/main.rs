@@ -29,6 +29,9 @@ pub(crate) struct Cli {
 
     #[clap(long, help = "use stdio instead of tcp")]
     stdio: bool,
+
+    #[clap(long, help = "include defualt params in auto-completion")]
+    default_param: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -48,8 +51,8 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     };
 
     log_to_console!("start sucess");
-    let mut server = Server::new(connection, args);
-    server.main_loop()?;
+    Server::create_server(connection, args);
+    Server::get_server().main_loop()?;
     io_threads.join()?;
 
     err_to_console!("exit");
