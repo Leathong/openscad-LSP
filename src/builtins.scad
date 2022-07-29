@@ -154,9 +154,9 @@ MultiRange() {
 
 ```
 */
-module children(index) {}
+module children(index) { builtin_flags(0000000000000010); }
 
-module echo(msg) {}
+module echo(msg) { builtin_flags(0000000000000010); }
 
 module import(file, center=false, dpi=96, convexity=1) {}
 
@@ -220,7 +220,7 @@ cube(box, true);
 
 ```
 */
-module cube(size, center) {}
+module cube(size, center=false) {}
 
 /**
 
@@ -2305,7 +2305,7 @@ module myModule(withColors = false) {
 
 Setting the colorname to undef keeps the default colors.
 */
-module color(c, alpha=1.0) { flags=0000000000000001; }
+module color(c, alpha=1.0) { builtin_flags(0000000000000001); }
 
 /**
 Subtracts the 2nd (and all further) child nodes from the first one
@@ -2371,9 +2371,9 @@ translate([ 10, 10, 0 ]) {
 
 ```
 */
-module difference() { flags=0000000000000001; }
+module difference() { builtin_flags(0000000000000001); }
 
-module group() { flags=0000000000000001; }
+module group() { builtin_flags(0000000000000001); }
 
 /**
 <a href="https://en.wikibooks.org/wiki/File:Openscad_hull_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Openscad_hull_example_1a.png/200px-Openscad_hull_example_1a.png width=160.0 height=119.2/></a>
@@ -2452,7 +2452,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Transf
 -   [Book:OpenSCAD User
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 */
-module hull() { flags=0000000000000001; }
+module hull() { builtin_flags(0000000000000001); }
 
 /**
 Creates the intersection of all child nodes. This keeps the
@@ -2473,7 +2473,7 @@ intersection() {
 
 ```
 */
-module intersection() { flags=0000000000000001; }
+module intersection() { builtin_flags(0000000000000001); }
 
 /**
 Linear Extrusion is an operation that takes a 2D object as input and
@@ -2700,7 +2700,7 @@ linear_extrude(
 
 ```
 */
-module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { flags=0000000000000001; }
+module linear_extrude(height, center=false, convexity=10, twist=0, slices=20, scale=1.0) { builtin_flags(0000000000000001); }
 
 /**
 <a href="https://en.wikibooks.org/wiki/File:Openscad_minkowski_example_1a.png" class="image"><img src=https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Openscad_minkowski_example_1a.png/200px-Openscad_minkowski_example_1a.png width=160.0 height=119.2/></a>
@@ -2774,7 +2774,7 @@ example $fn=100 and you combine two cylinders, then it does not just
 perform 200 operations as with two independent cylinders, but 100\*100 =
 10000 operations.
 */
-module minkowski() { flags=0000000000000001; }
+module minkowski() { builtin_flags(0000000000000001); }
 
 /**
 Mirrors the child element on a plane through the origin. The argument to
@@ -2821,7 +2821,7 @@ mirror([ 1, 0, 0 ]) translate([ 1, 0, 0 ])
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_mirror()_example.JPG" class="image" title="image of the result of the mirror() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/c/c9/OpenSCAD_mirror%28%29_example.JPG width=195.0 height=184.8/></a>
 */
-module mirror(v) { flags=0000000000000001; }
+module mirror(v) { builtin_flags(0000000000000001); }
 
 /**
 Multiplies the geometry of all child elements with the given
@@ -2970,7 +2970,7 @@ Learn more about it here:
 -   <a href="http://www.senocular.com/flash/tutorials/transformmatrix/"     class="external free"
     rel="nofollow">http://www.senocular.com/flash/tutorials/transformmatrix/</a>
 */
-module multmatrix(m) { flags=0000000000000001; }
+module multmatrix(m) { builtin_flags(0000000000000001); }
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
@@ -3060,9 +3060,9 @@ module fillet(r) {
 
 ```
 */
-module offset(delta, r=0, chamfer=false) { flags=0000000000000001; }
+module offset(delta, r=0, chamfer=false) { builtin_flags(0000000000000001); }
 
-module parent_module() { flags=0000000000000001; }
+module parent_module() { builtin_flags(0000000000000001); }
 
 /**
 Using the `projection()` function, you can create 2d drawings from 3d
@@ -3135,7 +3135,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/3D_to_
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 
 */
-module projection(cut = false) { flags=0000000000000001; }
+module projection(cut = false) { builtin_flags(0000000000000001); }
 
 /**
 **Warning:** Using render, always calculates the CSG model for this tree
@@ -3177,7 +3177,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/CSG_Mo
 -   [Book:OpenSCAD User
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 */
-module render() { flags=0000000000000001; }
+module render() { builtin_flags(0000000000000001); }
 
 /**
 Modifies the size of the child object to match the given x,y, and z.
@@ -3222,7 +3222,7 @@ resize([ 10, 0, 0 ], auto = [ true, true, false ])
 
 ```
 */
-module resize(newsize) { flags=0000000000000001; }
+module resize(newsize) { builtin_flags(0000000000000001); }
 
 /**
 Rotates its child 'a' degrees about the axis of the coordinate system or
@@ -3371,7 +3371,7 @@ rotate([ 0, b, c ]) cylinder(h = length, r = 0.5);
 
 <a href="https://en.wikibooks.org/wiki/File:Example_xyz_rotation_in_OpenSCAD.JPG" class="image" title="Example of OpenSCAD Rotate() used as a spherical coordinate system."><img src=https://upload.wikimedia.org/wikipedia/commons/6/61/Example_xyz_rotation_in_OpenSCAD.JPG width=190.8 height=193.2/></a>
 */
-module rotate(a, v) { flags=0000000000000001; }
+module rotate(a, v) { builtin_flags(0000000000000001); }
 
 /**
 Rotational extrusion spins a 2D shape around the Z-axis to form a solid
@@ -3547,7 +3547,7 @@ rotate_extrude($fn = 200) polygon(points = [
 For more information on polygons, please see: [2D Primitives:
 Polygon](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/2D_Primitives#polygon "OpenSCAD User Manual/2D Primitives").
 */
-module rotate_extrude(angle=360, convexity=2) { flags=0000000000000001; }
+module rotate_extrude(angle=360, convexity=2) { builtin_flags(0000000000000001); }
 
 /**
 Scales its child elements using the specified vector. The argument name
@@ -3569,7 +3569,7 @@ translate([ 15, 0, 0 ]) scale([ 0.5, 1, 2 ]) cube(10);
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_scale()_example.JPG" class="image" title="Image showing result of scale() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/a7/OpenSCAD_scale%28%29_example.JPG width=215.4 height=226.8/></a>
 */
-module scale(v) { flags=0000000000000001; }
+module scale(v) { builtin_flags(0000000000000001); }
 
 /**
 Translates (moves) its child elements along the specified vector. The
@@ -3590,7 +3590,7 @@ translate([ 5, 0, 0 ]) sphere(1, center = true);
 
 <a href="https://en.wikibooks.org/wiki/File:OpenSCAD_translate()_example.JPG" class="image" title="image of result of the translate() transformation in OpenSCAD"><img src=https://upload.wikimedia.org/wikipedia/commons/a/ad/OpenSCAD_translate%28%29_example.JPG width=231.0 height=191.4/></a>
 */
-module translate(v) { flags=0000000000000001; }
+module translate(v) { builtin_flags(0000000000000001); }
 
 /**
 Creates a union of all its child nodes. This is the **sum** of all
@@ -3656,7 +3656,7 @@ union() {
 
 ```
 */
-module union() { flags=0000000000000001; }
+module union() { builtin_flags(0000000000000001); }
 
 /**
 Mathematical **absolute value** function. Returns the positive value of
@@ -3672,7 +3672,7 @@ returns 8.0
 
 ```
 */
-function abs(x) = 0;
+function abs(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **arccosine**, or **inverse cosine**, expressed in degrees.
@@ -3680,7 +3680,7 @@ See:
 <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions" class="extiw" title="w:Inverse trigonometric functions">Inverse
 trigonometric functions</a>
 */
-function acos(x) = 0;
+function acos(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **arcsine**, or **inverse sine**, expressed in degrees.
@@ -3688,9 +3688,9 @@ See:
 <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions" class="extiw" title="w:Inverse trigonometric functions">Inverse
 trigonometric functions</a>
 */
-function asin(x) = 0;
+function asin(x) = builtin_flags(0000000000000010);
 
-function assert(cond) = 0;
+function assert(cond) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **arctangent**, or **inverse tangent**, function. Returns
@@ -3698,7 +3698,7 @@ the principal value of the arc tangent of x, expressed in degrees. See:
 <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions" class="extiw" title="w:Inverse trigonometric functions">Inverse
 trigonometric functions</a>
 */
-function atan(x) = 0;
+function atan(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **two-argument atan** function atan2(y,x) that spans the
@@ -3717,7 +3717,7 @@ atan2(y, x); // angle between (1,0) and (x,y) = angle around z-axis
 
 ## Other Mathematical Functions
 */
-function atan2(y, x) = 0;
+function atan2(y, x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **ceiling** function.
@@ -3732,7 +3732,7 @@ echo(ceil(4.4), ceil(-4.4)); // produces ECHO: 5, -4
 
 ```
 */
-function ceil(x) = 0;
+function ceil(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
@@ -3774,7 +3774,7 @@ echo(len(chr(9788)));       // ECHO: 1
 Note: When used with echo() the output to the console for character
 codes greater than 127 is platform dependent.
 */
-function chr(x) = 0;
+function chr(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2015.03</span></span>]</span>
@@ -3834,7 +3834,7 @@ echo(str("abc", "def"));    // produces ECHO: "abcdef"
 
 ```
 */
-function concat(args) = 0;
+function concat(args) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **cosine** function of degrees. See <a href="https://en.wikipedia.org/wiki/Cosine#Sine.2C_cosine_and_tangent"
@@ -3873,7 +3873,7 @@ OpenSCAD Cos Function
 </tbody>
 </table>
 */
-function cos(x) = 0;
+function cos(x) = builtin_flags(0000000000000010);
 
 /**
 Calculates the cross product of two vectors in 3D or 2D space. If both
@@ -3908,11 +3908,11 @@ For any two vectors *a* and *b* in 2D or in 3D, the following holds:
 
 *cross(a,b) == -cross(b,a)*
 */
-function cross(u, v) = 0;
+function cross(u, v) = builtin_flags(0000000000000010);
 
-function dxf_cross() = 0;
+function dxf_cross() = builtin_flags(0000000000000010);
 
-function dxf_dim() = 0;
+function dxf_dim() = builtin_flags(0000000000000010);
 
 /**
 Mathematical **exp** function. Returns the base-e exponential function
@@ -3924,7 +3924,7 @@ echo(exp(1), exp(ln(3) * 4)); // produces ECHO: 2.71828, 81
 
 ```
 */
-function exp(x) = 0;
+function exp(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **floor** function. floor(x) = is the largest integer not
@@ -3938,7 +3938,7 @@ echo(floor(4.4), floor(-4.4)); // produces ECHO: 4, -5
 
 ```
 */
-function floor(x) = 0;
+function floor(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -3962,7 +3962,7 @@ echo(is_bool(undef));
 
 ```
 */
-function is_bool(x) = 0;
+function is_bool(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -3989,7 +3989,7 @@ echo(is_list(1, 2));
 
 ```
 */
-function is_list(x) = 0;
+function is_list(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -4017,7 +4017,7 @@ echo(is_num(undef));
 
 ```
 */
-function is_num(x) = 0;
+function is_num(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -4041,7 +4041,7 @@ echo(is_string(undef));
 
 ```
 */
-function is_string(x) = 0;
+function is_string(x) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -4096,7 +4096,7 @@ function is_undef(a) = (undef == a);
 which of-course causes warning(s), but requires no changes to code
 relying on is_undef().
 */
-function is_undef(x) = 0;
+function is_undef(x) = builtin_flags(0000000000000010);
 
 /**
 returns the number of characters in a text.
@@ -4192,19 +4192,19 @@ doIt([ 5, 5, 5 ]); // similar to cube(5) v's cube([5,5,5])
 
 ```
 */
-function len(x) = 0;
+function len(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **natural logarithm**. See:
 <a href="https://en.wikipedia.org/wiki/Natural_logarithm" class="extiw" title="w:Natural logarithm">Natural logarithm</a>
 */
-function ln(x) = 0;
+function ln(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **logarithm** to the base 10. Example: log(1000) = 3. See:
 <a href="https://en.wikipedia.org/wiki/Logarithm" class="extiw" title="w:Logarithm">Logarithm</a>
 */
-function log(x) = 0;
+function log(x) = builtin_flags(0000000000000010);
 
 /**
 Look up value in table, and linearly interpolate if there's no exact
@@ -4261,7 +4261,7 @@ OpenSCAD Lookup Function
 </tbody>
 </table>
 */
-function lookup(key, vals) = 0;
+function lookup(key, vals) = builtin_flags(0000000000000010);
 
 /**
 Returns the maximum of the parameters. If a single vector is given as
@@ -4294,7 +4294,7 @@ max(3.0, 5.0) max(8.0, 3.0, 4.0, 5.0) max([ 8, 3, 4, 5 ])
 
 ```
 */
-function max(args) = 0;
+function max(args) = builtin_flags(0000000000000010);
 
 /**
 Returns the minimum of the parameters. If a single vector is given as
@@ -4330,7 +4330,7 @@ min(3.0, 5.0) min(8.0, 3.0, 4.0, 5.0) min([ 8, 3, 4, 5 ])
 Looking for **mod** - it's not a function, see [modulo operator
 (%)](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Mathematical_Operators "OpenSCAD User Manual/Mathematical Operators")
 */
-function min(args) = 0;
+function min(args) = builtin_flags(0000000000000010);
 
 /**
 Returns the
@@ -4370,7 +4370,7 @@ echo(norm(e[3])); // 1
     ECHO: 1
 ```
 */
-function norm(v) = 0;
+function norm(v) = builtin_flags(0000000000000010);
 
 /**
 <span style="font-weight: bold; font-style: normal;">[<span style="color: #A00000;">Note:</span> <span style="font-weight: normal; font-style: italic;">Requires version <span style="font-weight: bold;">2019.05</span></span>]</span>
@@ -4403,7 +4403,7 @@ echo(ord(txt) - 48, txt);
 
 ```
 */
-function ord(c) = 0;
+function ord(c) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **power** function.
@@ -4446,7 +4446,7 @@ echo(pow(
 
 ```
 */
-function pow(base, exp) = 0;
+function pow(base, exp) = builtin_flags(0000000000000010);
 
 /**
 Random number generator. Generates a constant vector of pseudo random
@@ -4494,7 +4494,7 @@ for (i = [0:3]) {
 
 ```
 */
-function rands(min, max, count, seed_value=0) = 0;
+function rands(min, max, count, seed_value=0) = builtin_flags(0000000000000010);
 
 /**
 The "round" operator returns the greatest or least integer part,
@@ -4519,9 +4519,9 @@ Some examples:
 
 ```
 */
-function round(x) = 0;
+function round(x) = builtin_flags(0000000000000010);
 
-function search() = 0;
+function search() = builtin_flags(0000000000000010);
 
 /**
 Mathematical **signum** function. Returns a unit value that extracts the
@@ -4549,7 +4549,7 @@ sign(8.0);
 
 ```
 */
-function sign(x) = 0;
+function sign(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **sine** function. See <a href="https://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine_and_tangent"
@@ -4617,7 +4617,7 @@ OpenSCAD Sin Function
 </tbody>
 </table>
 */
-function sin(x) = 0;
+function sin(x) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **square root** function.
@@ -4714,7 +4714,7 @@ dir="ltr">https://en.wikibooks.org/w/index.php?title=OpenSCAD_User_Manual/Mathem
 -   [Book:OpenSCAD User
     Manual](https://en.wikibooks.org/wiki/Category:Book:OpenSCAD_User_Manual "Category:Book:OpenSCAD User Manual")
 */
-function sqrt(x) = 0;
+function sqrt(x) = builtin_flags(0000000000000010);
 
 /**
 Convert all arguments to strings and concatenate.
@@ -4735,7 +4735,7 @@ echo(str("This is ", number, 3, " and that's it."));
     ECHO: "This is 23 and that's it."
 ```
 */
-function str(args) = 0;
+function str(args) = builtin_flags(0000000000000010);
 
 /**
 Mathematical **tangent** function. See <a href="https://en.wikipedia.org/wiki/Trigonometric_functions#Sine.2C_cosine_and_tangent"
@@ -4772,9 +4772,9 @@ for (i = [0:5]) {
 </tbody>
 </table>
 */
-function tan(x) = 0;
+function tan(x) = builtin_flags(0000000000000010);
 
-function version() = flags(0000000000000001);
+function version() = builtin_flags(0000000000000010);
 
-function version_num() = 0;
+function version_num() = builtin_flags(0000000000000010);
 

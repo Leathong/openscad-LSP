@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     io::{Read, Write},
     process::{Command, Stdio},
     rc::Rc,
@@ -53,10 +54,7 @@ impl Server {
                 items.first().map(|item| Hover {
                     contents: HoverContents::Markup(MarkupContent {
                         kind: lsp_types::MarkupKind::Markdown,
-                        value: match &item.hover {
-                            Some(hover) => hover.to_owned(),
-                            None => item.make_hover(),
-                        },
+                        value: item.borrow_mut().get_hover(),
                     }),
                     range: None,
                 })
@@ -105,10 +103,10 @@ impl Server {
                 );
                 let locs = items
                     .iter()
-                    .filter(|item| item.name == name && item.url.is_some())
+                    .filter(|item| item.borrow().name == name && item.borrow().url.is_some())
                     .map(|item| Location {
-                        uri: item.url.as_ref().unwrap().clone(),
-                        range: item.range,
+                        uri: item.borrow().url.as_ref().unwrap().clone(),
+                        range: item.borrow().range,
                     })
                     .collect::<Vec<Location>>();
                 Some(locs)
@@ -213,30 +211,30 @@ impl Server {
                         if !fun_items.is_empty() {
                             let item = &fun_items[0];
 
-                            let param_items = match &item.kind {
+                            let param_items = match &item.borrow().kind {
                                 ItemKind::Module { params, .. } => {
                                     let mut result = vec![];
                                     for p in params {
-                                        result.push(Rc::new(Item {
+                                        result.push(Rc::new(RefCell::new(Item {
                                             name: p.name.clone(),
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(bfile.url.clone()),
                                             ..Default::default()
-                                        }));
+                                        })));
                                     }
                                     result
                                 }
-                                ItemKind::Function(params) => {
+                                ItemKind::Function { flags: _, params } => {
                                     let mut result = vec![];
                                     for p in params {
-                                        result.push(Rc::new(Item {
+                                        result.push(Rc::new(RefCell::new(Item {
                                             name: p.name.clone(),
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(bfile.url.clone()),
                                             ..Default::default()
-                                        }));
+                                        })));
                                     }
                                     result
                                 }
@@ -284,26 +282,27 @@ impl Server {
                 is_incomplete: true,
                 items: items
                     .iter()
-                    .map(|item| CompletionItem {
-                        label: match &item.label {
-                            Some(label) => label.to_owned(),
-                            None => item.make_label(),
-                        },
-                        kind: Some(item.kind.completion_kind()),
-                        filter_text: Some(item.name.to_owned()),
-                        insert_text: Some(item.make_snippet()),
-                        insert_text_format: Some(match &item.kind {
-                            ItemKind::Variable => InsertTextFormat::PLAIN_TEXT,
-                            _ => InsertTextFormat::SNIPPET,
-                        }),
-                        insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
-                        documentation: item.hover.as_ref().map(|doc| {
-                            Documentation::MarkupContent(MarkupContent {
-                                kind: lsp_types::MarkupKind::Markdown,
-                                value: doc.to_owned(),
-                            })
-                        }),
-                        ..Default::default()
+                    .map(|item| {
+                        let label = item.borrow_mut().get_label();
+                        let snippet = item.borrow_mut().get_snippet();
+                        CompletionItem {
+                            label,
+                            kind: Some(item.borrow().kind.completion_kind()),
+                            filter_text: Some(item.borrow().name.to_owned()),
+                            insert_text: Some(snippet),
+                            insert_text_format: Some(match item.borrow().kind {
+                                ItemKind::Variable => InsertTextFormat::PLAIN_TEXT,
+                                _ => InsertTextFormat::SNIPPET,
+                            }),
+                            insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
+                            documentation: item.borrow().hover.as_ref().map(|doc| {
+                                Documentation::MarkupContent(MarkupContent {
+                                    kind: lsp_types::MarkupKind::Markdown,
+                                    value: doc.to_owned(),
+                                })
+                            }),
+                            ..Default::default()
+                        }
                     })
                     .collect(),
             })
@@ -329,19 +328,21 @@ impl Server {
         if let Some(items) = &bfile.root_items {
             let result: Vec<SymbolInformation> = items
                 .iter()
-                .map(|item| {
-                    #[allow(deprecated)]
-                    SymbolInformation {
-                        name: item.name.to_owned(),
-                        kind: item.get_symbol_kind(),
-                        tags: None,
-                        deprecated: None,
-                        location: Location {
-                            uri: item.url.clone().unwrap(),
-                            range: item.range,
-                        },
-                        container_name: None,
-                    }
+                .filter_map(|item| {
+                    item.borrow().url.as_ref().map(|url| {
+                        #[allow(deprecated)]
+                        SymbolInformation {
+                            name: item.borrow().name.to_owned(),
+                            kind: item.borrow().get_symbol_kind(),
+                            tags: None,
+                            deprecated: None,
+                            location: Location {
+                                uri: url.clone(),
+                                range: item.borrow().range,
+                            },
+                            container_name: None,
+                        }
+                    })
                 })
                 .collect();
 

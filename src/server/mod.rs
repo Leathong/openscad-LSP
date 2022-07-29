@@ -10,25 +10,17 @@ use std::fs::read_to_string;
 use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 
 use linked_hash_map::LinkedHashMap;
-use lsp_server::{Connection, ExtractError, Message, Response};
+use lsp_server::{Connection, Message};
 use lsp_types::{
-    notification::{
-        DidChangeConfiguration, DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
-        DidSaveTextDocument,
-    },
-    request::{Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest},
     HoverProviderCapability, OneOf, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
 };
 
-use serde_json::json;
-
 use crate::parse_code::ParsedCode;
-use crate::utils::*;
 use crate::Cli;
 
 const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtins.scad"));
-pub(crate) const BUILTIN_PATH: &str = "file://builtin";
+const BUILTIN_PATH: &str = "/builtin";
 
 pub(crate) struct Server {
     pub library_locations: Rc<RefCell<Vec<Url>>>,
@@ -36,6 +28,8 @@ pub(crate) struct Server {
     pub connection: Connection,
     pub code: LinkedHashMap<Url, Rc<RefCell<ParsedCode>>>,
     pub args: Cli,
+
+    builtin_url: Url,
 }
 
 pub(crate) enum LoopAction {
@@ -61,29 +55,34 @@ impl Server {
 
     fn new(connection: Connection, args: Cli) -> Self {
         let builtin_path = PathBuf::from(&args.builtin);
-        let mut instance = Self {
-            library_locations: Rc::new(RefCell::new(vec![])),
-            connection,
-            code: Default::default(),
-            args,
-        };
+
+        let mut args = args;
+
         let mut code = BUILTINS_SCAD.to_owned();
-        let mut url = Url::parse(BUILTIN_PATH).unwrap();
 
         let mut external = false;
         match read_to_string(&builtin_path) {
             Err(err) => {
                 err_to_console!("read external builtin file error: {:?}", err);
+                args.builtin = BUILTIN_PATH.to_owned();
             }
             Ok(builtin_str) => {
                 code = builtin_str;
-                url = Url::parse(&format!("file://{}", &builtin_path.to_str().unwrap())).unwrap();
                 external = true;
             }
         }
 
-        let rc = instance.insert_code(Url::parse(BUILTIN_PATH).unwrap(), code);
-        rc.borrow_mut().url = url;
+        let url = Url::parse(&format!("file://{}", &args.builtin)).unwrap();
+
+        let mut instance = Self {
+            library_locations: Rc::new(RefCell::new(vec![])),
+            connection,
+            code: Default::default(),
+            args,
+            builtin_url: url.to_owned(),
+        };
+        let rc = instance.insert_code(url, code);
+
         rc.borrow_mut().is_builtin = true;
         rc.borrow_mut().external_builtin = external;
 
@@ -181,86 +180,6 @@ impl Server {
             .sender
             .send(Message::Notification(notif))
             .unwrap()
-    }
-
-    pub(crate) fn respond(&self, mut resp: Response) {
-        // log_to_console!("{:?}\n\n", &resp);
-        if resp.result.is_none() {
-            resp.result = Some(json!("{}"))
-        }
-        self.connection
-            .sender
-            .send(Message::Response(resp))
-            .unwrap()
-    }
-
-    pub(crate) fn handle_message(
-        &mut self,
-        msg: Message,
-    ) -> Result<LoopAction, Box<dyn Error + Sync + Send>> {
-        match msg {
-            Message::Request(req) => {
-                if self.connection.handle_shutdown(&req)? {
-                    return Ok(LoopAction::Exit);
-                }
-
-                macro_rules! proc_req {
-                    ($request:ident, $req_type:ty, $method:ident) => {
-                        match cast_request::<$req_type>($request) {
-                            Ok((id, params)) => {
-                                self.$method(id, params);
-                                return Ok(LoopAction::Continue);
-                            }
-                            Err(error) => match error {
-                                ExtractError::MethodMismatch(req) => req,
-                                ExtractError::JsonError { method, error } => {
-                                    err_to_console!("method: {} error: {}\n", method, error);
-                                    return Ok(LoopAction::Continue);
-                                }
-                            },
-                        }
-                    };
-                }
-
-                let req = proc_req!(req, HoverRequest, handle_hover);
-                let req = proc_req!(req, Completion, handle_completion);
-                let req = proc_req!(req, GotoDefinition, handle_definition);
-                let req = proc_req!(req, DocumentSymbolRequest, handle_document_symbols);
-                let req = proc_req!(req, Formatting, handle_formatting);
-                err_to_console!("unknown request: {:?}", req);
-            }
-            Message::Response(resp) => {
-                err_to_console!("got response: {:?}", resp);
-            }
-            Message::Notification(noti) => {
-                macro_rules! proc {
-                    ($noti:ident, $noti_type:ty, $method:ident) => {
-                        match cast_notification::<$noti_type>($noti) {
-                            Ok(params) => {
-                                self.$method(params);
-                                return Ok(LoopAction::Continue);
-                            }
-                            Err(error) => match error {
-                                ExtractError::MethodMismatch(noti) => noti,
-                                ExtractError::JsonError { method, error } => {
-                                    err_to_console!("method: {} error: {}\n", method, error);
-                                    return Ok(LoopAction::Exit);
-                                }
-                            },
-                        }
-                    };
-                }
-
-                let noti = proc!(noti, DidOpenTextDocument, handle_did_open_text_document);
-                let noti = proc!(noti, DidChangeTextDocument, handle_did_change_text_document);
-                let noti = proc!(noti, DidSaveTextDocument, handle_did_save_text_document);
-                let noti = proc!(noti, DidCloseTextDocument, handle_did_close_text_document);
-                let noti = proc!(noti, DidChangeConfiguration, handle_did_change_config);
-
-                err_to_console!("unknown notification: {:?}", noti);
-            }
-        }
-        Ok(LoopAction::Continue)
     }
 
     pub(crate) fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {

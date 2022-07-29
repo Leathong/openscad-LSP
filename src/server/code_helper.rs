@@ -6,7 +6,7 @@ use tree_sitter::Node;
 use crate::{
     parse_code::ParsedCode,
     response_item::{Item, ItemKind},
-    server::{Server, BUILTIN_PATH},
+    server::Server,
     utils::*,
 };
 
@@ -25,7 +25,6 @@ impl Server {
         }
 
         let rc = Rc::new(RefCell::new(ParsedCode::new(
-            tree_sitter_openscad::language(),
             code,
             url.clone(),
             self.library_locations.clone(),
@@ -41,11 +40,11 @@ impl Server {
         start_node: &Node,
         findall: bool,
         inc_builtin: bool,
-    ) -> Vec<Rc<Item>> {
+    ) -> Vec<Rc<RefCell<Item>>> {
         let mut result = vec![];
         let mut include_vec = vec![];
         if inc_builtin {
-            include_vec.push(Url::parse(BUILTIN_PATH).unwrap())
+            include_vec.push(Server::get_server().builtin_url.clone())
         }
         if let Some(incs) = &code.includes {
             include_vec.extend(incs.clone());
@@ -72,29 +71,29 @@ impl Server {
                             ItemKind::Module { params, .. } => {
                                 for p in params {
                                     if comparator(&p.name) {
-                                        result.push(Rc::new(Item {
+                                        result.push(Rc::new(RefCell::new(Item {
                                             name: p.name.clone(),
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(code.url.clone()),
                                             ..Default::default()
-                                        }));
+                                        })));
                                         if !findall {
                                             return result;
                                         }
                                     }
                                 }
                             }
-                            ItemKind::Function(params) => {
+                            ItemKind::Function { flags: _, params } => {
                                 for p in params {
                                     if comparator(&p.name) {
-                                        result.push(Rc::new(Item {
+                                        result.push(Rc::new(RefCell::new(Item {
                                             name: p.name.clone(),
                                             kind: ItemKind::Variable,
                                             range: p.range,
                                             url: Some(code.url.clone()),
                                             ..Default::default()
-                                        }));
+                                        })));
                                         if !findall {
                                             return result;
                                         }
@@ -107,7 +106,7 @@ impl Server {
 
                     if !is_top_level_node && comparator(&item.name) {
                         item.url = Some(code.url.clone());
-                        result.push(Rc::new(item));
+                        result.push(Rc::new(RefCell::new(item)));
                         if !findall {
                             return result;
                         }
@@ -128,7 +127,7 @@ impl Server {
 
         if let Some(items) = &code.root_items {
             for item in items {
-                if comparator(&item.name) {
+                if comparator(&item.borrow().name) {
                     result.push(item.clone());
                     if !findall {
                         return result;

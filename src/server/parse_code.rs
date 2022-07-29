@@ -2,7 +2,7 @@ use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
 use lazy_static::lazy_static;
 use lsp_types::{TextDocumentContentChangeEvent, Url};
-use tree_sitter::{InputEdit, Language, Node, Point, Tree, TreeCursor};
+use tree_sitter::{InputEdit, Node, Point, Tree, TreeCursor};
 
 use crate::response_item::{Item, ItemKind};
 use crate::utils::*;
@@ -27,7 +27,7 @@ pub(crate) struct ParsedCode {
     pub code: String,
     pub tree: Tree,
     pub url: Url,
-    pub root_items: Option<Vec<Rc<Item>>>,
+    pub root_items: Option<Vec<Rc<RefCell<Item>>>>,
     pub includes: Option<Vec<Url>>,
     pub is_builtin: bool,
     pub external_builtin: bool,
@@ -36,10 +36,10 @@ pub(crate) struct ParsedCode {
 }
 
 impl ParsedCode {
-    pub(crate) fn new(lang: Language, code: String, url: Url, libs: Rc<RefCell<Vec<Url>>>) -> Self {
+    pub(crate) fn new(code: String, url: Url, libs: Rc<RefCell<Vec<Url>>>) -> Self {
         let mut parser = tree_sitter::Parser::new();
         parser
-            .set_language(lang)
+            .set_language(tree_sitter_openscad::language())
             .expect("Error loading openscad grammar");
         let tree = parser.parse(&code, None).unwrap();
         Self {
@@ -199,7 +199,7 @@ impl ParsedCode {
         let mut items = vec![];
         for mut item in ret {
             item.is_builtin = self.is_builtin;
-            items.push(Rc::new(item));
+            items.push(Rc::new(RefCell::new(item)));
         }
 
         self.root_items = Some(items);

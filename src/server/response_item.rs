@@ -1,9 +1,17 @@
+use lazy_static::lazy_static;
 use lsp_types::{CompletionItemKind, Range, SymbolKind, Url};
+use regex::Regex;
 use tree_sitter::Node;
 
 use crate::utils::*;
 
 use crate::Server;
+
+struct BuiltinFlags {}
+impl BuiltinFlags {
+    const IS_OPREATOR: u16 = 1;
+    const IGNORE_PARAM_NAME: u16 = 1 << 1;
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct Param {
@@ -34,11 +42,11 @@ impl Param {
             .collect()
     }
 
-    pub(crate) fn make_snippet(params: &[Param]) -> String {
+    pub(crate) fn make_snippet(params: &[Param], ignore_name: bool) -> String {
         params
             .iter()
             .filter_map(|p| {
-                if Server::get_server().args.default_param {
+                if !Server::get_server().args.ignore_default {
                     Some(p)
                 } else {
                     p.default.is_none().then(|| p)
@@ -46,12 +54,12 @@ impl Param {
             })
             .enumerate()
             .map(|(i, p)| {
-                if Server::get_server().args.default_param {
-                    if let Some(defualt) = &p.default {
-                        format!("{}={}", p.name, defualt)
-                    } else {
-                        format!("{}=${{{}:{}}}", p.name, i + 1, p.name)
-                    }
+                if !Server::get_server().args.ignore_default && p.default.as_ref().is_some() {
+                    return format!("{}={}", p.name, p.default.as_ref().unwrap());
+                }
+
+                if ignore_name {
+                    format!("${{{}:{}}}", i + 1, p.name)
                 } else {
                     format!("{}=${{{}:{}}}", p.name, i + 1, p.name)
                 }
@@ -63,9 +71,9 @@ impl Param {
 
 pub(crate) enum ItemKind {
     Variable,
-    Function(Vec<Param>),
+    Function { flags: u16, params: Vec<Param> },
     Keyword(String),
-    Module { group: bool, params: Vec<Param> },
+    Module { flags: u16, params: Vec<Param> },
 }
 
 impl Default for ItemKind {
@@ -78,7 +86,7 @@ impl ItemKind {
     pub(crate) fn completion_kind(&self) -> CompletionItemKind {
         match self {
             ItemKind::Variable => CompletionItemKind::VARIABLE,
-            ItemKind::Function(_) => CompletionItemKind::FUNCTION,
+            ItemKind::Function { .. } => CompletionItemKind::FUNCTION,
             ItemKind::Keyword(_) => CompletionItemKind::KEYWORD,
             ItemKind::Module { .. } => CompletionItemKind::MODULE,
         }
@@ -91,29 +99,59 @@ pub(crate) struct Item {
     pub kind: ItemKind,
     pub range: Range,
     pub url: Option<Url>,
-    pub doc: Option<String>,
-    pub hover: Option<String>,
-    pub label: Option<String>,
     pub is_builtin: bool,
+
+    pub(crate) doc: Option<String>,
+    pub(crate) hover: Option<String>,
+    pub(crate) label: Option<String>,
+    pub(crate) snippet: Option<String>,
 }
 
 impl Item {
-    pub(crate) fn make_snippet(&self) -> String {
-        match &self.kind {
+    pub(crate) fn get_snippet(&mut self) -> String {
+        if self.snippet.is_none() {
+            self.snippet = Some(self.make_snippet());
+        }
+        self.snippet.as_ref().unwrap().to_owned()
+    }
+
+    pub(crate) fn get_hover(&mut self) -> String {
+        if self.hover.is_none() {
+            self.hover = Some(self.make_hover());
+        }
+        self.hover.as_ref().unwrap().to_owned()
+    }
+
+    pub(crate) fn get_label(&mut self) -> String {
+        if self.label.is_none() {
+            self.label = Some(self.make_label());
+        }
+        self.label.as_ref().unwrap().to_owned()
+    }
+
+    pub(crate) fn make_snippet(&mut self) -> String {
+        let snippet = match &self.kind {
             ItemKind::Variable => self.name.clone(),
-            ItemKind::Function(ref params) => {
-                format!("{}({})$0", self.name, Param::make_snippet(params))
+            ItemKind::Function { flags, params } => {
+                format!(
+                    "{}({});$0",
+                    self.name,
+                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0)
+                )
             }
             ItemKind::Keyword(comp) => comp.clone(),
-            ItemKind::Module { params, group } => {
-                let params = Param::make_snippet(params);
-                if *group {
+            ItemKind::Module { params, flags } => {
+                let params =
+                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0);
+                if BuiltinFlags::IS_OPREATOR & flags != 0 {
                     format!("{}({}) $0", self.name, params)
                 } else {
                     format!("{}({});$0", self.name, params)
                 }
             }
-        }
+        };
+        self.snippet = Some(snippet.to_owned());
+        snippet
     }
 
     pub(crate) fn make_hover(&self) -> String {
@@ -122,11 +160,8 @@ impl Item {
             None => self.make_label(),
         };
         label = match self.kind {
-            ItemKind::Function(_) => format!("```scad\nfunction {}\n```", label),
-            ItemKind::Module {
-                group: _,
-                params: _,
-            } => format!("```scad\nmodule {}\n```", label),
+            ItemKind::Function { .. } => format!("```scad\nfunction {}\n```", label),
+            ItemKind::Module { .. } => format!("```scad\nmodule {}\n```", label),
             _ => format!("```scad\n{}\n```", label),
         };
         if let Some(doc) = &self.doc {
@@ -154,7 +189,9 @@ impl Item {
 
         let lable = match &self.kind {
             ItemKind::Variable => self.name.to_owned(),
-            ItemKind::Function(params) => format!("{}({})", self.name, format_params(params)),
+            ItemKind::Function { flags: _, params } => {
+                format!("{}({})", self.name, format_params(params))
+            }
             ItemKind::Keyword(_) => self.name.clone(),
             ItemKind::Module { params, .. } => {
                 format!("{}({})", self.name, format_params(params))
@@ -165,6 +202,11 @@ impl Item {
     }
 
     pub(crate) fn parse(code: &str, node: &Node) -> Option<Self> {
+        lazy_static! {
+            static ref FLAG_RE: Regex =
+                Regex::new(r"(?m)builtin_flags\((?P<flags>[01]{16})\)").unwrap();
+        };
+
         let extract_name = |name| {
             node.child_by_field_name(name)
                 .map(|child| node_text(code, &child).to_owned())
@@ -172,19 +214,24 @@ impl Item {
 
         match node.kind() {
             "module_declaration" => {
-                let group = if let Some(child) = node
+                let flags: u16 = if let Some(child) = node
                     .child_by_field_name("body")
                     .and_then(|body| body.named_child(0))
                 {
                     let body = node_text(code, &child);
-                    child.kind().is_comment() && (body == "/* group */" || body == "// group")
+                    if let Some(cap) = &FLAG_RE.captures(body) {
+                        let flag_str = &cap["flags"];
+                        u16::from_str_radix(flag_str, 2).unwrap()
+                    } else {
+                        0
+                    }
                 } else {
-                    false
+                    0
                 };
                 Some(Self {
                     name: extract_name("name")?,
                     kind: ItemKind::Module {
-                        group,
+                        flags,
                         params: node
                             .child_by_field_name("parameters")
                             .map_or(vec![], |params| Param::parse_declaration(code, &params)),
@@ -193,15 +240,30 @@ impl Item {
                     ..Default::default()
                 })
             }
-            "function_declaration" => Some(Self {
-                name: extract_name("name")?,
-                kind: ItemKind::Function(
-                    node.child_by_field_name("parameters")
-                        .map_or(vec![], |params| Param::parse_declaration(code, &params)),
-                ),
-                range: node.lsp_range(),
-                ..Default::default()
-            }),
+            "function_declaration" => {
+                let flags = if let Some(child) = node.children(&mut node.walk()).last() {
+                    let body = node_text(code, &child);
+                    if let Some(cap) = &FLAG_RE.captures(body) {
+                        let flag_str = &cap["flags"];
+                        u16::from_str_radix(flag_str, 2).unwrap()
+                    } else {
+                        0
+                    }
+                } else {
+                    0
+                };
+                Some(Self {
+                    name: extract_name("name")?,
+                    kind: ItemKind::Function {
+                        flags,
+                        params: node
+                            .child_by_field_name("parameters")
+                            .map_or(vec![], |params| Param::parse_declaration(code, &params)),
+                    },
+                    range: node.lsp_range(),
+                    ..Default::default()
+                })
+            }
             "assignment" => Some(Self {
                 name: extract_name("left")?,
                 kind: ItemKind::Variable,
@@ -214,11 +276,8 @@ impl Item {
 
     pub(crate) fn get_symbol_kind(&self) -> SymbolKind {
         match self.kind {
-            ItemKind::Function(_) => SymbolKind::FUNCTION,
-            ItemKind::Module {
-                group: _,
-                params: _,
-            } => SymbolKind::MODULE,
+            ItemKind::Function { .. } => SymbolKind::FUNCTION,
+            ItemKind::Module { .. } => SymbolKind::MODULE,
             ItemKind::Variable => SymbolKind::VARIABLE,
             ItemKind::Keyword(_) => SymbolKind::KEY,
         }

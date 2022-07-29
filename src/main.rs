@@ -1,4 +1,5 @@
 #![allow(clippy::option_map_unit_fn)]
+#![allow(clippy::collapsible_if)]
 
 #[macro_use]
 mod server;
@@ -30,8 +31,8 @@ pub(crate) struct Cli {
     #[clap(long, help = "use stdio instead of tcp")]
     stdio: bool,
 
-    #[clap(long, help = "include defualt params in auto-completion")]
-    default_param: bool,
+    #[clap(long, help = "exclude defualt params in auto-completion")]
+    ignore_default: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
