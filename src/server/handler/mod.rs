@@ -29,6 +29,13 @@ impl Server {
             .unwrap()
     }
 
+    pub(crate) fn notify(&self, notif: lsp_server::Notification) {
+        self.connection
+            .sender
+            .send(Message::Notification(notif))
+            .unwrap()
+    }
+
     pub(crate) fn handle_message(
         &mut self,
         msg: Message,

@@ -19,7 +19,7 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("let", "let (${1:VARS}) $0"),
     ("module", "module ${1:NAME}(${2:ARGS}) {\n  $0\n}"),
     ("true", "true"),
-    ("use", "use <${1:PATH}>;$0"),
+    ("use", "use <${1:PATH}>$0"),
 ];
 
 pub(crate) struct ParsedCode {

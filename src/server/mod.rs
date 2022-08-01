@@ -10,7 +10,7 @@ use std::fs::read_to_string;
 use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 
 use linked_hash_map::LinkedHashMap;
-use lsp_server::{Connection, Message};
+use lsp_server::{Connection};
 use lsp_types::{
     HoverProviderCapability, OneOf, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
@@ -173,13 +173,6 @@ impl Server {
 
             eprintln!();
         }
-    }
-
-    pub(crate) fn notify(&self, notif: lsp_server::Notification) {
-        self.connection
-            .sender
-            .send(Message::Notification(notif))
-            .unwrap()
     }
 
     pub(crate) fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
