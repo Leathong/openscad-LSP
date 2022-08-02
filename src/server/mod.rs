@@ -10,7 +10,7 @@ use std::fs::read_to_string;
 use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 
 use linked_hash_map::LinkedHashMap;
-use lsp_server::{Connection};
+use lsp_server::Connection;
 use lsp_types::{
     HoverProviderCapability, OneOf, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
@@ -19,7 +19,7 @@ use lsp_types::{
 use crate::parse_code::ParsedCode;
 use crate::Cli;
 
-const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtins.scad"));
+const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtins"));
 const BUILTIN_PATH: &str = "/builtin";
 
 pub(crate) struct Server {
