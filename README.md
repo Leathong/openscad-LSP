@@ -22,12 +22,18 @@ Features
 -   formatter, utilizing clang-format, you need install it youself, it is not built-in.
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
-Build
+Install
 ------------
 
 openscad-LSP is written in [Rust](https://rust-lang.org), in order to use it, you need to
 install [Rust toolchain](https://www.rust-lang.org/learn/get-started).
 
+``` {.sh}
+cargo install openscad-lsp
+```
+
+Build
+------------
 
 ``` {.sh}
 cd openscad-LSP
@@ -50,6 +56,7 @@ OPTIONS:
         --fmt-style <FMT_STYLE>    LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file
                                    [default: Microsoft]
     -h, --help                     Print help information
+        --ignore-default           exclude defualt params in auto-completion
         --ip <IP>                  [default: 127.0.0.1]
     -p, --port <PORT>              [default: 3245]
         --stdio                    use stdio instead of tcp
@@ -58,16 +65,18 @@ OPTIONS:
 
 To change the config during running, you can send notification `workspace/didChangeConfiguration` 
 
-```json
+```js
+// example
 {
     "settings": {
         "openscad": {
-            "search_paths": "libs",
-            "fmt_exe": "fmt_exe",
-            "fmt_style": "fmt_style"
+            "search_paths": "/libs",
+            "fmt_exe": "/usr/bin/clang-format",
+            "fmt_style": "file",
+            "default_param": true
         }
     }
 }
 ```
 
-If you work with vscode, you can install the extension directly from the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support&ssr=false#overview)
+If you work with vscode, you can install the extension directly from the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support)
