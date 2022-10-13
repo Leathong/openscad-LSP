@@ -1,6 +1,6 @@
 [package]
 name = "openscad-lsp"
-version = "1.2.1"
+version = "1.2.3"
 edition = "2021"
 authors = ["Leathong"]
 description = "A language(LSP) server for OpenSCAD"
@@ -12,15 +12,18 @@ include = ["/src", "README.md"]
 repository = "https://github.com/Leathong/openscad-LSP"
 
 [dependencies]
-home = "0.5.3"
+home = "0.5.4"
 lsp-server = "0.6.0"
-lsp-types = "0.93.0"
-serde = "1.0.137"
-serde_json = "1.0.81"
-tree-sitter = "0.20.6"
+lsp-types = "0.93.1"
+serde = "1.0.145"
+serde_json = "1.0.86"
+tree-sitter = "0.20.9"
 tree-sitter-openscad = "0.4.0"
-linked-hash-map = "0.5.4"
-shellexpand = "2.1.0"
-clap = {features = ["derive"], version = "3.1.17"}
+linked-hash-map = "0.5.6"
+shellexpand = "2.1.2"
+clap = {features = ["derive"], version = "4.0.14"}
 lazy_static = "1.4.0"
-regex = "1.5.6"
+regex = "1.6.0"
+
+[patch.crates-io]
+tree-sitter-openscad = {git = "https://github.com/Leathong/tree-sitter-openscad.git", branch = "master"}

@@ -143,7 +143,7 @@ impl Server {
             };
 
             let mut inccode = inccode.borrow_mut();
-            inccode.gen_items_if_needed();
+            inccode.gen_top_level_items_if_needed();
             result.extend(self.find_identities(
                 &inccode,
                 &comparator,

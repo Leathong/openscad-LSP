@@ -49,19 +49,19 @@ impl Param {
                 if !Server::get_server().args.ignore_default {
                     Some(p)
                 } else {
-                    p.default.is_none().then(|| p)
+                    p.default.is_none().then_some(p)
                 }
             })
             .enumerate()
             .map(|(i, p)| {
                 if !Server::get_server().args.ignore_default && p.default.as_ref().is_some() {
-                    return format!("{}={}", p.name, p.default.as_ref().unwrap());
+                    return format!("{} = {}", p.name, p.default.as_ref().unwrap());
                 }
 
                 if ignore_name {
                     format!("${{{}:{}}}", i + 1, p.name)
                 } else {
-                    format!("{}=${{{}:{}}}", p.name, i + 1, p.name)
+                    format!("{} = ${{{}:{}}}", p.name, i + 1, p.name)
                 }
             })
             .collect::<Vec<_>>()
@@ -187,7 +187,7 @@ impl Item {
                 .join(", ")
         };
 
-        let lable = match &self.kind {
+        match &self.kind {
             ItemKind::Variable => self.name.to_owned(),
             ItemKind::Function { flags: _, params } => {
                 format!("{}({})", self.name, format_params(params))
@@ -196,9 +196,7 @@ impl Item {
             ItemKind::Module { params, .. } => {
                 format!("{}({})", self.name, format_params(params))
             }
-        };
-
-        lable
+        }
     }
 
     pub(crate) fn parse(code: &str, node: &Node) -> Option<Self> {

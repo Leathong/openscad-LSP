@@ -20,6 +20,7 @@ const KEYWORDS: &[(&str, &str)] = &[
     ("module", "module ${1:NAME}(${2:ARGS}) {\n  $0\n}"),
     ("true", "true"),
     ("use", "use <${1:PATH}>$0"),
+    ("each", "each ${1:LIST}$0"),
 ];
 
 pub(crate) struct ParsedCode {
@@ -100,12 +101,12 @@ impl ParsedCode {
         self.changed = true;
     }
 
-    pub(crate) fn gen_items_if_needed(&mut self) {
+    pub(crate) fn gen_top_level_items_if_needed(&mut self) {
         if self.root_items.is_some() && !self.changed {
             return;
         }
         self.changed = false;
-        self.gen_items();
+        self.gen_top_level_items();
     }
 
     pub(crate) fn extract_doc(&self, doc: &str, builtin: bool) -> String {
@@ -122,7 +123,7 @@ impl ParsedCode {
         }
     }
 
-    pub(crate) fn gen_items(&mut self) {
+    pub(crate) fn gen_top_level_items(&mut self) {
         let mut cursor: TreeCursor = self.tree.walk();
         let mut ret: Vec<Item> = vec![];
         let mut inc = vec![];

@@ -30,7 +30,7 @@ impl Server {
             _ => return,
         };
 
-        file.borrow_mut().gen_items_if_needed();
+        file.borrow_mut().gen_top_level_items_if_needed();
 
         let point = to_point(pos);
         let bfile = file.borrow();
@@ -79,7 +79,7 @@ impl Server {
             _ => return,
         };
 
-        file.borrow_mut().gen_items_if_needed();
+        file.borrow_mut().gen_top_level_items_if_needed();
 
         let point = to_point(pos);
         let bfile = file.borrow();
@@ -159,7 +159,7 @@ impl Server {
             _ => return,
         };
 
-        file.borrow_mut().gen_items_if_needed();
+        file.borrow_mut().gen_top_level_items_if_needed();
 
         let mut point = to_point(pos);
 
@@ -324,7 +324,7 @@ impl Server {
         };
 
         let mut bfile = file.borrow_mut();
-        bfile.gen_items_if_needed();
+        bfile.gen_top_level_items_if_needed();
         if let Some(items) = &bfile.root_items {
             let result: Vec<SymbolInformation> = items
                 .iter()
