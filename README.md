@@ -13,13 +13,13 @@ Tested with lsp-mode on Emacs on Linux by [@Lenbok](https://github.com/Lenbok).
 Features
 --------
 
--   builtin fucntion/module documents
+-   builtin function/module documents
 -   code and path auto-completion
 -   jump to definition
 -   code snippets
 -   function/module signatures on hover
 -   document symbols
--   formatter, utilizing clang-format, you need install it youself, it is not built-in.
+-   formatter, utilizing clang-format, you need install it yourself, it is not built-in.
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
 Install
@@ -58,7 +58,7 @@ OPTIONS:
         --fmt-style <FMT_STYLE>    LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file
                                    [default: Microsoft]
     -h, --help                     Print help information
-        --ignore-default           exclude defualt params in auto-completion
+        --ignore-default           exclude default params in auto-completion
         --ip <IP>                  [default: 127.0.0.1]
     -p, --port <PORT>              [default: 3245]
         --stdio                    use stdio instead of tcp
