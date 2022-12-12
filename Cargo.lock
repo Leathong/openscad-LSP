@@ -488,8 +488,9 @@ dependencies = [
 
 [[package]]
 name = "tree-sitter-openscad"
-version = "0.4.0"
-source = "git+https://github.com/Leathong/tree-sitter-openscad.git?branch=master#d72423b3ea2e6bbc31df82c2716aff1d70fb89ea"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061ff2ad938cb0e2f5a34202cc5e3f739738b97f124017150856d7721a21e2ac"
 dependencies = [
  "cc",
  "tree-sitter",
