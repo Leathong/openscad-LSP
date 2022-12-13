@@ -25,8 +25,6 @@ Features
 Install
 ------------
 
-> There is a patch for '[tree-sitter-openscad](https://github.com/bollian/tree-sitter-openscad/pull/7)', you'd better building locally instead of downloading from crate.io, because the patch is not publish to crate.io for now (2022-10-13).
-
 openscad-LSP is written in [Rust](https://rust-lang.org), in order to use it, you need to
 install [Rust toolchain](https://www.rust-lang.org/learn/get-started).
 
