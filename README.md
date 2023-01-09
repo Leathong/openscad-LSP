@@ -30,7 +30,7 @@ IDE plugins
 | --- | ------ | ----- |
 | Neovim  | [mason.nvim](https://github.com/williamboman/mason.nvim)    | Only tested on Mac and Linux     |
 | Neovim  | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)  | Only tested on Mac and Linux     |
-| VS Code | [openscad-language-support](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support)  | Only tested on Mac and Windows   |
+| VS Code | [openscad-language-support](https://github.com/Leathong/openscad-support-vscode)  | Only tested on Mac and Windows   |
 
 
 Install
