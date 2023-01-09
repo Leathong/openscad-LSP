@@ -22,6 +22,17 @@ Features
 -   formatter, utilizing clang-format, you need install it yourself, it is not built-in.
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
+
+IDE plugins
+--------
+
+| IDE | Plugin                                                                        | Support                                                               |
+| ------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Neovim | [mason.nvim](https://github.com/williamboman/mason.nvim)                          | Supports all OpenSCAD features                                                |
+| Neovim | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)                    | Supports all OpenSCAD features                                              |
+| VS Code | [ADD](https://github.com/Leathong/openscad-support-vscode)) | Supports all OpenSCAD features                                        |
+
+
 Install
 ------------
 
