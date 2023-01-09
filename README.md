@@ -26,11 +26,11 @@ Features
 IDE plugins
 --------
 
-| IDE | Plugin                                                                        | Support                                                               |
-| ------------ | ----------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Neovim | [mason.nvim](https://github.com/williamboman/mason.nvim)                          | Supports all OpenSCAD features                                                |
-| Neovim | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)                    | Supports all OpenSCAD features                                              |
-| VS Code | [ADD](https://github.com/Leathong/openscad-support-vscode)) | Supports all OpenSCAD features                                        |
+| IDE | Plugin | Note  |
+| --- | ------ | ----- |
+| Neovim  | [mason.nvim](https://github.com/williamboman/mason.nvim)    | Only tested on Mac and Linux     |
+| Neovim  | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)  | Only tested on Mac and Linux     |
+| VS Code | [openscad-language-support](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support)  | Only tested on Mac and Windows   |
 
 
 Install
@@ -89,5 +89,3 @@ To change the config during running, you can send notification `workspace/didCha
     }
 }
 ```
-
-If you work with vscode, you can install the extension directly from the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support)
