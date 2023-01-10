@@ -22,6 +22,17 @@ Features
 -   formatter, utilizing clang-format, you need install it yourself, it is not built-in.
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
+
+IDE plugins
+--------
+
+| IDE | Plugin | Note  |
+| --- | ------ | ----- |
+| Neovim  | [mason.nvim](https://github.com/williamboman/mason.nvim)    | Only tested on Mac and Linux     |
+| Neovim  | [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig)  | Only tested on Mac and Linux     |
+| VS Code | [openscad-language-support](https://github.com/Leathong/openscad-support-vscode)  | Only tested on Mac and Windows   |
+
+
 Install
 ------------
 
@@ -78,5 +89,3 @@ To change the config during running, you can send notification `workspace/didCha
     }
 }
 ```
-
-If you work with vscode, you can install the extension directly from the [marketplace](https://marketplace.visualstudio.com/items?itemName=Leathong.openscad-language-support)
