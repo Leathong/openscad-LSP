@@ -46,10 +46,10 @@ impl Param {
         params
             .iter()
             .filter_map(|p| {
-                if !Server::get_server().args.ignore_default {
+                if !Server::get_server().args.ignore_default || p.default.is_none() {
                     Some(p)
                 } else {
-                    p.default.is_none().then_some(p)
+                    None
                 }
             })
             .enumerate()
