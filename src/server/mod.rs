@@ -61,7 +61,7 @@ impl Server {
         let mut code = BUILTINS_SCAD.to_owned();
 
         let mut external = false;
-        match read_to_string(&builtin_path) {
+        match read_to_string(builtin_path) {
             Err(err) => {
                 err_to_console!("read external builtin file error: {:?}", err);
                 args.builtin = BUILTIN_PATH.to_owned();

@@ -45,13 +45,7 @@ impl Param {
     pub(crate) fn make_snippet(params: &[Param], ignore_name: bool) -> String {
         params
             .iter()
-            .filter_map(|p| {
-                if !Server::get_server().args.ignore_default || p.default.is_none() {
-                    Some(p)
-                } else {
-                    None
-                }
-            })
+            .filter(|p| p.default.is_none() || !Server::get_server().args.ignore_default)
             .enumerate()
             .map(|(i, p)| {
                 if !Server::get_server().args.ignore_default && p.default.as_ref().is_some() {
@@ -69,17 +63,19 @@ impl Param {
     }
 }
 
+#[derive(Default)]
 pub(crate) enum ItemKind {
+    #[default]
     Variable,
-    Function { flags: u16, params: Vec<Param> },
+    Function {
+        flags: u16,
+        params: Vec<Param>,
+    },
     Keyword(String),
-    Module { flags: u16, params: Vec<Param> },
-}
-
-impl Default for ItemKind {
-    fn default() -> Self {
-        ItemKind::Variable
-    }
+    Module {
+        flags: u16,
+        params: Vec<Param>,
+    },
 }
 
 impl ItemKind {

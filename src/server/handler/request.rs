@@ -62,7 +62,7 @@ impl Server {
             _ => None,
         };
 
-        let result = result.map(|r| serde_json::to_value(&r).unwrap());
+        let result = result.map(|r| serde_json::to_value(r).unwrap());
         self.respond(Response {
             id,
             result,
@@ -142,7 +142,7 @@ impl Server {
         };
 
         let result = result.map(GotoDefinitionResponse::Array);
-        let result = serde_json::to_value(&result).unwrap();
+        let result = serde_json::to_value(result).unwrap();
 
         self.respond(Response {
             id,
@@ -436,7 +436,7 @@ impl Server {
                         new_text: code.to_owned(),
                     }];
 
-                    let result = serde_json::to_value(&result).unwrap();
+                    let result = serde_json::to_value(result).unwrap();
                     self.respond(Response {
                         id,
                         result: Some(result),
