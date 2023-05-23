@@ -26,7 +26,7 @@ pub(crate) struct Server {
     pub library_locations: Rc<RefCell<Vec<Url>>>,
 
     pub connection: Connection,
-    pub code: LinkedHashMap<Url, Rc<RefCell<ParsedCode>>>,
+    pub codes: LinkedHashMap<Url, Rc<RefCell<ParsedCode>>>,
     pub args: Cli,
 
     builtin_url: Url,
@@ -77,7 +77,7 @@ impl Server {
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(vec![])),
             connection,
-            code: Default::default(),
+            codes: Default::default(),
             args,
             builtin_url: url.to_owned(),
         };

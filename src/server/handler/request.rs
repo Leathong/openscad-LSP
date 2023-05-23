@@ -49,7 +49,7 @@ impl Server {
                     &|item_name| item_name == name,
                     &node,
                     false,
-                    true,
+                    0,
                 );
                 items.first().map(|item| Hover {
                     contents: HoverContents::Markup(MarkupContent {
@@ -99,7 +99,7 @@ impl Server {
                     &|item_name| item_name == namecp,
                     &node,
                     false,
-                    true,
+                    0,
                 );
                 let locs = items
                     .iter()
@@ -177,7 +177,7 @@ impl Server {
         let node = cursor.node();
         let name = node_text(&bfile.code, &node);
 
-        let mut items = self.find_identities(&file.borrow(), &|_| true, &node, true, true);
+        let mut items = self.find_identities(&file.borrow(), &|_| true, &node, true, 0);
 
         let kind = node.kind();
         if let Some(parent) = &node.parent().and_then(|parent| parent.parent()) {
@@ -205,7 +205,7 @@ impl Server {
                             &|item_name| item_name == name,
                             &node,
                             false,
-                            true,
+                            0,
                         );
 
                         if !fun_items.is_empty() {
@@ -308,7 +308,7 @@ impl Server {
             })
         };
 
-        let result = serde_json::to_value(&result).unwrap();
+        let result = serde_json::to_value(result).unwrap();
         self.respond(Response {
             id,
             result: Some(result),
@@ -348,7 +348,7 @@ impl Server {
 
             let result = DocumentSymbolResponse::Flat(result);
 
-            let result = serde_json::to_value(&result).unwrap();
+            let result = serde_json::to_value(result).unwrap();
             self.respond(Response {
                 id,
                 result: Some(result),

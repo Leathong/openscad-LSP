@@ -1,13 +1,16 @@
 build: mac windows linux
 
-mac:
+format:
+	cargo fmt
+
+mac: format
 	cargo build --release
 
-windows:
+windows: format
 	cargo build --release --target x86_64-pc-windows-gnu
 
-linux:
+linux: format
 	export CC_x86_64_unknown_linux_musl=x86_64-linux-musl-gcc; cargo build --release --target x86_64-unknown-linux-musl
 
-debug:
+debug: format
 	cargo build

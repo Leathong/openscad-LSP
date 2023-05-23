@@ -217,19 +217,22 @@ impl ParsedCode {
             return None;
         }
 
-        let url = self.url.join(include_path).unwrap();
-        if let Ok(path) = url.to_file_path() {
-            if path.exists() {
-                res = Some(url);
-                return res;
-            }
-        }
-        for lib in self.libs.borrow().iter() {
-            let url = lib.join(include_path).unwrap();
-            if let Ok(path) = url.to_file_path() {
-                if path.exists() {
-                    res = Some(url);
-                    return res;
+        let mut urls = vec![&self.url];
+        let libs = self.libs.borrow();
+        urls.extend(libs.iter());
+
+        for url in urls {
+            match url.join(include_path) {
+                Ok(url) => {
+                    if let Ok(path) = url.to_file_path() {
+                        if path.exists() {
+                            res = Some(url);
+                            return res;
+                        }
+                    }
+                }
+                Err(err) => {
+                    err_to_console!("{:?} {}", err.to_string(), include_path);
                 }
             }
         }

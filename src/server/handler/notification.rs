@@ -13,7 +13,7 @@ use crate::{server::Server, utils::*};
 impl Server {
     pub(crate) fn handle_did_open_text_document(&mut self, params: DidOpenTextDocumentParams) {
         let DidOpenTextDocumentParams { text_document: doc } = params;
-        if self.code.contains_key(&doc.uri) {
+        if self.codes.contains_key(&doc.uri) {
             return;
         }
         self.insert_code(doc.uri, doc.text);
@@ -25,13 +25,14 @@ impl Server {
             content_changes,
         } = params;
 
-        let pc = match self.code.get_mut(&text_document.uri) {
+        let pc = match self.codes.get_refresh(&text_document.uri) {
             Some(x) => x,
             None => {
                 err_to_console!("unknown document {}", text_document.uri);
                 return;
             }
         };
+
         pc.borrow_mut().edit(&content_changes);
 
         let mut diags: Vec<_> = error_nodes(pc.borrow().tree.walk())

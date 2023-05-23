@@ -13,15 +13,15 @@ use crate::{
 // Code-related helpers.
 impl Server {
     pub(crate) fn get_code(&mut self, uri: &Url) -> Option<Rc<RefCell<ParsedCode>>> {
-        match self.code.get(uri) {
+        match self.codes.get(uri) {
             Some(x) => Some(Rc::clone(x)),
             None => self.read_and_cache(uri.clone()).ok(),
         }
     }
 
     pub(crate) fn insert_code(&mut self, url: Url, code: String) -> Rc<RefCell<ParsedCode>> {
-        while self.code.len() > 100 {
-            self.code.pop_front();
+        while self.codes.len() > 1000 {
+            self.codes.pop_front();
         }
 
         let rc = Rc::new(RefCell::new(ParsedCode::new(
@@ -29,7 +29,7 @@ impl Server {
             url.clone(),
             self.library_locations.clone(),
         )));
-        self.code.insert(url, rc.clone());
+        self.codes.insert(url, rc.clone());
         rc
     }
 
@@ -39,11 +39,15 @@ impl Server {
         comparator: &dyn Fn(&str) -> bool,
         start_node: &Node,
         findall: bool,
-        inc_builtin: bool,
+        depth: i32,
     ) -> Vec<Rc<RefCell<Item>>> {
-        let mut result = vec![];
+        let mut result: Vec<Rc<RefCell<Item>>> = vec![];
+        if depth >= 5 {
+            return result;
+        }
+
         let mut include_vec = vec![];
-        if inc_builtin {
+        if depth == 0 {
             include_vec.push(Server::get_server().builtin_url.clone())
         }
         if let Some(incs) = &code.includes {
@@ -142,15 +146,17 @@ impl Server {
                 _ => return result,
             };
 
-            let mut inccode = inccode.borrow_mut();
-            inccode.gen_top_level_items_if_needed();
-            result.extend(self.find_identities(
-                &inccode,
-                &comparator,
-                &inccode.tree.root_node(),
-                findall,
-                false,
-            ));
+            if let Ok(mut inccode) = inccode.try_borrow_mut() {
+                inccode.gen_top_level_items_if_needed();
+                result.extend(self.find_identities(
+                    &inccode,
+                    &comparator,
+                    &inccode.tree.root_node(),
+                    findall,
+                    depth + 1,
+                ));
+            }
+
             if !result.is_empty() && !findall {
                 return result;
             }
@@ -162,7 +168,7 @@ impl Server {
     pub(crate) fn read_and_cache(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
         let text = read_to_string(url.to_file_path().unwrap())?;
 
-        match self.code.entry(url.clone()) {
+        match self.codes.entry(url.clone()) {
             linked_hash_map::Entry::Occupied(o) => {
                 if o.get().borrow().code != text {
                     Ok(self.insert_code(url, text))
