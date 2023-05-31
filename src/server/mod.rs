@@ -8,6 +8,7 @@ pub(crate) mod response_item;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
+use directories::UserDirs
 
 use linked_hash_map::LinkedHashMap;
 use lsp_server::Connection;
@@ -102,7 +103,12 @@ impl Server {
 
     pub(crate) fn built_in_library_location() -> Option<String> {
         let user_library_rel_path = if cfg!(target_os = "windows") {
-            "My Documents\\OpenSCAD\\libraries\\"
+            if let Some(userdir) = UserDirs::new() {
+                return userdir.document_dir()?.join("\\OpenSCAD\\libraries\\").into_os_string().into_string().ok();
+            } 
+            else {
+                "My Documents\\OpenSCAD\\libraries\\"
+            }
         } else if cfg!(target_os = "macos") {
             "Documents/OpenSCAD/libraries/"
         } else {

@@ -24,3 +24,4 @@ shellexpand = "2.1.2"
 clap = {features = ["derive"], version = "4.0.14"}
 lazy_static = "1.4.0"
 regex = "1.6.0"
+directories = "5.0.1"
