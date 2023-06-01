@@ -5,6 +5,7 @@ pub(crate) mod handler;
 pub(crate) mod parse_code;
 pub(crate) mod response_item;
 
+use directories::UserDirs;
 use std::error::Error;
 use std::fs::read_to_string;
 use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
@@ -101,18 +102,31 @@ impl Server {
     }
 
     pub(crate) fn built_in_library_location() -> Option<String> {
-        let user_library_rel_path = if cfg!(target_os = "windows") {
-            "My Documents\\OpenSCAD\\libraries\\"
-        } else if cfg!(target_os = "macos") {
-            "Documents/OpenSCAD/libraries/"
-        } else {
-            ".local/share/OpenSCAD/libraries/"
-        };
-        home::home_dir()?
-            .join(user_library_rel_path)
-            .into_os_string()
-            .into_string()
-            .ok()
+        if let Some(userdir) = UserDirs::new() {
+            let lib_path = if cfg!(target_os = "windows") {
+                userdir
+                    .document_dir()?
+                    .join("\\OpenSCAD\\libraries\\")
+                    .into_os_string()
+                    .into_string()
+            } else if cfg!(target_os = "macos") {
+                userdir
+                    .document_dir()?
+                    .join("OpenSCAD/libraries/")
+                    .into_os_string()
+                    .into_string()
+            } else {
+                userdir
+                    .home_dir()
+                    .join(".local/share/OpenSCAD/libraries/")
+                    .into_os_string()
+                    .into_string()
+            };
+
+            return lib_path.ok();
+        }
+
+        None
     }
 
     pub(crate) fn installation_library_location() -> Option<String> {
