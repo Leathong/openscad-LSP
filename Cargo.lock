@@ -347,7 +347,7 @@ checksum = "9670a07f94779e00908f3e686eab508878ebb390ba6e604d3a284c00e8d0487b"
 
 [[package]]
 name = "openscad-lsp"
-version = "1.2.3"
+version = "1.2.4"
 dependencies = [
  "clap",
  "directories",
