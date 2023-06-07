@@ -19,10 +19,10 @@ pub(crate) mod request;
 
 impl Server {
     pub(crate) fn respond(&self, mut resp: Response) {
-        // log_to_console!("{:?}\n\n", &resp);
         if resp.result.is_none() {
-            resp.result = Some(json!("{}"))
+            resp.result = Some(json!("null"))
         }
+        // log_to_console!("{:?}\n\n", &resp);
         self.connection
             .sender
             .send(Message::Response(resp))
