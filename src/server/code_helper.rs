@@ -42,7 +42,7 @@ impl Server {
         depth: i32,
     ) -> Vec<Rc<RefCell<Item>>> {
         let mut result: Vec<Rc<RefCell<Item>>> = vec![];
-        if depth >= 5 {
+        if depth >= Server::get_server().args.depth {
             return result;
         }
 

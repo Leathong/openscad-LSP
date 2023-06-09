@@ -33,6 +33,9 @@ pub(crate) struct Cli {
 
     #[clap(long, help = "exclude defualt params in auto-completion")]
     ignore_default: bool,
+
+    #[clap(long, default_value_t = 3, help = "search depth")]
+    depth: i32,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
