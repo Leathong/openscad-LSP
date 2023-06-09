@@ -93,10 +93,9 @@ impl Server {
 
         let result = match kind {
             "identifier" => {
-                let namecp = name.clone();
                 let items = self.find_identities(
                     &file.borrow(),
-                    &|item_name| item_name == namecp,
+                    &|item_name| item_name == name,
                     &node,
                     false,
                     0,
