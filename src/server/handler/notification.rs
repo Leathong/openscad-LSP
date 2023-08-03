@@ -131,8 +131,8 @@ impl Server {
                 }
             }
 
-            if let Some(defualt_param) = settings.openscad.default_param {
-                self.args.ignore_default = !defualt_param;
+            if let Some(default_param) = settings.openscad.default_param {
+                self.args.ignore_default = !default_param;
             }
         }
     }
