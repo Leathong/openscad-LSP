@@ -31,7 +31,7 @@ pub(crate) struct Cli {
     #[clap(long, help = "use stdio instead of tcp")]
     stdio: bool,
 
-    #[clap(long, help = "exclude defualt params in auto-completion")]
+    #[clap(long, help = "exclude default params in auto-completion")]
     ignore_default: bool,
 
     #[clap(long, default_value_t = 3, help = "search depth")]
