@@ -64,7 +64,7 @@ impl Server {
         let mut external = false;
         match read_to_string(builtin_path) {
             Err(err) => {
-                err_to_console!("read external builtin file error: {:?}", err);
+                err_to_console!("failed to read external file of builtin-function, {:?}. will use the content included in binary.", err);
                 args.builtin = BUILTIN_PATH.to_owned();
             }
             Ok(builtin_str) => {
