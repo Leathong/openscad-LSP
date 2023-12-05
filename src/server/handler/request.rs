@@ -15,7 +15,7 @@ use lsp_types::{
     SymbolInformation, TextEdit, WorkspaceEdit,
 };
 
-use tree_sitter_traversal::{traverse_tree, Order};
+use tree_sitter_traversal::{traverse, traverse_tree, Order};
 
 use crate::{
     response_item::{Item, ItemKind},
@@ -37,7 +37,7 @@ impl Server {
         file.borrow_mut().gen_top_level_items_if_needed();
         let bfile = file.borrow();
 
-        let ident_initial_name = {
+        let (ident_initial_name, parent_scope) = {
             let point = to_point(pos);
             let mut cursor = bfile.tree.root_node().walk();
             while cursor.goto_first_child_for_point(point).is_some() {}
@@ -56,10 +56,23 @@ impl Server {
                 });
                 return;
             }
-            node_text(&bfile.code, &node)
+
+            // Find the closest scope to the identifier
+            let mut parent_scope = node;
+            while let Some(parent_node) = parent_scope.parent() {
+                parent_scope = parent_node;
+                if matches!(
+                    parent_node.kind(),
+                    "source_file" | "module_declaration" | "union_block"
+                ) {
+                    break;
+                }
+            }
+
+            (node_text(&bfile.code, &node), parent_scope)
         };
 
-        let nodes_to_change = traverse_tree(&bfile.tree, Order::Post)
+        let nodes_to_change = traverse(parent_scope.walk(), Order::Post)
             .filter(|node| {
                 if node.kind() != "identifier" {
                     return false;
@@ -74,6 +87,7 @@ impl Server {
                 new_text: ident_new_name.to_string(),
             })
             .collect();
+
         let result = WorkspaceEdit {
             changes: Some({
                 let mut h = HashMap::new();
