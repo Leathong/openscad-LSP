@@ -67,25 +67,24 @@ impl Server {
             (node_text(&bfile.code, &node), parent_scope, node)
         };
 
-        let mut node_iter = traverse(parent_scope.walk(), Order::Post).peekable();
+        let mut node_iter = traverse(parent_scope.walk(), Order::Post);
         let mut changes = vec![];
         while let Some(node) = node_iter.next() {
-            let kind = node.kind();
-            let text = node_text(&bfile.code, &node);
-            dbg!(text, kind);
             let is_identifier_instance =
                 node.kind() != "identifier" || node_text(&bfile.code, &node) != ident_initial_name;
             if is_identifier_instance {
                 continue;
             }
 
-            let is_assignment = node_iter.peek().is_some_and(|node| node.kind() == "=");
+            let is_assignment = node
+                .parent()
+                .is_some_and(|node| node.kind() == "assignment");
             let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
             if is_assignment_in_subscope {
                 // Unwrap is ok because an identifier node whould always have a parent scope.
                 let scope = find_node_scope(node).unwrap();
                 // Consume iterator until it reaches the parent scope
-                while node_iter.next_if(|peek| &scope != peek).is_some() {}
+                while node_iter.next().is_some_and(|next| scope != next) {}
                 continue;
             }
 
