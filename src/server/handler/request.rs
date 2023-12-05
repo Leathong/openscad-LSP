@@ -60,12 +60,19 @@ impl Server {
             // unwrap here is fine because an identifier node should always have a parent scope
             let parent_scope = find_node_scope(node).unwrap();
 
+            let kind = parent_scope.kind();
+            let text = node_text(&bfile.code, &parent_scope);
+            dbg!(text, kind);
+
             (node_text(&bfile.code, &node), parent_scope, node)
         };
 
         let mut node_iter = traverse(parent_scope.walk(), Order::Post).peekable();
         let mut changes = vec![];
         while let Some(node) = node_iter.next() {
+            let kind = node.kind();
+            let text = node_text(&bfile.code, &node);
+            dbg!(text, kind);
             let is_identifier_instance =
                 node.kind() != "identifier" || node_text(&bfile.code, &node) != ident_initial_name;
             if is_identifier_instance {

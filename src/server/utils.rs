@@ -39,7 +39,16 @@ pub(crate) fn find_node_scope(node: Node) -> Option<Node> {
             parent_node.kind(),
             "source_file" | "module_declaration" | "union_block"
         ) {
-            return Some(parent_node);
+            // If this is a module_declaration, the module will detect itself as
+            // its scope. So we need to check for that and get its scope's scope.
+            return if node
+                .parent()
+                .is_some_and(|parent| parent.kind() == "module_declaration")
+            {
+                find_node_scope(parent_scope)
+            } else {
+                Some(parent_node)
+            };
         }
     }
     None
