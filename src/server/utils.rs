@@ -30,6 +30,13 @@ pub(crate) fn find_offset(text: &str, pos: Position) -> Option<usize> {
     Some(offset)
 }
 
+pub(crate) fn to_position(p: Point) -> Position {
+    Position {
+        line: p.row as u32,
+        character: p.column as u32,
+    }
+}
+
 pub(crate) fn to_point(p: Position) -> Point {
     Point {
         row: p.line as usize,

@@ -13,8 +13,8 @@ use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 use linked_hash_map::LinkedHashMap;
 use lsp_server::Connection;
 use lsp_types::{
-    HoverProviderCapability, OneOf, ServerCapabilities, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url,
+    HoverProviderCapability, OneOf, RenameOptions, ServerCapabilities, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url, WorkDoneProgressOptions,
 };
 
 use crate::parse_code::ParsedCode;
@@ -199,6 +199,10 @@ impl Server {
             hover_provider: Some(HoverProviderCapability::Simple(true)),
             document_symbol_provider: Some(OneOf::Left(true)),
             document_formatting_provider: Some(OneOf::Left(true)),
+            rename_provider: Some(OneOf::Right(RenameOptions {
+                prepare_provider: None,
+                work_done_progress_options: WorkDoneProgressOptions::default(),
+            })),
             ..Default::default()
         })?;
         self.connection.initialize(caps)?;

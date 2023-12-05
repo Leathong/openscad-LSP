@@ -1,5 +1,6 @@
 use std::{
     cell::RefCell,
+    collections::HashMap,
     io::{Read, Write},
     process::{Command, Stdio},
     rc::Rc,
@@ -10,8 +11,11 @@ use lsp_types::{
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
-    InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, SymbolInformation, TextEdit,
+    InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, RenameParams,
+    SymbolInformation, TextEdit, WorkspaceEdit,
 };
+
+use tree_sitter_traversal::{traverse_tree, Order};
 
 use crate::{
     response_item::{Item, ItemKind},
@@ -21,6 +25,70 @@ use crate::{
 
 // Request handlers.
 impl Server {
+    pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
+        let uri = params.text_document_position.text_document.uri;
+        let pos = params.text_document_position.position;
+        let ident_new_name = params.new_name;
+
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
+        };
+        file.borrow_mut().gen_top_level_items_if_needed();
+        let bfile = file.borrow();
+
+        let ident_initial_name = {
+            let point = to_point(pos);
+            let mut cursor = bfile.tree.root_node().walk();
+            while cursor.goto_first_child_for_point(point).is_some() {}
+
+            let node = cursor.node();
+
+            if node.kind() != "identifier" {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: -32600, // Invalid Request error
+                        message: "No identifier at given position".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            }
+            node_text(&bfile.code, &node)
+        };
+
+        let nodes_to_change = traverse_tree(&bfile.tree, Order::Post)
+            .filter(|node| {
+                if node.kind() != "identifier" {
+                    return false;
+                }
+                return node_text(&bfile.code, node) == ident_initial_name;
+            })
+            .map(|node| TextEdit {
+                range: Range {
+                    start: to_position(node.start_position()),
+                    end: to_position(node.end_position()),
+                },
+                new_text: ident_new_name.to_string(),
+            })
+            .collect();
+        let result = WorkspaceEdit {
+            changes: Some({
+                let mut h = HashMap::new();
+                h.insert(uri, nodes_to_change);
+                h
+            }),
+            ..Default::default()
+        };
+
+        self.respond(Response {
+            id,
+            result: Some(serde_json::to_value(result).unwrap()),
+            error: None,
+        });
+    }
     pub(crate) fn handle_hover(&mut self, id: RequestId, params: HoverParams) {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
