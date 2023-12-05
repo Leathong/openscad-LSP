@@ -15,7 +15,7 @@ use lsp_types::{
     SymbolInformation, TextEdit, WorkspaceEdit,
 };
 
-use tree_sitter_traversal::{traverse, traverse_tree, Order};
+use tree_sitter_traversal::{traverse, Order};
 
 use crate::{
     response_item::{Item, ItemKind},
@@ -27,7 +27,6 @@ use crate::{
 impl Server {
     pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
         let uri = params.text_document_position.text_document.uri;
-        let pos = params.text_document_position.position;
         let ident_new_name = params.new_name;
 
         let file = match self.get_code(&uri) {
@@ -37,7 +36,8 @@ impl Server {
         file.borrow_mut().gen_top_level_items_if_needed();
         let bfile = file.borrow();
 
-        let (ident_initial_name, parent_scope) = {
+        let (ident_initial_name, parent_scope, ident_initial_node) = {
+            let pos = params.text_document_position.position;
             let point = to_point(pos);
             let mut cursor = bfile.tree.root_node().walk();
             while cursor.goto_first_child_for_point(point).is_some() {}
@@ -57,41 +57,44 @@ impl Server {
                 return;
             }
 
-            // Find the closest scope to the identifier
-            let mut parent_scope = node;
-            while let Some(parent_node) = parent_scope.parent() {
-                parent_scope = parent_node;
-                if matches!(
-                    parent_node.kind(),
-                    "source_file" | "module_declaration" | "union_block"
-                ) {
-                    break;
-                }
-            }
+            // unwrap here is fine because an identifier node should always have a parent scope
+            let parent_scope = find_node_scope(node).unwrap();
 
-            (node_text(&bfile.code, &node), parent_scope)
+            (node_text(&bfile.code, &node), parent_scope, node)
         };
 
-        let nodes_to_change = traverse(parent_scope.walk(), Order::Post)
-            .filter(|node| {
-                if node.kind() != "identifier" {
-                    return false;
-                }
-                return node_text(&bfile.code, node) == ident_initial_name;
-            })
-            .map(|node| TextEdit {
+        let mut node_iter = traverse(parent_scope.walk(), Order::Post).peekable();
+        let mut changes = vec![];
+        while let Some(node) = node_iter.next() {
+            let is_identifier_instance =
+                node.kind() != "identifier" || node_text(&bfile.code, &node) != ident_initial_name;
+            if is_identifier_instance {
+                continue;
+            }
+
+            let is_assignment = node_iter.peek().is_some_and(|node| node.kind() == "=");
+            let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
+            if is_assignment_in_subscope {
+                // Unwrap is ok because an identifier node whould always have a parent scope.
+                let scope = find_node_scope(node).unwrap();
+                // Consume iterator until it reaches the parent scope
+                while node_iter.next_if(|peek| &scope != peek).is_some() {}
+                continue;
+            }
+
+            changes.push(TextEdit {
                 range: Range {
                     start: to_position(node.start_position()),
                     end: to_position(node.end_position()),
                 },
                 new_text: ident_new_name.to_string(),
-            })
-            .collect();
+            });
+        }
 
         let result = WorkspaceEdit {
             changes: Some({
                 let mut h = HashMap::new();
-                h.insert(uri, nodes_to_change);
+                h.insert(uri, changes);
                 h
             }),
             ..Default::default()
