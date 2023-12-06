@@ -1,5 +1,5 @@
 use std::{
-    cell::RefCell,
+    cell::{Ref, RefCell},
     collections::HashMap,
     io::{Read, Write},
     process::{Command, Stdio},
@@ -15,13 +15,20 @@ use lsp_types::{
     SymbolInformation, TextEdit, WorkspaceEdit,
 };
 
+use tree_sitter::{Node, Point};
 use tree_sitter_traversal::{traverse, Order};
 
 use crate::{
     response_item::{Item, ItemKind},
-    server::Server,
+    server::{parse_code::ParsedCode, Server},
     utils::*,
 };
+
+fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, point: Point) -> Node<'a> {
+    let mut cursor = parsed_code.tree.root_node().walk();
+    while cursor.goto_first_child_for_point(point).is_some() {}
+    cursor.node()
+}
 
 // Request handlers.
 impl Server {
@@ -37,13 +44,7 @@ impl Server {
         let bfile = file.borrow();
 
         let (ident_initial_name, parent_scope, ident_initial_node) = {
-            let pos = params.text_document_position.position;
-            let point = to_point(pos);
-            let mut cursor = bfile.tree.root_node().walk();
-            while cursor.goto_first_child_for_point(point).is_some() {}
-
-            let node = cursor.node();
-
+            let node = get_node_at_point(&bfile, to_point(params.text_document_position.position));
             if node.kind() != "identifier" {
                 self.respond(Response {
                     id,
@@ -56,15 +57,66 @@ impl Server {
                 });
                 return;
             }
+            let ident_initial_name = node_text(&bfile.code, &node);
+            let identifier_definition = self.find_identities(
+                &file.borrow(),
+                &|name| name == ident_initial_name,
+                &node,
+                false,
+                0,
+            );
 
+            let definition = if let Some(def) = identifier_definition.get(0) {
+                def
+            } else {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "No definition found for this identifier".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            };
+
+            let url = if let Some(url) = definition.borrow().url.clone() {
+                url
+            } else {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "Cannot rename builtin".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            };
+
+            if url != uri {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "Sorry, but renaming symbols defined in another file is not yet supported".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            }
+
+            let definition_node = get_node_at_point(
+                &bfile,
+                to_point(identifier_definition[0].borrow().range.start),
+            );
             // unwrap here is fine because an identifier node should always have a parent scope
-            let parent_scope = find_node_scope(node).unwrap();
+            let parent_scope = find_node_scope(definition_node).unwrap();
 
-            let kind = parent_scope.kind();
-            let text = node_text(&bfile.code, &parent_scope);
-            dbg!(text, kind);
-
-            (node_text(&bfile.code, &node), parent_scope, node)
+            (ident_initial_name, parent_scope, definition_node)
         };
 
         let mut node_iter = traverse(parent_scope.walk(), Order::Post);
