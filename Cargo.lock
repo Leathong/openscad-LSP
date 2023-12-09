@@ -361,6 +361,7 @@ dependencies = [
  "shellexpand",
  "tree-sitter",
  "tree-sitter-openscad",
+ "tree-sitter-traversal",
 ]
 
 [[package]]
@@ -570,6 +571,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "061ff2ad938cb0e2f5a34202cc5e3f739738b97f124017150856d7721a21e2ac"
 dependencies = [
  "cc",
+ "tree-sitter",
+]
+
+[[package]]
+name = "tree-sitter-traversal"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df8a158225e4a4d8505f071340bba9edd109b23f01b70540dccb7c799868f307"
+dependencies = [
  "tree-sitter",
 ]
 

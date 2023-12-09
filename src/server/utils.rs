@@ -30,6 +30,37 @@ pub(crate) fn find_offset(text: &str, pos: Position) -> Option<usize> {
     Some(offset)
 }
 
+// Find the closest parent scope to the given node.
+pub(crate) fn find_node_scope(node: Node) -> Option<Node> {
+    let mut parent_scope = node;
+    while let Some(parent_node) = parent_scope.parent() {
+        parent_scope = parent_node;
+        if matches!(
+            parent_node.kind(),
+            "source_file" | "module_declaration" | "union_block"
+        ) {
+            // If this is a module_declaration, the module will detect itself as
+            // its scope. So we need to check for that and get its scope's scope.
+            return if node
+                .parent()
+                .is_some_and(|parent| parent.kind() == "module_declaration")
+            {
+                find_node_scope(parent_scope)
+            } else {
+                Some(parent_node)
+            };
+        }
+    }
+    None
+}
+
+pub(crate) fn to_position(p: Point) -> Position {
+    Position {
+        line: p.row as u32,
+        character: p.column as u32,
+    }
+}
+
 pub(crate) fn to_point(p: Position) -> Point {
     Point {
         row: p.line as usize,

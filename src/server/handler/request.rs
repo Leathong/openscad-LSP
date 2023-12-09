@@ -1,5 +1,6 @@
 use std::{
-    cell::RefCell,
+    cell::{Ref, RefCell},
+    collections::HashMap,
     io::{Read, Write},
     process::{Command, Stdio},
     rc::Rc,
@@ -10,17 +11,159 @@ use lsp_types::{
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
-    InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, SymbolInformation, TextEdit,
+    InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, RenameParams,
+    SymbolInformation, TextEdit, WorkspaceEdit,
 };
+
+use tree_sitter::{Node, Point};
+use tree_sitter_traversal::{traverse, Order};
 
 use crate::{
     response_item::{Item, ItemKind},
-    server::Server,
+    server::{parse_code::ParsedCode, Server},
     utils::*,
 };
 
+fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, point: Point) -> Node<'a> {
+    let mut cursor = parsed_code.tree.root_node().walk();
+    while cursor.goto_first_child_for_point(point).is_some() {}
+    cursor.node()
+}
+
 // Request handlers.
 impl Server {
+    pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
+        let uri = params.text_document_position.text_document.uri;
+        let ident_new_name = params.new_name;
+
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
+        };
+        file.borrow_mut().gen_top_level_items_if_needed();
+        let bfile = file.borrow();
+
+        let (ident_initial_name, parent_scope, ident_initial_node) = {
+            let node = get_node_at_point(&bfile, to_point(params.text_document_position.position));
+            if node.kind() != "identifier" {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: -32600, // Invalid Request error
+                        message: "No identifier at given position".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            }
+            let ident_initial_name = node_text(&bfile.code, &node);
+            let identifier_definition = self.find_identities(
+                &file.borrow(),
+                &|name| name == ident_initial_name,
+                &node,
+                false,
+                0,
+            );
+
+            let definition = if let Some(def) = identifier_definition.get(0) {
+                def
+            } else {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "No definition found for this identifier".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            };
+
+            let url = if let Some(url) = definition.borrow().url.clone() {
+                url
+            } else {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "Cannot rename builtin".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            };
+
+            if url != uri {
+                self.respond(Response {
+                    id,
+                    result: None,
+                    error: Some(ResponseError {
+                        code: 0,
+                        message: "Sorry, but renaming symbols defined in another file is not yet supported".to_string(),
+                        data: None,
+                    }),
+                });
+                return;
+            }
+
+            let definition_node = get_node_at_point(
+                &bfile,
+                to_point(identifier_definition[0].borrow().range.start),
+            );
+            // unwrap here is fine because an identifier node should always have a parent scope
+            let parent_scope = find_node_scope(definition_node).unwrap();
+
+            (ident_initial_name, parent_scope, definition_node)
+        };
+
+        let mut node_iter = traverse(parent_scope.walk(), Order::Post);
+        let mut changes = vec![];
+        while let Some(node) = node_iter.next() {
+            let is_identifier_instance =
+                node.kind() != "identifier" || node_text(&bfile.code, &node) != ident_initial_name;
+            if is_identifier_instance {
+                continue;
+            }
+
+            let is_assignment = node
+                .parent()
+                .is_some_and(|node| node.kind() == "assignment");
+            let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
+            if is_assignment_in_subscope {
+                // Unwrap is ok because an identifier node whould always have a parent scope.
+                let scope = find_node_scope(node).unwrap();
+                // Consume iterator until it reaches the parent scope
+                while node_iter.next().is_some_and(|next| scope != next) {}
+                continue;
+            }
+
+            changes.push(TextEdit {
+                range: Range {
+                    start: to_position(node.start_position()),
+                    end: to_position(node.end_position()),
+                },
+                new_text: ident_new_name.to_string(),
+            });
+        }
+
+        let result = WorkspaceEdit {
+            changes: Some({
+                let mut h = HashMap::new();
+                h.insert(uri, changes);
+                h
+            }),
+            ..Default::default()
+        };
+
+        self.respond(Response {
+            id,
+            result: Some(serde_json::to_value(result).unwrap()),
+            error: None,
+        });
+    }
     pub(crate) fn handle_hover(&mut self, id: RequestId, params: HoverParams) {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;

@@ -20,6 +20,7 @@ Features
 -   function/module signatures on hover
 -   document symbols
 -   formatter, utilizing clang-format, you need install it yourself, it is not built-in.
+-   variable / module renaming
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
 
