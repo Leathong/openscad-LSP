@@ -12,7 +12,7 @@ use lsp_types::{
     DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
     InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, RenameParams,
-    SymbolInformation, TextEdit, WorkspaceEdit,
+    SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
 };
 
 use tree_sitter::{Node, Point};
@@ -32,6 +32,82 @@ fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, point: Point) -> 
 
 // Request handlers.
 impl Server {
+    pub(crate) fn handle_prepare_rename(
+        &mut self,
+        id: RequestId,
+        params: TextDocumentPositionParams,
+    ) {
+        let uri = params.text_document.uri;
+
+        let file = match self.get_code(&uri) {
+            Some(code) => code,
+            _ => return,
+        };
+        file.borrow_mut().gen_top_level_items_if_needed();
+        let bfile = file.borrow();
+
+        let node = get_node_at_point(&bfile, to_point(params.position));
+        if node.kind() != "identifier" {
+            self.respond(Response {
+                id,
+                result: None,
+                error: None,
+            });
+            return;
+        }
+        let ident_name = node_text(&bfile.code, &node);
+        let identifier_definition =
+            self.find_identities(&file.borrow(), &|name| name == ident_name, &node, false, 0);
+
+        let definition = if let Some(def) = identifier_definition.get(0) {
+            def
+        } else {
+            self.respond(Response {
+                id,
+                result: None,
+                error: None,
+            });
+            return;
+        };
+
+        let url = if let Some(url) = definition.borrow().url.clone() {
+            url
+        } else {
+            self.respond(Response {
+                id,
+                result: None,
+                error: None,
+            });
+            return;
+        };
+
+        if url != uri {
+            self.respond(Response {
+                id,
+                result: None,
+                error: Some(ResponseError {
+                    code: 0,
+                    message:
+                        "Sorry, but renaming symbols defined in another file is not yet supported"
+                            .to_string(),
+                    data: None,
+                }),
+            });
+            return;
+        }
+
+        self.respond(Response {
+            id,
+            result: Some(
+                serde_json::to_value(Range {
+                    start: to_position(node.start_position()),
+                    end: to_position(node.end_position()),
+                })
+                .unwrap(),
+            ),
+            error: None,
+        })
+    }
     pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
         let uri = params.text_document_position.text_document.uri;
         let ident_new_name = params.new_name;
