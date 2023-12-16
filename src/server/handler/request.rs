@@ -24,8 +24,9 @@ use crate::{
     utils::*,
 };
 
-fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, point: Point) -> Node<'a> {
+fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, mut point: Point) -> Node<'a> {
     let mut cursor = parsed_code.tree.root_node().walk();
+    point.column += 1;
     while cursor.goto_first_child_for_point(point).is_some() {}
     cursor.node()
 }
@@ -45,6 +46,7 @@ impl Server {
 
         let (ident_initial_name, parent_scope, ident_initial_node) = {
             let node = get_node_at_point(&bfile, to_point(params.text_document_position.position));
+
             if node.kind() != "identifier" {
                 self.respond(Response {
                     id,
@@ -177,10 +179,7 @@ impl Server {
 
         let point = to_point(pos);
         let bfile = file.borrow();
-        let mut cursor = bfile.tree.root_node().walk();
-        while cursor.goto_first_child_for_point(point).is_some() {}
-
-        let node = cursor.node();
+        let node = get_node_at_point(&bfile, point);
 
         let kind = node.kind();
         let name = String::from(node_text(&bfile.code, &node));
@@ -226,10 +225,7 @@ impl Server {
 
         let point = to_point(pos);
         let bfile = file.borrow();
-        let mut cursor = bfile.tree.root_node().walk();
-        while cursor.goto_first_child_for_point(point).is_some() {}
-
-        let node = cursor.node();
+        let node = get_node_at_point(&bfile, point);
 
         let kind = node.kind();
         let name = String::from(node_text(&bfile.code, &node));
@@ -312,11 +308,7 @@ impl Server {
         }
 
         let bfile = file.borrow();
-        let mut cursor = bfile.tree.root_node().walk();
-
-        while cursor.goto_first_child_for_point(point).is_some() {}
-
-        let node = cursor.node();
+        let node = get_node_at_point(&bfile, point);
         let name = node_text(&bfile.code, &node);
 
         let mut items = self.find_identities(&file.borrow(), &|_| true, &node, true, 0);
