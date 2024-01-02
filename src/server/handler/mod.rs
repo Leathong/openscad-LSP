@@ -7,7 +7,8 @@ use lsp_types::{
         DidSaveTextDocument,
     },
     request::{
-        Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest, Rename,
+        Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest,
+        PrepareRenameRequest, Rename,
     },
 };
 use serde_json::json;
@@ -71,6 +72,7 @@ impl Server {
                 let req = proc_req!(req, GotoDefinition, handle_definition);
                 let req = proc_req!(req, DocumentSymbolRequest, handle_document_symbols);
                 let req = proc_req!(req, Formatting, handle_formatting);
+                let req = proc_req!(req, PrepareRenameRequest, handle_prepare_rename);
                 let req = proc_req!(req, Rename, handle_rename);
                 err_to_console!("unknown request: {:?}", req);
             }

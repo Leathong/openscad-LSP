@@ -190,7 +190,7 @@ impl Server {
     }
 
     pub(crate) fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
-        let caps = serde_json::to_value(&ServerCapabilities {
+        let caps = serde_json::to_value(ServerCapabilities {
             text_document_sync: Some(TextDocumentSyncCapability::Kind(
                 TextDocumentSyncKind::INCREMENTAL,
             )),
@@ -200,7 +200,7 @@ impl Server {
             document_symbol_provider: Some(OneOf::Left(true)),
             document_formatting_provider: Some(OneOf::Left(true)),
             rename_provider: Some(OneOf::Right(RenameOptions {
-                prepare_provider: None,
+                prepare_provider: Some(true),
                 work_done_progress_options: WorkDoneProgressOptions::default(),
             })),
             ..Default::default()
