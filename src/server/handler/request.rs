@@ -59,7 +59,7 @@ impl Server {
         let identifier_definition =
             self.find_identities(&file.borrow(), &|name| name == ident_name, &node, false, 0);
 
-        let definition = if let Some(def) = identifier_definition.get(0) {
+        let definition = if let Some(def) = identifier_definition.first() {
             def
         } else {
             self.respond(Response {
@@ -142,7 +142,7 @@ impl Server {
                 0,
             );
 
-            let definition = if let Some(def) = identifier_definition.get(0) {
+            let definition = if let Some(def) = identifier_definition.first() {
                 def
             } else {
                 self.respond(Response {
