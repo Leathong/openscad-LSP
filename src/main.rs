@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let (connection, io_threads) = if args.stdio {
         Connection::stdio()
     } else {
-        log_to_console!("start with socket");
+        log_to_console!("Start with socket");
         match Connection::listen(format!("{}:{}", args.ip, args.port)) {
             Ok(res) => res,
             Err(err) => {
@@ -54,7 +54,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         }
     };
 
-    log_to_console!("start sucess");
+    log_to_console!("Start successful");
     Server::create_server(connection, args);
     Server::get_server().main_loop()?;
     io_threads.join()?;
