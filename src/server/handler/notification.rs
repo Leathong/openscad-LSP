@@ -115,7 +115,7 @@ impl Server {
                         .filter_map(|buf| buf.into_os_string().into_string().ok())
                         .collect::<Vec<String>>()
                 })
-                .unwrap();
+                .unwrap_or_default();
 
             self.extend_libs(paths);
 
