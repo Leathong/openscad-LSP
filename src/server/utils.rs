@@ -20,7 +20,7 @@ macro_rules! err_to_console {
 pub(crate) fn find_offset(text: &str, pos: Position) -> Option<usize> {
     let mut offset = 0;
     for _ in 0..pos.line {
-        offset += text[offset..].find('\n')? + 1;
+        offset += text[offset..].find('\n').unwrap_or_default() + 1;
     }
 
     let mut chars = text[offset..].chars();
