@@ -10,31 +10,42 @@ use server::*;
 use std::error::Error;
 
 #[derive(Parser)]
-#[clap(name = "OpenSCAD-LSP")]
-#[clap(author, version, about)]
+#[command(name = "OpenSCAD-LSP")]
+#[command(author, version, about)]
 pub(crate) struct Cli {
-    #[clap(short, long, default_value_t = String::from("3245"))]
+    #[arg(short, long, default_value_t = String::from("3245"))]
     port: String,
 
-    #[clap(long, default_value_t = String::from("127.0.0.1"))]
+    #[arg(long, default_value_t = String::from("127.0.0.1"))]
     ip: String,
 
-    #[clap(long, default_value_t = String::from("Microsoft"), help = "LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file")]
-    fmt_style: String,
+    #[arg(
+        long,
+        default_value_if("fmt_exe", "clang-format", Some("Microsoft")),
+        value_parser = ["LLVM", "GNU", "Google", "Chromium", "Microsoft", "Mozilla", "Webkit", "file"]
+    )]
+    fmt_style: Option<String>,
 
-    #[clap(long, default_value_t = String::from("clang-format"), help = "clang format executable file path")]
+    #[arg(
+        long,
+        default_value = "clang-format",
+        help = "formatter executable file path"
+    )]
     fmt_exe: String,
 
-    #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
-    builtin: String,
+    #[arg(
+        long,
+        help = "external builtin functions file path, if set, the built-in builtin functions file will not be used"
+    )]
+    builtin: Option<String>,
 
-    #[clap(long, help = "use stdio instead of tcp")]
+    #[arg(long, help = "use stdio instead of tcp")]
     stdio: bool,
 
-    #[clap(long, help = "exclude default params in auto-completion")]
+    #[arg(long, help = "exclude default params in auto-completion")]
     ignore_default: bool,
 
-    #[clap(long, default_value_t = 3, help = "search depth")]
+    #[arg(long, default_value_t = 3, help = "search depth")]
     depth: i32,
 }
 

@@ -120,8 +120,8 @@ impl Server {
             self.extend_libs(paths);
 
             if let Some(style) = settings.openscad.fmt_style {
-                if !style.trim().is_empty() && self.args.fmt_style != style {
-                    self.args.fmt_style = style;
+                if !style.trim().is_empty() && self.args.fmt_style.as_ref() != Some(&style) {
+                    self.args.fmt_style = Some(style);
                 }
             }
 

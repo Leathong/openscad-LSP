@@ -620,9 +620,14 @@ impl Server {
         let path = uri.to_file_path().unwrap();
         let path = path.parent().unwrap();
 
-        let child = match Command::new(&self.args.fmt_exe)
-            .arg(format!("-style={}", self.args.fmt_style))
-            .arg("-assume-filename=foo.scad")
+        let mut fmt_cmd = Command::new(&self.args.fmt_exe);
+        if let Some(style) = &self.args.fmt_style {
+            fmt_cmd.arg(format!("-style={style}"));
+        }
+        if self.args.fmt_exe.ends_with("clang-format") {
+            fmt_cmd.arg("-assume-filename=foo.scad");
+        }
+        let child = match fmt_cmd
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .current_dir(path)

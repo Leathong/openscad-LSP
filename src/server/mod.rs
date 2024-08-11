@@ -55,34 +55,33 @@ impl Server {
     }
 
     fn new(connection: Connection, args: Cli) -> Self {
-        let builtin_path = PathBuf::from(&args.builtin);
-
-        let mut args = args;
-
         let mut code = BUILTINS_SCAD.to_owned();
 
         let mut external = false;
-        match read_to_string(builtin_path) {
+        let builtin_path = args.builtin.as_ref().and_then(|p| {
+            let p = PathBuf::from(p);
+        match read_to_string(&p) {
             Err(err) => {
                 err_to_console!("failed to read external file of builtin-function, {:?}. will use the content included in binary.", err);
-                args.builtin = BUILTIN_PATH.to_owned();
+                None
             }
             Ok(builtin_str) => {
                 code = builtin_str;
                 external = true;
+                Some(p)
             }
-        }
-
-        let url = Url::parse(&format!("file://{}", &args.builtin)).unwrap();
+            }
+        }).unwrap_or_else(|| BUILTIN_PATH.into());
+        let builtin_url = Url::from_file_path(builtin_path).unwrap();
 
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(vec![])),
             connection,
             codes: Default::default(),
             args,
-            builtin_url: url.to_owned(),
+            builtin_url: builtin_url.clone(),
         };
-        let rc = instance.insert_code(url, code);
+        let rc = instance.insert_code(builtin_url, code);
 
         rc.borrow_mut().is_builtin = true;
         rc.borrow_mut().external_builtin = external;
@@ -175,7 +174,6 @@ impl Server {
             .collect();
 
         if !ret.is_empty() {
-            eprintln!();
             log_to_console!("search paths:");
 
             for lib in ret {
