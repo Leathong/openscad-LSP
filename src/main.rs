@@ -33,6 +33,9 @@ pub(crate) struct Cli {
     )]
     fmt_exe: String,
 
+    #[arg(long, help = "formatter executable arguments")]
+    fmt_args: Vec<String>,
+
     #[arg(
         long,
         help = "external builtin functions file path, if set, the built-in builtin functions file will not be used"

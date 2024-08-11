@@ -595,6 +595,7 @@ impl Server {
             });
         };
 
+        let is_clang_format = self.args.fmt_exe.ends_with("clang-format");
         let mut code = String::new();
         let mut last_pos = 0;
         for_each_child(&mut (file.borrow().tree.walk()), |cursor| {
@@ -609,7 +610,7 @@ impl Server {
                 code.push_str(sub);
             }
 
-            if node.kind().is_include_statement() {
+            if node.kind().is_include_statement() && is_clang_format {
                 code.push_str("#include <");
             }
             code.push_str(node_text(code_str, &node));
@@ -619,13 +620,16 @@ impl Server {
 
         let path = uri.to_file_path().unwrap();
         let path = path.parent().unwrap();
-
         let mut fmt_cmd = Command::new(&self.args.fmt_exe);
         if let Some(style) = &self.args.fmt_style {
             fmt_cmd.arg(format!("-style={style}"));
         }
-        if self.args.fmt_exe.ends_with("clang-format") {
+        if is_clang_format {
             fmt_cmd.arg("-assume-filename=foo.scad");
+        }
+        for args in &self.args.fmt_args {
+            // handle strings such as "--log-level error"
+            fmt_cmd.args(args.split(' '));
         }
         let child = match fmt_cmd
             .stdin(Stdio::piped())
@@ -653,7 +657,9 @@ impl Server {
             }
             Ok(size) => {
                 if size > 0 {
-                    code = code.replace("#include <", "");
+                    if is_clang_format {
+                        code = code.replace("#include <", "");
+                    }
                     let result = [TextEdit {
                         range: file.borrow().tree.root_node().lsp_range(),
                         new_text: code.to_owned(),
