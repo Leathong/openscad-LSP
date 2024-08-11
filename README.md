@@ -67,7 +67,7 @@ Usage: openscad-lsp [OPTIONS]
 Options:
   -p, --port <PORT>            [default: 3245]
       --ip <IP>                [default: 127.0.0.1]
-      --fmt-style <FMT_STYLE>  [possible values: LLVM, GNU, Google, Chromium, Microsoft, Mozilla, Webkit, file]
+      --fmt-style <FMT_STYLE>  formatting style for clang-format [possible values: LLVM, GNU, Google, Chromium, Microsoft, Mozilla, Webkit, file]
       --fmt-exe <FMT_EXE>      formatter executable file path [default: clang-format]
       --fmt-args <FMT_ARGS>    formatter executable arguments
       --builtin <BUILTIN>      external builtin functions file path, if set, the built-in builtin functions file will not be used

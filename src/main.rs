@@ -21,8 +21,8 @@ pub(crate) struct Cli {
 
     #[arg(
         long,
-        default_value_if("fmt_exe", "clang-format", Some("Microsoft")),
-        value_parser = ["LLVM", "GNU", "Google", "Chromium", "Microsoft", "Mozilla", "Webkit", "file"]
+        value_parser = ["LLVM", "GNU", "Google", "Chromium", "Microsoft", "Mozilla", "Webkit", "file"],
+        help = "formatting style for clang-format",
     )]
     fmt_style: Option<String>,
 
