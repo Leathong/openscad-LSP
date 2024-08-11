@@ -621,10 +621,10 @@ impl Server {
         let path = uri.to_file_path().unwrap();
         let path = path.parent().unwrap();
         let mut fmt_cmd = Command::new(&self.args.fmt_exe);
-        if let Some(style) = &self.args.fmt_style {
-            fmt_cmd.arg(format!("-style={style}"));
-        }
         if is_clang_format {
+            if let Some(style) = &self.args.fmt_style {
+                fmt_cmd.arg(format!("-style={style}"));
+            }
             fmt_cmd.arg("-assume-filename=foo.scad");
         }
         for args in &self.args.fmt_args {
