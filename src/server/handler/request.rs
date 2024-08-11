@@ -583,13 +583,13 @@ impl Server {
             _ => return,
         };
 
-        let internal_err = |err: String| {
+        let internal_err = |message: String| {
             self.respond(Response {
                 id: id.clone(),
                 result: None,
                 error: Some(ResponseError {
                     code: -32603,
-                    message: err,
+                    message,
                     data: None,
                 }),
             });
