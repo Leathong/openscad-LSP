@@ -652,14 +652,14 @@ cube and render it (F6). If the polyhedron disappears, it means that it
 is not correct. Revise the winding order of all faces and the two rules
 stated above.
 
-#### Mis-ordered faces
+#### Misordered faces
 
 ------------------------------------------------------------------------
 
-**Example 4** a more complex polyhedron with mis-ordered faces
+**Example 4** a more complex polyhedron with misordered faces
 
 When you select 'Thrown together' from the view menu and **compile** the
-design (**not** compile and render!) the preview shows the mis-oriented
+design (**not** compile and render!) the preview shows the misoriented
 polygons highlighted. Unfortunately this highlighting is not possible in
 the OpenCSG preview mode because it would interfere with the way the
 OpenCSG preview mode is implemented.)
@@ -722,7 +722,7 @@ polyhedron(
 Beginner's tip  
 
 If you don't really understand "orientation", try to identify the
-mis-oriented pink faces and then invert the sequence of the references
+misoriented pink faces and then invert the sequence of the references
 to the points vectors until you get it right. E.g. in the above example,
 the third triangle (*[0,4,5]*) was wrong and we fixed it as
 *[4,0,5]*. Remember that a face list is a circular list. In addition,
@@ -3443,7 +3443,7 @@ Right-hand grip rule
 
 You must use parameter names due to a backward compatibility issue.
 
-**convexity** : If the extrusion fails for a non-trival 2D shape, try
+**convexity** : If the extrusion fails for a non-trivial 2D shape, try
 setting the convexity parameter (the default is not 10, but 10 is a
 "good" value to try). See explanation further down.
 
@@ -3813,7 +3813,7 @@ echo(concat([ [1], [2] ], [[3]])); // produces ECHO: [[1], [2], [3]]
 ***Note:*** All vectors passed to the function lose one nesting level.
 When adding something like a single element [x, y, z] tuples (which
 are vectors, too), the tuple needs to be enclosed in a vector (i.e. an
-extra set of brackets) before the concatenation. in the exmple below, a
+extra set of brackets) before the concatenation. in the example below, a
 fourth point is added to the polygon path, which used to resemble a
 triangle, making it a square now:
 
