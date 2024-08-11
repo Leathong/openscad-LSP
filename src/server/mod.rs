@@ -105,7 +105,7 @@ impl Server {
             let lib_path = if cfg!(target_os = "windows") {
                 userdir
                     .document_dir()?
-                    .join("\\OpenSCAD\\libraries\\")
+                    .join("OpenSCAD\\libraries\\")
                     .into_os_string()
                     .into_string()
             } else if cfg!(target_os = "macos") {
@@ -156,7 +156,7 @@ impl Server {
                     return None;
                 }
 
-                let mut path = format!("file://{}", p);
+                let mut path = format!("file://{p}");
                 if !path.ends_with('/') {
                     path.push('/');
                 }
