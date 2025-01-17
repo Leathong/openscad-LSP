@@ -89,6 +89,7 @@ impl Server {
             search_paths: Option<String>,
             fmt_style: Option<String>,
             fmt_exe: Option<String>,
+            fmt_args: Vec<String>,
             default_param: Option<bool>,
         }
 
@@ -120,8 +121,8 @@ impl Server {
             self.extend_libs(paths);
 
             if let Some(style) = settings.openscad.fmt_style {
-                if !style.trim().is_empty() && self.args.fmt_style != style {
-                    self.args.fmt_style = style;
+                if !style.trim().is_empty() && self.args.fmt_style.as_ref() != Some(&style) {
+                    self.args.fmt_style = Some(style);
                 }
             }
 
@@ -129,6 +130,10 @@ impl Server {
                 if !fmt_exe.trim().is_empty() && self.args.fmt_exe != fmt_exe {
                     self.args.fmt_exe = fmt_exe;
                 }
+            }
+
+            if !settings.openscad.fmt_args.is_empty() {
+                self.args.fmt_args = settings.openscad.fmt_args;
             }
 
             if let Some(default_param) = settings.openscad.default_param {

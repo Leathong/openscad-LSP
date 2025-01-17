@@ -209,7 +209,7 @@ impl Server {
                 .is_some_and(|node| node.kind() == "assignment");
             let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
             if is_assignment_in_subscope {
-                // Unwrap is ok because an identifier node whould always have a parent scope.
+                // Unwrap is ok because an identifier node would always have a parent scope.
                 let scope = find_node_scope(node).unwrap();
                 // Consume iterator until it reaches the parent scope
                 while node_iter.next().is_some_and(|next| scope != next) {}
@@ -583,18 +583,19 @@ impl Server {
             _ => return,
         };
 
-        let internal_err = |err: String| {
+        let internal_err = |message: String| {
             self.respond(Response {
                 id: id.clone(),
                 result: None,
                 error: Some(ResponseError {
                     code: -32603,
-                    message: err,
+                    message,
                     data: None,
                 }),
             });
         };
 
+        let is_clang_format = self.args.fmt_exe.ends_with("clang-format");
         let mut code = String::new();
         let mut last_pos = 0;
         for_each_child(&mut (file.borrow().tree.walk()), |cursor| {
@@ -609,7 +610,7 @@ impl Server {
                 code.push_str(sub);
             }
 
-            if node.kind().is_include_statement() {
+            if node.kind().is_include_statement() && is_clang_format {
                 code.push_str("#include <");
             }
             code.push_str(node_text(code_str, &node));
@@ -619,10 +620,18 @@ impl Server {
 
         let path = uri.to_file_path().unwrap();
         let path = path.parent().unwrap();
-
-        let child = match Command::new(&self.args.fmt_exe)
-            .arg(format!("-style={}", self.args.fmt_style))
-            .arg("-assume-filename=foo.scad")
+        let mut fmt_cmd = Command::new(&self.args.fmt_exe);
+        if is_clang_format {
+            if let Some(style) = &self.args.fmt_style {
+                fmt_cmd.arg(format!("-style={style}"));
+            }
+            fmt_cmd.arg("-assume-filename=foo.scad");
+        }
+        for args in &self.args.fmt_args {
+            // handle strings such as "--log-level error"
+            fmt_cmd.args(args.split(' '));
+        }
+        let child = match fmt_cmd
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .current_dir(path)
@@ -648,7 +657,9 @@ impl Server {
             }
             Ok(size) => {
                 if size > 0 {
-                    code = code.replace("#include <", "");
+                    if is_clang_format {
+                        code = code.replace("#include <", "");
+                    }
                     let result = [TextEdit {
                         range: file.borrow().tree.root_node().lsp_range(),
                         new_text: code.to_owned(),
