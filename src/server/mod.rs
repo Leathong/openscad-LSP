@@ -38,23 +38,9 @@ pub(crate) enum LoopAction {
     Continue,
 }
 
-static mut GLOBAL_SERVER: Option<Server> = None;
-
 // Miscellaneous high-level logic.
 impl Server {
-    pub(crate) fn create_server(connection: Connection, args: Cli) {
-        unsafe {
-            GLOBAL_SERVER = Some(Server::new(connection, args));
-        }
-    }
-
-    pub(crate) fn get_server<'a>() -> &'a mut Server {
-        unsafe {
-            return GLOBAL_SERVER.as_mut().unwrap();
-        }
-    }
-
-    fn new(connection: Connection, args: Cli) -> Self {
+    pub(crate) fn new(connection: Connection, args: Cli) -> Self {
         let builtin_path = PathBuf::from(&args.builtin);
 
         let mut args = args;

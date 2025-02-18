@@ -5,6 +5,7 @@ use tree_sitter::Node;
 
 use crate::utils::*;
 
+use crate::Cli;
 use crate::Server;
 
 struct BuiltinFlags {}
@@ -42,13 +43,13 @@ impl Param {
             .collect()
     }
 
-    pub(crate) fn make_snippet(params: &[Param], ignore_name: bool) -> String {
+    pub(crate) fn make_snippet(params: &[Param], ignore_name: bool, args: &Cli) -> String {
         params
             .iter()
-            .filter(|p| p.default.is_none() || !Server::get_server().args.ignore_default)
+            .filter(|p| p.default.is_none() || !args.ignore_default)
             .enumerate()
             .map(|(i, p)| {
-                if !Server::get_server().args.ignore_default && p.default.as_ref().is_some() {
+                if !args.ignore_default && p.default.as_ref().is_some() {
                     return format!("{} = {}", p.name, p.default.as_ref().unwrap());
                 }
 
@@ -104,9 +105,9 @@ pub(crate) struct Item {
 }
 
 impl Item {
-    pub(crate) fn get_snippet(&mut self) -> String {
+    pub(crate) fn get_snippet(&mut self, args: &Cli) -> String {
         if self.snippet.is_none() {
-            self.snippet = Some(self.make_snippet());
+            self.snippet = Some(self.make_snippet(args));
         }
         self.snippet.as_ref().unwrap().to_owned()
     }
@@ -125,20 +126,20 @@ impl Item {
         self.label.as_ref().unwrap().to_owned()
     }
 
-    pub(crate) fn make_snippet(&mut self) -> String {
+    pub(crate) fn make_snippet(&mut self, args: &Cli) -> String {
         let snippet = match &self.kind {
             ItemKind::Variable => self.name.clone(),
             ItemKind::Function { flags, params } => {
                 format!(
                     "{}({});$0",
                     self.name,
-                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0)
+                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0, args)
                 )
             }
             ItemKind::Keyword(comp) => comp.clone(),
             ItemKind::Module { params, flags } => {
                 let params =
-                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0);
+                    Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0, args);
                 if BuiltinFlags::IS_OPREATOR & flags != 0 {
                     format!("{}({}) $0", self.name, params)
                 } else {

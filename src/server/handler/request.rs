@@ -502,7 +502,7 @@ impl Server {
                     .iter()
                     .map(|item| {
                         let label = item.borrow_mut().get_label();
-                        let snippet = item.borrow_mut().get_snippet();
+                        let snippet = item.borrow_mut().get_snippet(&self.args);
                         CompletionItem {
                             label,
                             kind: Some(item.borrow().kind.completion_kind()),
