@@ -6,7 +6,6 @@ use tree_sitter::Node;
 use crate::utils::*;
 
 use crate::Cli;
-use crate::Server;
 
 struct BuiltinFlags {}
 impl BuiltinFlags {

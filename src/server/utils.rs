@@ -144,6 +144,7 @@ impl NodeExt for Node<'_> {
 pub(crate) trait KindExt {
     fn is_include_statement(&self) -> bool;
     fn is_comment(&self) -> bool;
+    #[allow(unused)]
     fn is_callable(&self) -> bool;
 }
 
