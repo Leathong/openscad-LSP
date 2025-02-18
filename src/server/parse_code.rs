@@ -40,7 +40,7 @@ impl ParsedCode {
     pub(crate) fn new(code: String, url: Url, libs: Rc<RefCell<Vec<Url>>>) -> Self {
         let mut parser = tree_sitter::Parser::new();
         parser
-            .set_language(tree_sitter_openscad::language())
+            .set_language(&tree_sitter_openscad::LANGUAGE.into())
             .expect("Error loading openscad grammar");
         let tree = parser.parse(&code, None).unwrap();
         Self {
