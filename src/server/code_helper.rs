@@ -42,13 +42,13 @@ impl Server {
         depth: i32,
     ) -> Vec<Rc<RefCell<Item>>> {
         let mut result: Vec<Rc<RefCell<Item>>> = vec![];
-        if depth >= Server::get_server().args.depth {
+        if depth >= self.args.depth {
             return result;
         }
 
         let mut include_vec = vec![];
         if depth == 0 {
-            include_vec.push(Server::get_server().builtin_url.clone())
+            include_vec.push(self.builtin_url.clone())
         }
         if let Some(incs) = &code.includes {
             include_vec.extend(incs.clone());

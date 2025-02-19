@@ -55,8 +55,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     };
 
     log_to_console!("Start successful");
-    Server::create_server(connection, args);
-    Server::get_server().main_loop()?;
+    Server::new(connection, args).main_loop()?;
     io_threads.join()?;
 
     err_to_console!("exit");
