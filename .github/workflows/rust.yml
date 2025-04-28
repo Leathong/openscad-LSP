@@ -71,3 +71,17 @@ jobs:
         with:
           command: clippy
           args: --all-features --all-targets -- -D warnings
+
+  lockfile:
+    name: Cargo.lock up-to-date?
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Check if Cargo.lock is up-to-date
+        run: cargo generate-lockfile --locked
+
