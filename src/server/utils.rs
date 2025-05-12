@@ -37,13 +37,13 @@ pub(crate) fn find_node_scope(node: Node) -> Option<Node> {
         parent_scope = parent_node;
         if matches!(
             parent_node.kind(),
-            "source_file" | "module_declaration" | "union_block"
+            "source_file" | "module_item" | "union_block"
         ) {
             // If this is a module_declaration, the module will detect itself as
             // its scope. So we need to check for that and get its scope's scope.
             return if node
                 .parent()
-                .is_some_and(|parent| parent.kind() == "module_declaration")
+                .is_some_and(|parent| parent.kind() == "module_item")
             {
                 find_node_scope(parent_scope)
             } else {
@@ -146,6 +146,7 @@ pub(crate) trait KindExt {
     fn is_comment(&self) -> bool;
     #[allow(unused)]
     fn is_callable(&self) -> bool;
+    fn is_parameter(&self) -> bool;
 }
 
 impl KindExt for str {
@@ -154,10 +155,14 @@ impl KindExt for str {
     }
 
     fn is_comment(&self) -> bool {
-        self == "comment"
+        self == "line_comment" || self == "block_comment"
     }
 
     fn is_callable(&self) -> bool {
-        self == "module_declaration" || self == "function_declaration"
+        self == "module_item" || self == "function_item"
+    }
+
+    fn is_parameter(&self) -> bool {
+        self == "parameter"
     }
 }

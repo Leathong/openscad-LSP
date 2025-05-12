@@ -23,21 +23,30 @@ pub(crate) struct Param {
 impl Param {
     pub(crate) fn parse_declaration(code: &str, node: &Node) -> Vec<Param> {
         node.children(&mut node.walk())
-            .filter_map(|child| match child.kind() {
-                "identifier" => Some(Param {
-                    name: node_text(code, &child).to_owned(),
-                    default: None,
-                    range: child.lsp_range(),
-                }),
-                "assignment" => child.child_by_field_name("left").and_then(|left| {
-                    child.child_by_field_name("right").map(|right| Param {
-                        name: node_text(code, &left).to_owned(),
-                        default: Some(node_text(code, &right).to_owned()),
-                        range: right.lsp_range(),
-                    })
-                }),
-                "special_variable" => None,
-                _ => None,
+            .filter_map(|child| {
+                let kind = child.kind();
+                if !kind.is_parameter() {
+                    return None;
+                }
+
+                let child = child.child(0).unwrap();
+                let kind = child.kind();
+                match kind {
+                    "identifier" => Some(Param {
+                        name: node_text(code, &child).to_owned(),
+                        default: None,
+                        range: child.lsp_range(),
+                    }),
+                    "assignment" => child.child_by_field_name("name").and_then(|left| {
+                        child.child_by_field_name("value").map(|right| Param {
+                            name: node_text(code, &left).to_owned(),
+                            default: Some(node_text(code, &right).to_owned()),
+                            range: right.lsp_range(),
+                        })
+                    }),
+                    "special_variable" => None,
+                    _ => None,
+                }
             })
             .collect()
     }
@@ -115,6 +124,7 @@ impl Item {
         if self.hover.is_none() {
             self.hover = Some(self.make_hover());
         }
+        // log_to_console!("{:?}\n\n", &self.hover);
         self.hover.as_ref().unwrap().to_owned()
     }
 
@@ -206,8 +216,9 @@ impl Item {
                 .map(|child| node_text(code, &child).to_owned())
         };
 
-        match node.kind() {
-            "module_declaration" => {
+        let kind = node.kind();
+        match kind {
+            "module_item" => {
                 let flags: u16 = if let Some(child) = node
                     .child_by_field_name("body")
                     .and_then(|body| body.named_child(0))
@@ -234,9 +245,10 @@ impl Item {
                     ..Default::default()
                 })
             }
-            "function_declaration" => {
-                let flags = if let Some(child) = node.children(&mut node.walk()).last() {
+            "function_item" => {
+                let flags = if let Some(child) = node.child(4) {
                     let body = node_text(code, &child);
+                    // log_to_console!("{}", &body);
                     if let Some(cap) = &FLAG_RE.captures(body) {
                         let flag_str = &cap["flags"];
                         u16::from_str_radix(flag_str, 2).unwrap()
