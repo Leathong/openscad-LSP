@@ -1,3 +1,5 @@
+>Because clang-format produces poor formatting results for OpenSCAD, we have completely removed support for clang-format and switched to the new formatter [topiary](https://github.com/tweag/topiary), please download topjary from [release](https://github.com/Leathong/openscad-LSP/releases) page and install it to your path, or pass `--fmt-exe` to openscad-lsp.
+
 openscad-LSP
 ========================
 

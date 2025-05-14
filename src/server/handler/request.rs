@@ -595,37 +595,17 @@ impl Server {
             });
         };
 
-        let mut code = String::new();
-        let mut last_pos = 0;
-        for_each_child(&mut (file.borrow().tree.walk()), |cursor| {
-            let node = cursor.node();
-
-            let code_str = &file.borrow().code;
-
-            if node.start_byte() > last_pos {
-                let mut sub = &code_str[last_pos..node.start_byte()];
-                sub = sub.trim_matches(' ');
-                sub = sub.trim_matches('\t');
-                code.push_str(sub);
-            }
-
-            if node.kind().is_include_statement() {
-                code.push_str("#include <");
-            }
-            code.push_str(node_text(code_str, &node));
-
-            last_pos = node.end_byte();
-        });
+        let code = &file.borrow().code;
 
         let path = uri.to_file_path().unwrap();
-        let path = path.parent().unwrap();
+        let dir = path.parent().unwrap();
 
         let child = match Command::new(&self.args.fmt_exe)
-            .arg(format!("-style={}", self.args.fmt_style))
-            .arg("-assume-filename=foo.scad")
+            .arg("format")
+            .arg("-lopenscad")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .current_dir(path)
+            .current_dir(dir)
             .spawn()
         {
             Ok(res) => res,
@@ -648,7 +628,6 @@ impl Server {
             }
             Ok(size) => {
                 if size > 0 {
-                    code = code.replace("#include <", "");
                     let result = [TextEdit {
                         range: file.borrow().tree.root_node().lsp_range(),
                         new_text: code.to_owned(),

@@ -22,7 +22,7 @@ pub(crate) struct Cli {
     #[clap(long, default_value_t = String::from("Microsoft"), help = "LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file")]
     fmt_style: String,
 
-    #[clap(long, default_value_t = String::from("clang-format"), help = "clang format executable file path")]
+    #[clap(long, default_value_t = String::from("topiary"), help = "clang format executable file path")]
     fmt_exe: String,
 
     #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
