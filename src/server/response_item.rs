@@ -41,7 +41,7 @@ impl Param {
                         child.child_by_field_name("value").map(|right| Param {
                             name: node_text(code, &left).to_owned(),
                             default: Some(node_text(code, &right).to_owned()),
-                            range: right.lsp_range(),
+                            range: left.lsp_range(),
                         })
                     }),
                     "special_variable" => None,
@@ -212,11 +212,14 @@ impl Item {
         };
 
         let extract_name = |name| {
-            node.child_by_field_name(name)
-                .map(|child| node_text(code, &child).to_owned())
+            let res = node.child_by_field_name(name)
+                .map(|child| node_text(code, &child).to_owned());
+            // log_to_console!("{} {:?}", name, res);
+            res
         };
 
         let kind = node.kind();
+        // log_to_console!("{}", kind);
         match kind {
             "module_item" => {
                 let flags: u16 = if let Some(child) = node
@@ -270,12 +273,18 @@ impl Item {
                     ..Default::default()
                 })
             }
-            "assignment" => Some(Self {
-                name: extract_name("left")?,
-                kind: ItemKind::Variable,
-                range: node.lsp_range(),
-                ..Default::default()
-            }),
+            "assignment" => {
+                Some(Self {
+                    name: extract_name("name")?,
+                    kind: ItemKind::Variable,
+                    range: node.lsp_range(),
+                    ..Default::default()
+                })
+            },
+            "var_declaration" => {
+                let node = node.named_child(0)?;
+                Self::parse(code, &node)
+            }
             _ => None,
         }
     }

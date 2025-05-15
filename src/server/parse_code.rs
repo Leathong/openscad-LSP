@@ -134,7 +134,9 @@ impl ParsedCode {
 
         for_each_child(&mut cursor, |cursor| {
             let node = &cursor.node();
-            if node.kind().is_comment() {
+            let kind = node.kind();
+            // log_to_console!("kind: {}", kind);
+            if kind.is_comment() {
                 if last_code_line > 0 && node.start_position().row == last_code_line {
                     let last = ret.last_mut().unwrap();
                     let doc_str = node_text(&self.code, node);

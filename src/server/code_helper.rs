@@ -59,7 +59,7 @@ impl Server {
         let mut node = *start_node;
         let mut parent = start_node.parent();
 
-        while parent.is_some() {
+        'outer: while parent.is_some() {
             let is_top_level_node = parent.unwrap().parent().is_none();
 
             loop {
@@ -117,14 +117,16 @@ impl Server {
                     }
                 }
 
-                if is_top_level_node || node.prev_sibling().is_none() {
+                should_process_param = false;
+                if is_top_level_node {
+                    break 'outer;
+                } else if node.prev_sibling().is_none() {
                     node = parent.unwrap();
                     parent = node.parent();
                     should_process_param = true;
                     break;
                 } else {
                     node = node.prev_sibling().unwrap();
-                    should_process_param = false;
                 }
             }
         }
