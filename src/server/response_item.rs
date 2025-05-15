@@ -212,7 +212,8 @@ impl Item {
         };
 
         let extract_name = |name| {
-            let res = node.child_by_field_name(name)
+            let res = node
+                .child_by_field_name(name)
                 .map(|child| node_text(code, &child).to_owned());
             // log_to_console!("{} {:?}", name, res);
             res
@@ -273,14 +274,12 @@ impl Item {
                     ..Default::default()
                 })
             }
-            "assignment" => {
-                Some(Self {
-                    name: extract_name("name")?,
-                    kind: ItemKind::Variable,
-                    range: node.lsp_range(),
-                    ..Default::default()
-                })
-            },
+            "assignment" => Some(Self {
+                name: extract_name("name")?,
+                kind: ItemKind::Variable,
+                range: node.lsp_range(),
+                ..Default::default()
+            }),
             "var_declaration" => {
                 let node = node.named_child(0)?;
                 Self::parse(code, &node)
