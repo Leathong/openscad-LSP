@@ -211,7 +211,7 @@ impl Item {
                 Regex::new(r"(?m)builtin_flags\((?P<flags>[01]{16})\)").unwrap();
         };
 
-        let extract_name = |name| {
+        let extract_name = |node: &Node, name| {
             let res = node
                 .child_by_field_name(name)
                 .map(|child| node_text(code, &child).to_owned());
@@ -238,7 +238,7 @@ impl Item {
                     0
                 };
                 Some(Self {
-                    name: extract_name("name")?,
+                    name: extract_name(node, "name")?,
                     kind: ItemKind::Module {
                         flags,
                         params: node
@@ -263,7 +263,7 @@ impl Item {
                     0
                 };
                 Some(Self {
-                    name: extract_name("name")?,
+                    name: extract_name(node, "name")?,
                     kind: ItemKind::Function {
                         flags,
                         params: node
@@ -274,15 +274,14 @@ impl Item {
                     ..Default::default()
                 })
             }
-            "assignment" => Some(Self {
-                name: extract_name("name")?,
-                kind: ItemKind::Variable,
-                range: node.lsp_range(),
-                ..Default::default()
-            }),
             "var_declaration" => {
                 let node = node.named_child(0)?;
-                Self::parse(code, &node)
+                Some(Self {
+                    name: extract_name(&node, "name")?,
+                    kind: ItemKind::Variable,
+                    range: node.lsp_range(),
+                    ..Default::default()
+                })
             }
             _ => None,
         }

@@ -54,8 +54,6 @@ impl Server {
             include_vec.extend(incs.clone());
         }
 
-        let mut should_process_param = false;
-
         let mut node = *start_node;
         let mut parent = start_node.parent();
 
@@ -70,43 +68,41 @@ impl Server {
                 }
 
                 if let Some(mut item) = Item::parse(&code.code, &node) {
-                    if should_process_param {
-                        match &item.kind {
-                            ItemKind::Module { params, .. } => {
-                                for p in params {
-                                    if comparator(&p.name) {
-                                        result.push(Rc::new(RefCell::new(Item {
-                                            name: p.name.clone(),
-                                            kind: ItemKind::Variable,
-                                            range: p.range,
-                                            url: Some(code.url.clone()),
-                                            ..Default::default()
-                                        })));
-                                        if !findall {
-                                            return result;
-                                        }
+                    match &item.kind {
+                        ItemKind::Module { params, .. } => {
+                            for p in params {
+                                if comparator(&p.name) {
+                                    result.push(Rc::new(RefCell::new(Item {
+                                        name: p.name.clone(),
+                                        kind: ItemKind::Variable,
+                                        range: p.range,
+                                        url: Some(code.url.clone()),
+                                        ..Default::default()
+                                    })));
+                                    if !findall {
+                                        return result;
                                     }
                                 }
                             }
-                            ItemKind::Function { flags: _, params } => {
-                                for p in params {
-                                    if comparator(&p.name) {
-                                        result.push(Rc::new(RefCell::new(Item {
-                                            name: p.name.clone(),
-                                            kind: ItemKind::Variable,
-                                            range: p.range,
-                                            url: Some(code.url.clone()),
-                                            ..Default::default()
-                                        })));
-                                        if !findall {
-                                            return result;
-                                        }
+                        }
+                        ItemKind::Function { flags: _, params } => {
+                            for p in params {
+                                if comparator(&p.name) {
+                                    result.push(Rc::new(RefCell::new(Item {
+                                        name: p.name.clone(),
+                                        kind: ItemKind::Variable,
+                                        range: p.range,
+                                        url: Some(code.url.clone()),
+                                        ..Default::default()
+                                    })));
+                                    if !findall {
+                                        return result;
                                     }
                                 }
                             }
-                            _ => {}
-                        };
-                    }
+                        }
+                        _ => {}
+                    };
 
                     if !is_top_level_node && comparator(&item.name) {
                         item.url = Some(code.url.clone());
@@ -117,13 +113,11 @@ impl Server {
                     }
                 }
 
-                should_process_param = false;
                 if is_top_level_node {
                     break 'outer;
                 } else if node.prev_sibling().is_none() {
                     node = parent.unwrap();
                     parent = node.parent();
-                    should_process_param = true;
                     break;
                 } else {
                     node = node.prev_sibling().unwrap();

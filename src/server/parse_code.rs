@@ -179,6 +179,7 @@ impl ParsedCode {
                     item.label = Some(item.make_label());
                     item.hover = Some(item.make_hover());
                     last_code_line = item.range.start.line as usize;
+                    // log_to_console!("name: {} kind: {}", item.name, kind);
                     ret.push(item);
                 } else if node.kind().is_include_statement() {
                     self.get_include_url(node).map(|url| {
