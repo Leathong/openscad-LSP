@@ -1,8 +1,6 @@
 use std::{
     cell::{Ref, RefCell},
     collections::HashMap,
-    io::{Read, Write},
-    process::{Command, Stdio},
     rc::Rc,
 };
 
@@ -598,9 +596,6 @@ impl Server {
 
         let code = &file.borrow().code;
 
-        let path = uri.to_file_path().unwrap();
-        let dir = path.parent().unwrap();
-
         let mut formatted_code: Vec<u8> = Vec::new();
         match topiary::format(code.as_bytes(), &mut formatted_code) {
             Ok(_) => {
@@ -618,7 +613,6 @@ impl Server {
             }
             Err(err) => {
                 internal_err(format!("topiary: {}", &err.to_string()));
-                return;
             }
         }
     }

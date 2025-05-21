@@ -88,7 +88,7 @@ pub(crate) enum ItemKind {
 }
 
 impl ItemKind {
-    pub(crate) fn completion_kind(&self) -> CompletionItemKind {
+    pub(crate) const fn completion_kind(&self) -> CompletionItemKind {
         match self {
             ItemKind::Variable => CompletionItemKind::VARIABLE,
             ItemKind::Function { .. } => CompletionItemKind::FUNCTION,
@@ -166,15 +166,15 @@ impl Item {
             None => self.make_label(),
         };
         label = match self.kind {
-            ItemKind::Function { .. } => format!("```scad\nfunction {}\n```", label),
-            ItemKind::Module { .. } => format!("```scad\nmodule {}\n```", label),
-            _ => format!("```scad\n{}\n```", label),
+            ItemKind::Function { .. } => format!("```scad\nfunction {label}\n```"),
+            ItemKind::Module { .. } => format!("```scad\nmodule {label}\n```"),
+            _ => format!("```scad\n{label}\n```"),
         };
         if let Some(doc) = &self.doc {
             if self.is_builtin {
-                label = format!("{}\n---\n\n{}\n", label, doc);
+                label = format!("{label}\n---\n\n{doc}\n");
             } else {
-                label = format!("{}\n---\n\n<pre>\n{}\n</pre>\n", label, doc);
+                label = format!("{label}\n---\n\n<pre>\n{doc}\n</pre>\n");
             }
         }
         // print!("{}", &label);
@@ -287,7 +287,7 @@ impl Item {
         }
     }
 
-    pub(crate) fn get_symbol_kind(&self) -> SymbolKind {
+    pub(crate) const fn get_symbol_kind(&self) -> SymbolKind {
         match self.kind {
             ItemKind::Function { .. } => SymbolKind::FUNCTION,
             ItemKind::Module { .. } => SymbolKind::MODULE,

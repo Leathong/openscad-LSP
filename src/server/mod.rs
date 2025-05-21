@@ -143,7 +143,7 @@ impl Server {
                     return None;
                 }
 
-                let mut path = format!("file://{}", p);
+                let mut path = format!("file://{p}");
                 if !path.ends_with('/') {
                     path.push('/');
                 }
