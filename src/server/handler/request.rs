@@ -21,6 +21,7 @@ use tree_sitter_traversal2::{traverse, Order};
 use crate::{
     response_item::{Item, ItemKind},
     server::{parse_code::ParsedCode, Server},
+    topiary,
     utils::*,
 };
 
@@ -600,46 +601,24 @@ impl Server {
         let path = uri.to_file_path().unwrap();
         let dir = path.parent().unwrap();
 
-        let child = match Command::new(&self.args.fmt_exe)
-            .arg("format")
-            .arg("-lopenscad")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .current_dir(dir)
-            .spawn()
-        {
-            Ok(res) => res,
+        let mut formatted_code: Vec<u8> = Vec::new();
+        match topiary::format(code.as_bytes(), &mut formatted_code) {
+            Ok(_) => {
+                let result = [TextEdit {
+                    range: file.borrow().tree.root_node().lsp_range(),
+                    new_text: code.to_owned(),
+                }];
+
+                let result = serde_json::to_value(result).unwrap();
+                self.respond(Response {
+                    id,
+                    result: Some(result),
+                    error: None,
+                });
+            }
             Err(err) => {
-                internal_err(format!("{}: {}", &self.args.fmt_exe, &err.to_string()));
+                internal_err(format!("topiary: {}", &err.to_string()));
                 return;
-            }
-        };
-
-        if let Err(why) = child.stdin.unwrap().write_all(code.as_bytes()) {
-            internal_err(why.to_string());
-            return;
-        }
-
-        let mut code = String::new();
-
-        match child.stdout.unwrap().read_to_string(&mut code) {
-            Err(why) => {
-                internal_err(why.to_string());
-            }
-            Ok(size) => {
-                if size > 0 {
-                    let result = [TextEdit {
-                        range: file.borrow().tree.root_node().lsp_range(),
-                        new_text: code.to_owned(),
-                    }];
-
-                    let result = serde_json::to_value(result).unwrap();
-                    self.respond(Response {
-                        id,
-                        result: Some(result),
-                        error: None,
-                    });
-                }
             }
         }
     }

@@ -87,8 +87,6 @@ impl Server {
         #[derive(Deserialize)]
         pub(crate) struct Openscad {
             search_paths: Option<String>,
-            fmt_style: Option<String>,
-            fmt_exe: Option<String>,
             default_param: Option<bool>,
         }
 
@@ -118,18 +116,6 @@ impl Server {
                 .unwrap_or_default();
 
             self.extend_libs(paths);
-
-            if let Some(style) = settings.openscad.fmt_style {
-                if !style.trim().is_empty() && self.args.fmt_style != style {
-                    self.args.fmt_style = style;
-                }
-            }
-
-            if let Some(fmt_exe) = settings.openscad.fmt_exe {
-                if !fmt_exe.trim().is_empty() && self.args.fmt_exe != fmt_exe {
-                    self.args.fmt_exe = fmt_exe;
-                }
-            }
 
             if let Some(default_param) = settings.openscad.default_param {
                 self.args.ignore_default = !default_param;

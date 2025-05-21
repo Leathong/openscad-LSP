@@ -3,6 +3,7 @@
 
 #[macro_use]
 mod server;
+mod topiary;
 
 use clap::Parser;
 use lsp_server::Connection;
@@ -18,12 +19,6 @@ pub(crate) struct Cli {
 
     #[clap(long, default_value_t = String::from("127.0.0.1"))]
     ip: String,
-
-    #[clap(long, default_value_t = String::from("Microsoft"), help = "LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file")]
-    fmt_style: String,
-
-    #[clap(long, default_value_t = String::from("topiary"), help = "clang format executable file path")]
-    fmt_exe: String,
 
     #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
     builtin: String,
