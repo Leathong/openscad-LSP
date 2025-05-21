@@ -208,7 +208,7 @@ impl Server {
                 .is_some_and(|node| node.kind() == "assignment");
             let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
             if is_assignment_in_subscope {
-                // Unwrap is ok because an identifier node whould always have a parent scope.
+                // Unwrap is ok because an identifier node would always have a parent scope.
                 let scope = find_node_scope(node).unwrap();
                 // Consume iterator until it reaches the parent scope
                 while node_iter.next().is_some_and(|next| scope != next) {}
@@ -597,23 +597,25 @@ impl Server {
         let code = &file.borrow().code;
 
         let mut formatted_code: Vec<u8> = Vec::new();
-        match topiary::format(code.as_bytes(), &mut formatted_code) {
-            Ok(_) => {
-                let result = [TextEdit {
-                    range: file.borrow().tree.root_node().lsp_range(),
-                    new_text: code.to_owned(),
-                }];
-
-                let result = serde_json::to_value(result).unwrap();
-                self.respond(Response {
-                    id,
-                    result: Some(result),
-                    error: None,
-                });
-            }
-            Err(err) => {
-                internal_err(format!("topiary: {}", &err.to_string()));
-            }
+        if let Err(e) = topiary::format(
+            code.as_bytes(),
+            &mut formatted_code,
+            self.args.indent.clone(),
+        ) {
+            internal_err(format!("topiary: {e}"));
+            return;
         }
+        let formatted_code = String::from_utf8(formatted_code).unwrap();
+        let result = serde_json::to_value([TextEdit {
+            range: file.borrow().tree.root_node().lsp_range(),
+            new_text: formatted_code,
+        }])
+        .unwrap();
+
+        self.respond(Response {
+            id,
+            result: Some(result),
+            error: None,
+        });
     }
 }

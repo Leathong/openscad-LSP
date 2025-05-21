@@ -19,15 +19,19 @@ impl Display for FormatError {
 
 const OPENSCAD_QUERY: &str = include_str!("../openscad.scm");
 
-/// Format a Nickel file being read from `input`, writing the result to `output`.
-pub fn format(mut input: impl Read, mut output: impl Write) -> Result<(), FormatError> {
+/// Format an Openscad file being read from `input`, writing the result to `output`.
+pub fn format(
+    mut input: impl Read,
+    mut output: impl Write,
+    indent: Option<String>,
+) -> Result<(), FormatError> {
     let grammar = tree_sitter_openscad::LANGUAGE.into();
     let query = TopiaryQuery::new(&grammar, OPENSCAD_QUERY).map_err(FormatError)?;
     let language = Language {
-        name: "nickel".to_owned(),
+        name: "openscad".to_owned(),
         query,
         grammar,
-        indent: None,
+        indent,
     };
 
     formatter(

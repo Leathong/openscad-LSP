@@ -31,6 +31,12 @@ pub(crate) struct Cli {
 
     #[clap(long, default_value_t = 3, help = "search depth")]
     depth: i32,
+
+    /// The indentation string used for that particular language. Defaults to "  "
+    /// if not provided. Any string can be provided, but in most instances will be
+    /// some whitespace: "  ", "    ", or "\t".
+    #[clap(long)]
+    indent: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
