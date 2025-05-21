@@ -21,7 +21,7 @@ pub(crate) struct Param {
 }
 
 impl Param {
-    pub(crate) fn parse_declaration(code: &str, node: &Node) -> Vec<Param> {
+    pub(crate) fn parse_declaration(code: &str, node: &Node) -> Vec<Self> {
         node.children(&mut node.walk())
             .filter_map(|child| {
                 let kind = child.kind();
@@ -32,13 +32,13 @@ impl Param {
                 let child = child.child(0).unwrap();
                 let kind = child.kind();
                 match kind {
-                    "identifier" => Some(Param {
+                    "identifier" => Some(Self {
                         name: node_text(code, &child).to_owned(),
                         default: None,
                         range: child.lsp_range(),
                     }),
                     "assignment" => child.child_by_field_name("name").and_then(|left| {
-                        child.child_by_field_name("value").map(|right| Param {
+                        child.child_by_field_name("value").map(|right| Self {
                             name: node_text(code, &left).to_owned(),
                             default: Some(node_text(code, &right).to_owned()),
                             range: left.lsp_range(),
@@ -51,7 +51,7 @@ impl Param {
             .collect()
     }
 
-    pub(crate) fn make_snippet(params: &[Param], ignore_name: bool, args: &Cli) -> String {
+    pub(crate) fn make_snippet(params: &[Self], ignore_name: bool, args: &Cli) -> String {
         params
             .iter()
             .filter(|p| p.default.is_none() || !args.ignore_default)
@@ -90,10 +90,10 @@ pub(crate) enum ItemKind {
 impl ItemKind {
     pub(crate) const fn completion_kind(&self) -> CompletionItemKind {
         match self {
-            ItemKind::Variable => CompletionItemKind::VARIABLE,
-            ItemKind::Function { .. } => CompletionItemKind::FUNCTION,
-            ItemKind::Keyword(_) => CompletionItemKind::KEYWORD,
-            ItemKind::Module { .. } => CompletionItemKind::MODULE,
+            Self::Variable => CompletionItemKind::VARIABLE,
+            Self::Function { .. } => CompletionItemKind::FUNCTION,
+            Self::Keyword(_) => CompletionItemKind::KEYWORD,
+            Self::Module { .. } => CompletionItemKind::MODULE,
         }
     }
 }

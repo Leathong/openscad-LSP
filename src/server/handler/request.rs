@@ -601,7 +601,7 @@ impl Server {
             code.as_bytes(),
             &mut formatted_code,
             self.args.indent.clone(),
-            self.fmt_query.as_ref().map(|s| s.as_str()),
+            self.fmt_query.as_deref(),
         ) {
             internal_err(format!("topiary: {e}"));
             return;
