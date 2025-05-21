@@ -6,7 +6,7 @@ use std::{
     rc::Rc,
 };
 
-use lsp_server::{RequestId, Response, ResponseError};
+use lsp_server::{ErrorCode, RequestId, Response, ResponseError};
 use lsp_types::{
     CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
     DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
@@ -588,7 +588,7 @@ impl Server {
                 id: id.clone(),
                 result: None,
                 error: Some(ResponseError {
-                    code: -32603,
+                    code: ErrorCode::InternalError as i32,
                     message: err,
                     data: None,
                 }),
