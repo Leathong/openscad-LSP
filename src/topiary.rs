@@ -27,7 +27,6 @@ pub fn format(
     query_str: Option<&str>,
 ) -> Result<(), FormatError> {
     let query_str = query_str.unwrap_or(OPENSCAD_QUERY);
-    log_to_console!("Indent: '{:?}'", &indent);
     let grammar = tree_sitter_openscad::LANGUAGE.into();
     let query = TopiaryQuery::new(&grammar, query_str).map_err(FormatError)?;
     let language = Language {
