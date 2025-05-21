@@ -24,9 +24,12 @@ pub fn format(
     mut input: impl Read,
     mut output: impl Write,
     indent: Option<String>,
+    query_str: Option<&str>,
 ) -> Result<(), FormatError> {
+    let query_str = query_str.unwrap_or(OPENSCAD_QUERY);
+    log_to_console!("Indent: '{:?}'", &indent);
     let grammar = tree_sitter_openscad::LANGUAGE.into();
-    let query = TopiaryQuery::new(&grammar, OPENSCAD_QUERY).map_err(FormatError)?;
+    let query = TopiaryQuery::new(&grammar, query_str).map_err(FormatError)?;
     let language = Language {
         name: "openscad".to_owned(),
         query,

@@ -3,8 +3,8 @@
 openscad-LSP
 ========================
 
-A [LSP](https://microsoft.github.io/language-server-protocol/) (Language Server Protocol) 
-server for [OpenSCAD](https://openscad.org). 
+A [LSP](https://microsoft.github.io/language-server-protocol/) (Language Server Protocol)
+server for [OpenSCAD](https://openscad.org).
 
 inspired by [dzhu/openscad-language-server](https://github.com/dzhu/openscad-language-server)
 
@@ -61,35 +61,35 @@ Usage
 The server communicates over TCP socket (127.0.0.1:3245).
 
 ```
-USAGE:
-    openscad-lsp [OPTIONS]
+A language(LSP) server for OpenSCAD
 
-OPTIONS:
-        --builtin <BUILTIN>        external builtin functions file path, if set, the built-in
-                                   builtin functions file will not be used [default: ]
-        --fmt-exe <FMT_EXE>        clang format executable file path [default: clang-format]
-        --fmt-style <FMT_STYLE>    LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file
-                                   [default: Microsoft]
-    -h, --help                     Print help information
-        --ignore-default           exclude default params in auto-completion
-        --ip <IP>                  [default: 127.0.0.1]
-    -p, --port <PORT>              [default: 3245]
-        --stdio                    use stdio instead of tcp
-    -V, --version                  Print version information
+Usage: openscad-lsp [OPTIONS]
+
+Options:
+  -p, --port <PORT>              [default: 3245]
+      --ip <IP>                  [default: 127.0.0.1]
+      --builtin <BUILTIN>        external builtin functions file path, if set, the built-in builtin functions file will not be used [default: ]
+      --stdio                    use stdio instead of tcp
+      --ignore-default           exclude default params in auto-completion
+      --depth <DEPTH>            search depth [default: 3]
+      --indent <INDENT>          The indentation string used for that particular language. Defaults to "  " if not provided. Any string can be provided, but in most instances will be some whitespace: "  ", "    ", or "\t"
+      --query-file <QUERY_FILE>  The query file used for topiary formatting
+  -h, --help                     Print help
+  -V, --version                  Print version
 ```
 
-To change the config during running, you can send notification `workspace/didChangeConfiguration` 
+To change the config at runtime, you can send notification `workspace/didChangeConfiguration`
 
-```js
+```jsonc
 // example
 {
-    "settings": {
-        "openscad": {
-            "search_paths": "/libs",
-            "fmt_exe": "/usr/bin/clang-format",
-            "fmt_style": "file",
-            "default_param": true
-        }
+  "settings": {
+    "openscad": {
+      "search_paths": "/libs",
+      "indent": "    ",
+      "query_file": "path/to/my/openscad.scm",
+      "default_param": true
     }
+  }
 }
 ```

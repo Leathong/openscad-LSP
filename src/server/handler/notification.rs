@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::PathBuf};
 
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
@@ -88,6 +88,8 @@ impl Server {
         pub(crate) struct Openscad {
             search_paths: Option<String>,
             default_param: Option<bool>,
+            indent: Option<String>,
+            query_file: Option<PathBuf>,
         }
 
         #[derive(Deserialize)]
@@ -119,6 +121,14 @@ impl Server {
 
             if let Some(default_param) = settings.openscad.default_param {
                 self.args.ignore_default = !default_param;
+            }
+
+            if self.args.indent.is_none() {
+                self.args.indent = settings.openscad.indent;
+            }
+
+            if self.args.query_file.is_none() {
+                self.fmt_query = Self::get_fmt_query(settings.openscad.query_file.clone());
             }
         }
     }

@@ -205,6 +205,8 @@
 (var_declaration . (assignment . (identifier) . "=" @append_input_softline))
 
 (assignments) @append_space
+
+; NOTE uncomment for OpenSCAD 2022 and later
 ; OS2021 does not support trailing commas in assignments
 ; https://github.com/Leathong/openscad-LSP/issues/51#issuecomment-2891821939
 ; (assignments
@@ -219,6 +221,7 @@
 ;   .
 ;   (#multi_line_only!)
 ; )
+
 (assignments
   .
   "(" @append_empty_softline @append_indent_start
@@ -235,6 +238,8 @@
   ")" @prepend_indent_end @prepend_empty_softline @prepend_antispace
   .
 )
+
+; NOTE uncomment for OpenSCAD 2022 and later
 ; OS2021 does not support trailing commas in arguments
 ; (arguments
 ;   (#delimiter! ",")

@@ -8,7 +8,7 @@ mod topiary;
 use clap::Parser;
 use lsp_server::Connection;
 use server::*;
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 
 #[derive(Parser)]
 #[clap(name = "OpenSCAD-LSP")]
@@ -37,6 +37,10 @@ pub(crate) struct Cli {
     /// some whitespace: "  ", "    ", or "\t".
     #[clap(long)]
     indent: Option<String>,
+
+    /// The query file used for topiary formatting
+    #[clap(long)]
+    query_file: Option<PathBuf>,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
