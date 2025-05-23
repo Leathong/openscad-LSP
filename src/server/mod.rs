@@ -31,6 +31,7 @@ pub(crate) struct Server {
     pub args: Cli,
 
     builtin_url: Url,
+    fmt_query: Option<String>,
 }
 
 pub(crate) enum LoopAction {
@@ -40,9 +41,24 @@ pub(crate) enum LoopAction {
 
 // Miscellaneous high-level logic.
 impl Server {
+    pub(crate) fn get_fmt_query(query_file: Option<PathBuf>) -> Option<String> {
+        query_file
+            .clone()
+            .map(|f| {
+                read_to_string(&f).inspect_err(|e| {
+                    err_to_console!(
+                        "failed to find query file: {}, {e:?}. Using default query",
+                        f.display()
+                    );
+                })
+            })
+            .transpose()
+            .unwrap_or_default()
+    }
     pub(crate) fn new(connection: Connection, args: Cli) -> Self {
         let builtin_path = PathBuf::from(&args.builtin);
 
+        let fmt_query = Self::get_fmt_query(args.query_file.clone());
         let mut args = args;
 
         let mut code = BUILTINS_SCAD.to_owned();
@@ -67,6 +83,7 @@ impl Server {
             codes: Default::default(),
             args,
             builtin_url: url.to_owned(),
+            fmt_query,
         };
         let rc = instance.insert_code(url, code);
 
@@ -143,7 +160,7 @@ impl Server {
                     return None;
                 }
 
-                let mut path = format!("file://{}", p);
+                let mut path = format!("file://{p}");
                 if !path.ends_with('/') {
                     path.push('/');
                 }

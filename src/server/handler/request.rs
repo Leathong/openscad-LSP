@@ -1,8 +1,6 @@
 use std::{
     cell::{Ref, RefCell},
     collections::HashMap,
-    io::{Read, Write},
-    process::{Command, Stdio},
     rc::Rc,
 };
 
@@ -21,6 +19,7 @@ use tree_sitter_traversal2::{traverse, Order};
 use crate::{
     response_item::{Item, ItemKind},
     server::{parse_code::ParsedCode, Server},
+    topiary,
     utils::*,
 };
 
@@ -209,7 +208,7 @@ impl Server {
                 .is_some_and(|node| node.kind() == "assignment");
             let is_assignment_in_subscope = is_assignment && node != ident_initial_node;
             if is_assignment_in_subscope {
-                // Unwrap is ok because an identifier node whould always have a parent scope.
+                // Unwrap is ok because an identifier node would always have a parent scope.
                 let scope = find_node_scope(node).unwrap();
                 // Consume iterator until it reaches the parent scope
                 while node_iter.next().is_some_and(|next| scope != next) {}
@@ -597,50 +596,27 @@ impl Server {
 
         let code = &file.borrow().code;
 
-        let path = uri.to_file_path().unwrap();
-        let dir = path.parent().unwrap();
-
-        let child = match Command::new(&self.args.fmt_exe)
-            .arg("format")
-            .arg("-lopenscad")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .current_dir(dir)
-            .spawn()
-        {
-            Ok(res) => res,
-            Err(err) => {
-                internal_err(format!("{}: {}", &self.args.fmt_exe, &err.to_string()));
-                return;
-            }
-        };
-
-        if let Err(why) = child.stdin.unwrap().write_all(code.as_bytes()) {
-            internal_err(why.to_string());
+        let mut formatted_code: Vec<u8> = Vec::new();
+        if let Err(e) = topiary::format(
+            code.as_bytes(),
+            &mut formatted_code,
+            self.args.indent.clone(),
+            self.fmt_query.as_deref(),
+        ) {
+            internal_err(format!("topiary: {e}"));
             return;
         }
+        let formatted_code = String::from_utf8(formatted_code).unwrap();
+        let result = serde_json::to_value([TextEdit {
+            range: file.borrow().tree.root_node().lsp_range(),
+            new_text: formatted_code,
+        }])
+        .unwrap();
 
-        let mut code = String::new();
-
-        match child.stdout.unwrap().read_to_string(&mut code) {
-            Err(why) => {
-                internal_err(why.to_string());
-            }
-            Ok(size) => {
-                if size > 0 {
-                    let result = [TextEdit {
-                        range: file.borrow().tree.root_node().lsp_range(),
-                        new_text: code.to_owned(),
-                    }];
-
-                    let result = serde_json::to_value(result).unwrap();
-                    self.respond(Response {
-                        id,
-                        result: Some(result),
-                        error: None,
-                    });
-                }
-            }
-        }
+        self.respond(Response {
+            id,
+            result: Some(result),
+            error: None,
+        });
     }
 }

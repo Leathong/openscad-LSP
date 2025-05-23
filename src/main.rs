@@ -3,11 +3,12 @@
 
 #[macro_use]
 mod server;
+mod topiary;
 
 use clap::Parser;
 use lsp_server::Connection;
 use server::*;
-use std::error::Error;
+use std::{error::Error, path::PathBuf};
 
 #[derive(Parser)]
 #[clap(name = "OpenSCAD-LSP")]
@@ -18,12 +19,6 @@ pub(crate) struct Cli {
 
     #[clap(long, default_value_t = String::from("127.0.0.1"))]
     ip: String,
-
-    #[clap(long, default_value_t = String::from("Microsoft"), help = "LLVM, GNU, Google, Chromium, Microsoft, Mozilla, WebKit, file")]
-    fmt_style: String,
-
-    #[clap(long, default_value_t = String::from("topiary"), help = "clang format executable file path")]
-    fmt_exe: String,
 
     #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
     builtin: String,
@@ -36,6 +31,16 @@ pub(crate) struct Cli {
 
     #[clap(long, default_value_t = 3, help = "search depth")]
     depth: i32,
+
+    /// The indentation string used for that particular language. Defaults to "  "
+    /// if not provided. Any string can be provided, but in most instances will be
+    /// some whitespace: "  ", "    ", or "\t".
+    #[clap(long)]
+    indent: Option<String>,
+
+    /// The query file used for topiary formatting
+    #[clap(long)]
+    query_file: Option<PathBuf>,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {

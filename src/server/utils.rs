@@ -54,14 +54,14 @@ pub(crate) fn find_node_scope(node: Node) -> Option<Node> {
     None
 }
 
-pub(crate) fn to_position(p: Point) -> Position {
+pub(crate) const fn to_position(p: Point) -> Position {
     Position {
         line: p.row as u32,
         character: p.column as u32,
     }
 }
 
-pub(crate) fn to_point(p: Position) -> Point {
+pub(crate) const fn to_point(p: Position) -> Point {
     Point {
         row: p.line as usize,
         column: p.character as usize,

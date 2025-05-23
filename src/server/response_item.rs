@@ -21,7 +21,7 @@ pub(crate) struct Param {
 }
 
 impl Param {
-    pub(crate) fn parse_declaration(code: &str, node: &Node) -> Vec<Param> {
+    pub(crate) fn parse_declaration(code: &str, node: &Node) -> Vec<Self> {
         node.children(&mut node.walk())
             .filter_map(|child| {
                 let kind = child.kind();
@@ -32,13 +32,13 @@ impl Param {
                 let child = child.child(0).unwrap();
                 let kind = child.kind();
                 match kind {
-                    "identifier" => Some(Param {
+                    "identifier" => Some(Self {
                         name: node_text(code, &child).to_owned(),
                         default: None,
                         range: child.lsp_range(),
                     }),
                     "assignment" => child.child_by_field_name("name").and_then(|left| {
-                        child.child_by_field_name("value").map(|right| Param {
+                        child.child_by_field_name("value").map(|right| Self {
                             name: node_text(code, &left).to_owned(),
                             default: Some(node_text(code, &right).to_owned()),
                             range: left.lsp_range(),
@@ -51,7 +51,7 @@ impl Param {
             .collect()
     }
 
-    pub(crate) fn make_snippet(params: &[Param], ignore_name: bool, args: &Cli) -> String {
+    pub(crate) fn make_snippet(params: &[Self], ignore_name: bool, args: &Cli) -> String {
         params
             .iter()
             .filter(|p| p.default.is_none() || !args.ignore_default)
@@ -88,12 +88,12 @@ pub(crate) enum ItemKind {
 }
 
 impl ItemKind {
-    pub(crate) fn completion_kind(&self) -> CompletionItemKind {
+    pub(crate) const fn completion_kind(&self) -> CompletionItemKind {
         match self {
-            ItemKind::Variable => CompletionItemKind::VARIABLE,
-            ItemKind::Function { .. } => CompletionItemKind::FUNCTION,
-            ItemKind::Keyword(_) => CompletionItemKind::KEYWORD,
-            ItemKind::Module { .. } => CompletionItemKind::MODULE,
+            Self::Variable => CompletionItemKind::VARIABLE,
+            Self::Function { .. } => CompletionItemKind::FUNCTION,
+            Self::Keyword(_) => CompletionItemKind::KEYWORD,
+            Self::Module { .. } => CompletionItemKind::MODULE,
         }
     }
 }
@@ -166,15 +166,15 @@ impl Item {
             None => self.make_label(),
         };
         label = match self.kind {
-            ItemKind::Function { .. } => format!("```scad\nfunction {}\n```", label),
-            ItemKind::Module { .. } => format!("```scad\nmodule {}\n```", label),
-            _ => format!("```scad\n{}\n```", label),
+            ItemKind::Function { .. } => format!("```scad\nfunction {label}\n```"),
+            ItemKind::Module { .. } => format!("```scad\nmodule {label}\n```"),
+            _ => format!("```scad\n{label}\n```"),
         };
         if let Some(doc) = &self.doc {
             if self.is_builtin {
-                label = format!("{}\n---\n\n{}\n", label, doc);
+                label = format!("{label}\n---\n\n{doc}\n");
             } else {
-                label = format!("{}\n---\n\n<pre>\n{}\n</pre>\n", label, doc);
+                label = format!("{label}\n---\n\n<pre>\n{doc}\n</pre>\n");
             }
         }
         // print!("{}", &label);
@@ -287,7 +287,7 @@ impl Item {
         }
     }
 
-    pub(crate) fn get_symbol_kind(&self) -> SymbolKind {
+    pub(crate) const fn get_symbol_kind(&self) -> SymbolKind {
         match self.kind {
             ItemKind::Function { .. } => SymbolKind::FUNCTION,
             ItemKind::Module { .. } => SymbolKind::MODULE,
