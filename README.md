@@ -1,4 +1,4 @@
-> **NOTICE: Because clang-format produces poor formatting results for OpenSCAD, we have completely removed support for clang-format and switched to the new formatter [topiary](https://github.com/tweag/topiary), please download topjary from [release](https://github.com/Leathong/openscad-LSP/releases) page and install it to your path, or pass `--fmt-exe` to openscad-lsp.**
+> **NOTICE: Because clang-format produces poor formatting results for OpenSCAD, we have completely removed support for clang-format and switched to the new formatter [topiary](https://github.com/tweag/topiary)**
 
 openscad-LSP
 ========================
@@ -21,7 +21,7 @@ Features
 -   code snippets
 -   function/module signatures on hover
 -   document symbols
--   formatter, utilizing topiary, you need install it yourself, it is not built-in.
+-   formatter, utilizing topiary.
 -   variable / module renaming
 -   hover and suggestion documentation, read from comments before the function/module.</br>
 
