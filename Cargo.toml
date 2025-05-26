@@ -26,3 +26,8 @@ regex = "1.11.1"
 directories = "6.0.0"
 tree-sitter-traversal2 = "0.2.1"
 topiary-core = { git = "https://github.com/tweag/topiary", version = "0.6.0" }
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
