@@ -20,7 +20,7 @@ pub(crate) struct Cli {
     #[clap(long, default_value_t = String::from("127.0.0.1"))]
     ip: String,
 
-    #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if set, the built-in builtin functions file will not be used")]
+    #[clap(long, default_value_t = String::from(""), help = "external builtin functions file path, if not set, the built-in file will be used")]
     builtin: String,
 
     #[clap(long, help = "use stdio instead of tcp")]
@@ -32,14 +32,14 @@ pub(crate) struct Cli {
     #[clap(long, default_value_t = 3, help = "search depth")]
     depth: i32,
 
-    /// The indentation string used for that particular language. Defaults to "  "
-    /// if not provided. Any string can be provided, but in most instances will be
-    /// some whitespace: "  ", "    ", or "\t".
-    #[clap(long)]
-    indent: Option<String>,
+    #[clap(
+        long,
+        default_value_t = String::from("  "),
+        help = r#"The indentation string used for that particular language. Defaults to "  " if not provided. Any string can be provided, but in most instances will be some whitespace: "  ", "    ", or "\t"."#
+    )]
+    indent: String,
 
-    /// The query file used for topiary formatting
-    #[clap(long)]
+    #[clap(long, help = "The query file used for topiary formatting")]
     query_file: Option<PathBuf>,
 }
 

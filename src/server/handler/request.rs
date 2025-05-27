@@ -600,7 +600,7 @@ impl Server {
         if let Err(e) = topiary::format(
             code.as_bytes(),
             &mut formatted_code,
-            self.args.indent.clone(),
+            Some(self.args.indent.clone()),
             self.fmt_query.as_deref(),
         ) {
             internal_err(format!("topiary: {e}"));

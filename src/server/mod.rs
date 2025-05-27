@@ -42,18 +42,17 @@ pub(crate) enum LoopAction {
 // Miscellaneous high-level logic.
 impl Server {
     pub(crate) fn get_fmt_query(query_file: Option<PathBuf>) -> Option<String> {
-        query_file
-            .clone()
-            .map(|f| {
-                read_to_string(&f).inspect_err(|e| {
-                    err_to_console!(
-                        "failed to find query file: {}, {e:?}. Using default query",
-                        f.display()
-                    );
-                })
-            })
-            .transpose()
-            .unwrap_or_default()
+        let query_file = query_file?;
+        if query_file.as_os_str().is_empty() {
+            return None;
+        }
+        match read_to_string(query_file) {
+            Err(err) => {
+                err_to_console!("failed to read file {:?}.", err);
+                None
+            }
+            Ok(query) => Some(query),
+        }
     }
     pub(crate) fn new(connection: Connection, args: Cli) -> Self {
         let builtin_path = PathBuf::from(&args.builtin);

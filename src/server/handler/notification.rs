@@ -123,13 +123,17 @@ impl Server {
                 self.args.ignore_default = !default_param;
             }
 
-            if self.args.indent.is_none() {
-                self.args.indent = settings.openscad.indent;
-            }
-
-            if self.args.query_file.is_none() {
-                self.fmt_query = Self::get_fmt_query(settings.openscad.query_file.clone());
-            }
+            self.args.indent = match settings.openscad.indent {
+                Some(indent) => {
+                    if indent.is_empty() {
+                        "  ".to_owned()
+                    } else {
+                        indent
+                    }
+                }
+                None => "  ".to_owned(),
+            };
+            self.fmt_query = Self::get_fmt_query(settings.openscad.query_file);
         }
     }
 
