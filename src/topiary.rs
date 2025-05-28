@@ -17,7 +17,7 @@ impl Display for FormatError {
     }
 }
 
-const OPENSCAD_QUERY: &str = include_str!("../openscad.scm");
+const OPENSCAD_QUERY: &str = include_str!("./openscad.scm");
 
 /// Format an Openscad file being read from `input`, writing the result to `output`.
 pub fn format(
