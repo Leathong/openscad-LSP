@@ -12,17 +12,17 @@ include = ["/src", "README.md"]
 repository = "https://github.com/Leathong/openscad-LSP"
 
 [dependencies]
-lsp-server = "0.7.8"
-lsp-types = "0.94.1"
+lsp-server = "0.7.9"
+lsp-types = "0.97.0"
 serde = "1.0.219"
-serde_json = "1.0.140"
-tree-sitter = "0.25.5"
+serde_json = "1.0.143"
+tree-sitter = "0.25.9"
 tree-sitter-openscad-ng = "0.6.1"
 linked-hash-map = "0.5.6"
 shellexpand = "3.1.1"
-clap = {features = ["derive"], version = "4.5.39"}
+clap = {features = ["derive"], version = "4.5.47"}
 lazy_static = "1.5.0"
-regex = "1.11.1"
+regex = "1.11.2"
 directories = "6.0.0"
 tree-sitter-traversal2 = "0.2.1"
 topiary-core = "0.6.1"
