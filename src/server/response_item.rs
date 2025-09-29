@@ -212,11 +212,11 @@ impl Item {
         };
 
         let extract_name = |node: &Node, name| {
-            let res = node
-                .child_by_field_name(name)
-                .map(|child| node_text(code, &child).to_owned());
+            
             // log_to_console!("{} {:?}", name, res);
-            res
+            node
+                .child_by_field_name(name)
+                .map(|child| node_text(code, &child).to_owned())
         };
 
         let kind = node.kind();
