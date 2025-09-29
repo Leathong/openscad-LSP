@@ -212,10 +212,8 @@ impl Item {
         };
 
         let extract_name = |node: &Node, name| {
-            
             // log_to_console!("{} {:?}", name, res);
-            node
-                .child_by_field_name(name)
+            node.child_by_field_name(name)
                 .map(|child| node_text(code, &child).to_owned())
         };
 

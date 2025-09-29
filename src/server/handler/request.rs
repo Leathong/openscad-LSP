@@ -14,11 +14,11 @@ use lsp_types::{
 };
 
 use tree_sitter::{Node, Point};
-use tree_sitter_traversal2::{traverse, Order};
+use tree_sitter_traversal2::{Order, traverse};
 
 use crate::{
     response_item::{Item, ItemKind},
-    server::{parse_code::ParsedCode, Server},
+    server::{Server, parse_code::ParsedCode},
     topiary,
     utils::*,
 };

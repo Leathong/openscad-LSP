@@ -17,8 +17,8 @@ use lsp_types::{
     TextDocumentSyncKind, Url, WorkDoneProgressOptions,
 };
 
-use crate::parse_code::ParsedCode;
 use crate::Cli;
+use crate::parse_code::ParsedCode;
 
 const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtins"));
 const BUILTIN_PATH: &str = "/builtin";
@@ -65,7 +65,10 @@ impl Server {
         let mut external = false;
         match read_to_string(builtin_path) {
             Err(err) => {
-                err_to_console!("failed to read external file of builtin-function, {:?}. will use the content included in binary.", err);
+                err_to_console!(
+                    "failed to read external file of builtin-function, {:?}. will use the content included in binary.",
+                    err
+                );
                 args.builtin = BUILTIN_PATH.to_owned();
             }
             Ok(builtin_str) => {
