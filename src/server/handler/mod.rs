@@ -13,7 +13,7 @@ use lsp_types::{
 };
 use serde_json::json;
 
-use crate::{utils::*, Server};
+use crate::{Server, utils::*};
 
 use super::LoopAction;
 
