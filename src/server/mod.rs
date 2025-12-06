@@ -1,6 +1,7 @@
 #[macro_use]
 pub(crate) mod utils;
 pub(crate) mod code_helper;
+pub(crate) mod dep_graph;
 pub(crate) mod handler;
 pub(crate) mod parse_code;
 pub(crate) mod response_item;
@@ -19,6 +20,7 @@ use lsp_types::{
 
 use crate::Cli;
 use crate::parse_code::ParsedCode;
+use crate::server::dep_graph::DependencyGraph;
 
 const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/src/builtins"));
 const BUILTIN_PATH: &str = "/builtin";
@@ -32,6 +34,7 @@ pub(crate) struct Server {
 
     builtin_url: Url,
     fmt_query: Option<String>,
+    pub dep_graph: DependencyGraph,
 }
 
 pub(crate) enum LoopAction {
@@ -86,6 +89,7 @@ impl Server {
             args,
             builtin_url: url.to_owned(),
             fmt_query,
+            dep_graph: DependencyGraph::new(),
         };
         let rc = instance.insert_code(url, code);
 
@@ -208,6 +212,8 @@ impl Server {
                 prepare_provider: Some(true),
                 work_done_progress_options: WorkDoneProgressOptions::default(),
             })),
+            references_provider: Some(OneOf::Left(true)),
+            document_highlight_provider: Some(OneOf::Left(true)),
             ..Default::default()
         })?;
         self.connection.initialize(caps)?;
