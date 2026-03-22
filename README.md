@@ -18,6 +18,8 @@ Features
 -   builtin function/module documents
 -   code and path auto-completion
 -   jump to definition
+-   find all references
+-   document highlight (highlight all occurrences of a symbol)
 -   code snippets
 -   function/module signatures on hover
 -   document symbols

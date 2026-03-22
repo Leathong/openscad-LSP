@@ -1,16 +1,17 @@
 use std::error::Error;
 
-use lsp_server::{ExtractError, Message, Response};
+use lsp_server::{ExtractError, Message, RequestId, Response};
 use lsp_types::{
     notification::{
         DidChangeConfiguration, DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
         DidSaveTextDocument,
     },
     request::{
-        Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest,
-        PrepareRenameRequest, Rename,
+        Completion, DocumentHighlightRequest, DocumentSymbolRequest, Formatting, GotoDefinition,
+        HoverRequest, PrepareRenameRequest, References, Rename,
     },
 };
+use serde::Serialize;
 use serde_json::json;
 
 use crate::{Server, utils::*};
@@ -30,6 +31,15 @@ impl Server {
             .sender
             .send(Message::Response(resp))
             .unwrap()
+    }
+
+    /// Respond with an empty result (e.g., empty Vec for references/highlights).
+    pub(crate) fn respond_empty<T: Serialize + Default>(&self, id: RequestId) {
+        self.respond(Response {
+            id,
+            result: Some(serde_json::to_value(T::default()).unwrap()),
+            error: None,
+        });
     }
 
     pub(crate) fn notify(&self, notif: lsp_server::Notification) {
@@ -74,6 +84,8 @@ impl Server {
                 let req = proc_req!(req, Formatting, handle_formatting);
                 let req = proc_req!(req, PrepareRenameRequest, handle_prepare_rename);
                 let req = proc_req!(req, Rename, handle_rename);
+                let req = proc_req!(req, References, handle_references);
+                let req = proc_req!(req, DocumentHighlightRequest, handle_document_highlight);
                 err_to_console!("unknown request: {:?}", req);
             }
             Message::Response(resp) => {

@@ -1,22 +1,33 @@
-use std::{env, path::PathBuf};
+use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    PublishDiagnosticsParams,
+    PublishDiagnosticsParams, Url,
 };
 use serde::Deserialize;
 
-use crate::{server::Server, utils::*};
+use crate::{parse_code::ParsedCode, server::Server, utils::*};
 
 // Notification handlers.
 impl Server {
+    /// Update the dependency graph for a file after parsing.
+    fn update_dep_graph(&mut self, url: &Url, code: &Rc<RefCell<ParsedCode>>) {
+        let mut borrowed = code.borrow_mut();
+        borrowed.gen_top_level_items_if_needed();
+        if let Some(includes) = &borrowed.includes {
+            self.dep_graph.update_file(url, includes);
+        }
+    }
+
     pub(crate) fn handle_did_open_text_document(&mut self, params: DidOpenTextDocumentParams) {
         let DidOpenTextDocumentParams { text_document: doc } = params;
         if self.codes.contains_key(&doc.uri) {
             return;
         }
-        self.insert_code(doc.uri, doc.text);
+        let url = doc.uri.clone();
+        let code = self.insert_code(doc.uri, doc.text);
+        self.update_dep_graph(&url, &code);
     }
 
     pub(crate) fn handle_did_change_text_document(&mut self, params: DidChangeTextDocumentParams) {
@@ -25,8 +36,9 @@ impl Server {
             content_changes,
         } = params;
 
+        // Clone the Rc to avoid holding onto the mutable borrow of self.codes
         let pc = match self.codes.get_refresh(&text_document.uri) {
-            Some(x) => x,
+            Some(x) => x.clone(),
             None => {
                 err_to_console!("unknown document {}", text_document.uri);
                 return;
@@ -76,11 +88,13 @@ impl Server {
         self.notify(lsp_server::Notification::new(
             "textDocument/publishDiagnostics".into(),
             PublishDiagnosticsParams {
-                uri: text_document.uri,
+                uri: text_document.uri.clone(),
                 diagnostics: diags,
                 version: Some(text_document.version),
             },
         ));
+
+        self.update_dep_graph(&text_document.uri, &pc);
     }
 
     pub(crate) fn handle_did_change_config(&mut self, params: DidChangeConfigurationParams) {
@@ -139,5 +153,7 @@ impl Server {
 
     pub(crate) fn handle_did_save_text_document(&mut self, _params: DidSaveTextDocumentParams) {}
 
-    pub(crate) fn handle_did_close_text_document(&mut self, _params: DidCloseTextDocumentParams) {}
+    pub(crate) fn handle_did_close_text_document(&mut self, params: DidCloseTextDocumentParams) {
+        self.dep_graph.remove_file(&params.text_document.uri);
+    }
 }
