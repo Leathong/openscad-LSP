@@ -1,6 +1,6 @@
 use std::{cell::RefCell, fs::read_to_string, io, rc::Rc};
 
-use lsp_types::Url;
+use lsp_types::Uri;
 use tree_sitter::Node;
 
 use crate::{
@@ -12,24 +12,24 @@ use crate::{
 
 // Code-related helpers.
 impl Server {
-    pub(crate) fn get_code(&mut self, uri: &Url) -> Option<Rc<RefCell<ParsedCode>>> {
+    pub(crate) fn get_code(&mut self, uri: &Uri) -> Option<Rc<RefCell<ParsedCode>>> {
         match self.codes.get(uri) {
             Some(x) => Some(Rc::clone(x)),
             None => self.read_and_cache(uri.clone()).ok(),
         }
     }
 
-    pub(crate) fn insert_code(&mut self, url: Url, code: String) -> Rc<RefCell<ParsedCode>> {
+    pub(crate) fn insert_code(&mut self, uri: Uri, code: String) -> Rc<RefCell<ParsedCode>> {
         while self.codes.len() > 1000 {
             self.codes.pop_front();
         }
 
         let rc = Rc::new(RefCell::new(ParsedCode::new(
             code,
-            url.clone(),
+            uri.clone(),
             self.library_locations.clone(),
         )));
-        self.codes.insert(url, rc.clone());
+        self.codes.insert(uri, rc.clone());
         rc
     }
 
@@ -161,18 +161,18 @@ impl Server {
         result
     }
 
-    pub(crate) fn read_and_cache(&mut self, url: Url) -> io::Result<Rc<RefCell<ParsedCode>>> {
-        let text = read_to_string(url.to_file_path().unwrap())?;
+    pub(crate) fn read_and_cache(&mut self, uri: Uri) -> io::Result<Rc<RefCell<ParsedCode>>> {
+        let text = read_to_string(uri.to_file_path().unwrap())?;
 
-        match self.codes.entry(url.clone()) {
+        match self.codes.entry(uri.clone()) {
             linked_hash_map::Entry::Occupied(o) => {
                 if o.get().borrow().code != text {
-                    Ok(self.insert_code(url, text))
+                    Ok(self.insert_code(uri, text))
                 } else {
                     Ok(Rc::clone(o.get()))
                 }
             }
-            linked_hash_map::Entry::Vacant(_) => Ok(self.insert_code(url, text)),
+            linked_hash_map::Entry::Vacant(_) => Ok(self.insert_code(uri, text)),
         }
     }
 }

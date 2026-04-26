@@ -1,7 +1,7 @@
 use std::{cell::RefCell, path::PathBuf, rc::Rc};
 
 use lazy_static::lazy_static;
-use lsp_types::{TextDocumentContentChangeEvent, Url};
+use lsp_types::{TextDocumentContentChangeEvent, TextDocumentContentChangePartial, Uri};
 use tree_sitter::{InputEdit, Node, Point, Tree, TreeCursor};
 
 use crate::response_item::{Item, ItemKind};
@@ -27,17 +27,17 @@ pub(crate) struct ParsedCode {
     pub parser: tree_sitter::Parser,
     pub code: String,
     pub tree: Tree,
-    pub url: Url,
+    pub url: Uri,
     pub root_items: Option<Vec<Rc<RefCell<Item>>>>,
-    pub includes: Option<Vec<Url>>,
+    pub includes: Option<Vec<Uri>>,
     pub is_builtin: bool,
     pub external_builtin: bool,
     pub changed: bool,
-    pub libs: Rc<RefCell<Vec<Url>>>,
+    pub libs: Rc<RefCell<Vec<Uri>>>,
 }
 
 impl ParsedCode {
-    pub(crate) fn new(code: String, url: Url, libs: Rc<RefCell<Vec<Url>>>) -> Self {
+    pub(crate) fn new(code: String, url: Uri, libs: Rc<RefCell<Vec<Uri>>>) -> Self {
         let mut parser = tree_sitter::Parser::new();
         parser
             .set_language(&tree_sitter_openscad::LANGUAGE.into())
@@ -60,37 +60,42 @@ impl ParsedCode {
     pub(crate) fn edit(&mut self, events: &[TextDocumentContentChangeEvent]) {
         let mut old_tree = Some(&mut self.tree);
         for event in events {
-            if let Some(range) = event.range {
-                let start_ofs = find_offset(&self.code, range.start).unwrap();
-                let end_ofs = find_offset(&self.code, range.end).unwrap();
-                self.code.replace_range(start_ofs..end_ofs, &event.text);
+            match event {
+                TextDocumentContentChangeEvent::TextDocumentContentChangePartial(
+                    TextDocumentContentChangePartial { range, text, .. },
+                ) => {
+                    let start_ofs = find_offset(&self.code, range.start).unwrap();
+                    let end_ofs = find_offset(&self.code, range.end).unwrap();
+                    self.code.replace_range(start_ofs..end_ofs, &text);
 
-                let new_end_position = match event.text.rfind('\n') {
-                    Some(ind) => {
-                        let num_newlines = event.text.bytes().filter(|&c| c == b'\n').count();
-                        Point {
-                            row: range.start.line as usize + num_newlines,
-                            column: event.text.len() - ind,
+                    let new_end_position = match text.rfind('\n') {
+                        Some(ind) => {
+                            let num_newlines = text.bytes().filter(|&c| c == b'\n').count();
+                            Point {
+                                row: range.start.line as usize + num_newlines,
+                                column: text.len() - ind,
+                            }
                         }
-                    }
-                    None => Point {
-                        row: range.start.line as usize,
-                        column: range.start.character as usize + event.text.len(),
-                    },
-                };
+                        None => Point {
+                            row: range.start.line as usize,
+                            column: range.start.character as usize + text.len(),
+                        },
+                    };
 
-                old_tree.as_mut().unwrap().edit(&InputEdit {
-                    start_byte: start_ofs,
-                    old_end_byte: end_ofs,
-                    new_end_byte: start_ofs + event.text.len(),
-                    start_position: to_point(range.start),
-                    old_end_position: to_point(range.end),
-                    new_end_position,
-                });
-            } else {
-                old_tree = None;
-                self.code = event.text.clone();
-                break;
+                    old_tree.as_mut().unwrap().edit(&InputEdit {
+                        start_byte: start_ofs,
+                        old_end_byte: end_ofs,
+                        new_end_byte: start_ofs + text.len(),
+                        start_position: to_point(range.start),
+                        old_end_position: to_point(range.end),
+                        new_end_position,
+                    });
+                }
+                TextDocumentContentChangeEvent::TextDocumentContentChangeWholeDocument(event) => {
+                    old_tree = None;
+                    self.code = event.text.clone();
+                    break;
+                }
             }
         }
 
@@ -210,7 +215,7 @@ impl ParsedCode {
         self.includes = Some(inc);
     }
 
-    pub(crate) fn get_include_url(&self, incstat_node: &Node) -> Option<Url> {
+    pub(crate) fn get_include_url(&self, incstat_node: &Node) -> Option<Uri> {
         let mut res = None;
         let include_path = node_text(&self.code, &incstat_node.child(1).unwrap())
             .trim_start_matches(&['<', '\n'][..])
