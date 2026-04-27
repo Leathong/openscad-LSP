@@ -464,9 +464,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
+checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "js-sys"
@@ -578,7 +578,7 @@ dependencies = [
  "topiary-core",
  "tree-sitter",
  "tree-sitter-openscad-ng",
- "tree-sitter-traversal2",
+ "tree-sitter-rust",
 ]
 
 [[package]]
@@ -939,21 +939,22 @@ checksum = "009994f150cc0cd50ff54917d5bc8bffe8cad10ca10d81c34da2ec421ae61782"
 
 [[package]]
 name = "tree-sitter-openscad-ng"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0addc06c4e9c9349a3ae038c20aa8297bc4d48d9c1ce09e13f4e04a15d435945"
+checksum = "a9286371873e82cb888be0d9394dd3c6a6aaca66fa2fd31879baafb2e4008488"
 dependencies = [
  "cc",
  "tree-sitter-language",
 ]
 
 [[package]]
-name = "tree-sitter-traversal2"
-version = "0.2.1"
+name = "tree-sitter-rust"
+version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fba902d00ce3c8229bf933e0a5972609657d39c5cfc09d9b3431baa0f6e18c16"
+checksum = "439e577dbe07423ec2582ac62c7531120dbfccfa6e5f92406f93dd271a120e45"
 dependencies = [
- "tree-sitter",
+ "cc",
+ "tree-sitter-language",
 ]
 
 [[package]]
