@@ -533,9 +533,7 @@ mod tests {
             false
         }
 
-        fn node(&self) -> Self::Node {
-            
-        }
+        fn node(&self) -> Self::Node {}
     }
 
     #[test]
