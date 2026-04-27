@@ -369,6 +369,7 @@ impl<'a> Traverse<tree_sitter::TreeCursor<'a>> {
 /// Convenience method to traverse a tree-sitter [`Tree`] in an order according to `order`.
 ///
 /// [`Tree`]: tree_sitter::Tree
+#[cfg(test)]
 pub fn traverse_tree(
     tree: &tree_sitter::Tree,
     order: Order,
