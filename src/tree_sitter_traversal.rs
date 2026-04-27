@@ -74,7 +74,7 @@ pub trait Cursor {
     fn node(&self) -> Self::Node;
 }
 
-impl<'a, T> Cursor for &'a mut T
+impl<T> Cursor for &mut T
 where
     T: Cursor,
 {
@@ -374,7 +374,7 @@ pub fn traverse_tree(
     tree: &tree_sitter::Tree,
     order: Order,
 ) -> impl FusedIterator<Item = tree_sitter::Node<'_>> {
-    return traverse(tree.walk(), order);
+    traverse(tree.walk(), order)
 }
 
 /// Traverse an n-ary tree using `cursor`, returning the nodes of the tree through an iterator
@@ -451,9 +451,9 @@ function double(x: usize) -> usize {
         parser
             .set_language(&lang.into())
             .expect("Error loading Rust grammar");
-        return parser
+        parser
             .parse(code, None)
-            .expect("Error parsing provided code");
+            .expect("Error parsing provided code")
     }
 
     #[test]
@@ -522,19 +522,19 @@ mod tests {
         type Node = ();
 
         fn goto_first_child(&mut self) -> bool {
-            return false;
+            false
         }
 
         fn goto_parent(&mut self) -> bool {
-            return false;
+            false
         }
 
         fn goto_next_sibling(&mut self) -> bool {
-            return false;
+            false
         }
 
         fn node(&self) -> Self::Node {
-            ()
+            
         }
     }
 

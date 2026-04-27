@@ -142,9 +142,9 @@ impl ParsedCode {
                     let doc_str = node_text(&self.code, node);
                     let newdoc = self.extract_doc(doc_str, self.is_builtin);
 
-                    if last.doc.is_some() {
-                        last.doc.as_mut().unwrap().push_str("  \n");
-                        last.doc.as_mut().unwrap().push_str(&newdoc);
+                    if let Some(doc1) = last.doc.as_mut() {
+                        doc1.push_str("  \n");
+                        doc1.push_str(&newdoc);
                     } else {
                         let mut doc = "".to_owned();
                         doc.push_str("  \n");
