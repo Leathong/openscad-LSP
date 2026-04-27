@@ -9,7 +9,7 @@ use crate::Cli;
 
 struct BuiltinFlags {}
 impl BuiltinFlags {
-    const IS_OPREATOR: u16 = 1;
+    const IS_OPERATOR: u16 = 1;
     const IGNORE_PARAM_NAME: u16 = 1 << 1;
 }
 
@@ -149,7 +149,7 @@ impl Item {
             ItemKind::Module { params, flags } => {
                 let params =
                     Param::make_snippet(params, BuiltinFlags::IGNORE_PARAM_NAME & flags != 0, args);
-                if BuiltinFlags::IS_OPREATOR & flags != 0 {
+                if BuiltinFlags::IS_OPERATOR & flags != 0 {
                     format!("{}({}) $0", self.name, params)
                 } else {
                     format!("{}({});$0", self.name, params)
