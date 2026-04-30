@@ -66,7 +66,7 @@ impl ParsedCode {
                 ) => {
                     let start_ofs = find_offset(&self.code, range.start).unwrap();
                     let end_ofs = find_offset(&self.code, range.end).unwrap();
-                    self.code.replace_range(start_ofs..end_ofs, &text);
+                    self.code.replace_range(start_ofs..end_ofs, text);
 
                     let new_end_position = match text.rfind('\n') {
                         Some(ind) => {
@@ -147,9 +147,9 @@ impl ParsedCode {
                     let doc_str = node_text(&self.code, node);
                     let newdoc = self.extract_doc(doc_str, self.is_builtin);
 
-                    if last.doc.is_some() {
-                        last.doc.as_mut().unwrap().push_str("  \n");
-                        last.doc.as_mut().unwrap().push_str(&newdoc);
+                    if let Some(doc) = &mut last.doc {
+                        doc.push_str("  \n");
+                        doc.push_str(&newdoc);
                     } else {
                         let mut doc = "".to_owned();
                         doc.push_str("  \n");
