@@ -2,14 +2,10 @@ use std::error::Error;
 
 use lsp_server::{ExtractError, Message, Response};
 use lsp_types::{
-    notification::{
-        DidChangeConfiguration, DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
-        DidSaveTextDocument,
-    },
-    request::{
-        Completion, DocumentSymbolRequest, Formatting, GotoDefinition, HoverRequest,
-        PrepareRenameRequest, Rename,
-    },
+    CompletionRequest, DefinitionRequest, DidChangeConfigurationNotification,
+    DidChangeTextDocumentNotification, DidCloseTextDocumentNotification,
+    DidOpenTextDocumentNotification, DidSaveTextDocumentNotification, DocumentFormattingRequest,
+    DocumentSymbolRequest, HoverRequest, PrepareRenameRequest, RenameRequest,
 };
 use serde_json::json;
 
@@ -68,12 +64,12 @@ impl Server {
                 }
 
                 let req = proc_req!(req, HoverRequest, handle_hover);
-                let req = proc_req!(req, Completion, handle_completion);
-                let req = proc_req!(req, GotoDefinition, handle_definition);
+                let req = proc_req!(req, CompletionRequest, handle_completion);
+                let req = proc_req!(req, DefinitionRequest, handle_definition);
                 let req = proc_req!(req, DocumentSymbolRequest, handle_document_symbols);
-                let req = proc_req!(req, Formatting, handle_formatting);
+                let req = proc_req!(req, DocumentFormattingRequest, handle_formatting);
                 let req = proc_req!(req, PrepareRenameRequest, handle_prepare_rename);
-                let req = proc_req!(req, Rename, handle_rename);
+                let req = proc_req!(req, RenameRequest, handle_rename);
                 err_to_console!("unknown request: {:?}", req);
             }
             Message::Response(resp) => {
@@ -98,11 +94,31 @@ impl Server {
                     };
                 }
 
-                let noti = proc!(noti, DidOpenTextDocument, handle_did_open_text_document);
-                let noti = proc!(noti, DidChangeTextDocument, handle_did_change_text_document);
-                let noti = proc!(noti, DidSaveTextDocument, handle_did_save_text_document);
-                let noti = proc!(noti, DidCloseTextDocument, handle_did_close_text_document);
-                let noti = proc!(noti, DidChangeConfiguration, handle_did_change_config);
+                let noti = proc!(
+                    noti,
+                    DidOpenTextDocumentNotification,
+                    handle_did_open_text_document
+                );
+                let noti = proc!(
+                    noti,
+                    DidChangeTextDocumentNotification,
+                    handle_did_change_text_document
+                );
+                let noti = proc!(
+                    noti,
+                    DidSaveTextDocumentNotification,
+                    handle_did_save_text_document
+                );
+                let noti = proc!(
+                    noti,
+                    DidCloseTextDocumentNotification,
+                    handle_did_close_text_document
+                );
+                let noti = proc!(
+                    noti,
+                    DidChangeConfigurationNotification,
+                    handle_did_change_config
+                );
 
                 err_to_console!("unknown notification: {:?}", noti);
             }

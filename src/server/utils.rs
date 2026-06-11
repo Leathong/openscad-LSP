@@ -107,18 +107,18 @@ pub(crate) fn error_nodes(mut cursor: TreeCursor) -> Vec<Node> {
 
 pub(crate) fn cast_request<R>(req: Request) -> Result<(RequestId, R::Params), ExtractError<Request>>
 where
-    R: lsp_types::request::Request,
+    R: lsp_types::Request,
 {
-    req.extract(R::METHOD)
+    req.extract(R::METHOD.as_str())
 }
 
 pub(crate) fn cast_notification<N>(
     notif: lsp_server::Notification,
 ) -> Result<N::Params, ExtractError<lsp_server::Notification>>
 where
-    N: lsp_types::notification::Notification,
+    N: lsp_types::Notification,
 {
-    notif.extract(N::METHOD)
+    notif.extract(N::METHOD.as_str())
 }
 
 pub(crate) trait NodeExt {

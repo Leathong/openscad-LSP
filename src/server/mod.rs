@@ -13,8 +13,8 @@ use std::{cell::RefCell, env, path::PathBuf, rc::Rc};
 use linked_hash_map::LinkedHashMap;
 use lsp_server::Connection;
 use lsp_types::{
-    HoverProviderCapability, OneOf, RenameOptions, ServerCapabilities, TextDocumentSyncCapability,
-    TextDocumentSyncKind, Url, WorkDoneProgressOptions,
+    CompletionOptions, RenameOptions, ServerCapabilities, TextDocumentSyncKind, Uri,
+    WorkDoneProgressOptions,
 };
 
 use crate::Cli;
@@ -24,13 +24,13 @@ const BUILTINS_SCAD: &str = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/s
 const BUILTIN_PATH: &str = "/builtin";
 
 pub(crate) struct Server {
-    pub library_locations: Rc<RefCell<Vec<Url>>>,
+    pub library_locations: Rc<RefCell<Vec<Uri>>>,
 
     pub connection: Connection,
-    pub codes: LinkedHashMap<Url, Rc<RefCell<ParsedCode>>>,
+    pub codes: LinkedHashMap<Uri, Rc<RefCell<ParsedCode>>>,
     pub args: Cli,
 
-    builtin_url: Url,
+    builtin_url: Uri,
     fmt_query: Option<String>,
 }
 
@@ -77,7 +77,7 @@ impl Server {
             }
         }
 
-        let url = Url::parse(&format!("file://{}", &args.builtin)).unwrap();
+        let url = Uri::parse(&format!("file://{}", &args.builtin)).unwrap();
 
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(vec![])),
@@ -154,7 +154,7 @@ impl Server {
     }
 
     pub(crate) fn extend_libs(&mut self, userlibs: Vec<String>) {
-        let ret: Vec<Url> = userlibs
+        let ret: Vec<Uri> = userlibs
             .into_iter()
             .map(|lib| shellexpand::tilde(&lib).to_string())
             .filter_map(|p| {
@@ -167,7 +167,7 @@ impl Server {
                     path.push('/');
                 }
 
-                if let Ok(uri) = Url::parse(&path) {
+                if let Ok(uri) = Uri::parse(&path) {
                     if let Ok(path) = uri.to_file_path() {
                         if path.exists() {
                             return Some(uri);
@@ -196,18 +196,19 @@ impl Server {
 
     pub(crate) fn main_loop(&mut self) -> Result<(), Box<dyn Error + Sync + Send>> {
         let caps = serde_json::to_value(ServerCapabilities {
-            text_document_sync: Some(TextDocumentSyncCapability::Kind(
-                TextDocumentSyncKind::INCREMENTAL,
-            )),
-            completion_provider: Some(Default::default()),
-            definition_provider: Some(OneOf::Left(true)),
-            hover_provider: Some(HoverProviderCapability::Simple(true)),
-            document_symbol_provider: Some(OneOf::Left(true)),
-            document_formatting_provider: Some(OneOf::Left(true)),
-            rename_provider: Some(OneOf::Right(RenameOptions {
-                prepare_provider: Some(true),
-                work_done_progress_options: WorkDoneProgressOptions::default(),
-            })),
+            text_document_sync: Some(TextDocumentSyncKind::Incremental.into()),
+            completion_provider: Some(CompletionOptions::default()),
+            definition_provider: Some(true.into()),
+            hover_provider: Some(true.into()),
+            document_symbol_provider: Some(true.into()),
+            document_formatting_provider: Some(true.into()),
+            rename_provider: Some(
+                RenameOptions {
+                    prepare_provider: Some(true),
+                    work_done_progress_options: WorkDoneProgressOptions::default(),
+                }
+                .into(),
+            ),
             ..Default::default()
         })?;
         self.connection.initialize(caps)?;

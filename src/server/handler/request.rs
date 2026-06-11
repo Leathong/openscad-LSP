@@ -6,11 +6,11 @@ use std::{
 
 use lsp_server::{ErrorCode, RequestId, Response, ResponseError};
 use lsp_types::{
-    CompletionItem, CompletionItemKind, CompletionList, CompletionParams, CompletionResponse,
-    DocumentFormattingParams, DocumentSymbolParams, DocumentSymbolResponse, Documentation,
-    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
-    InsertTextFormat, InsertTextMode, Location, MarkupContent, Range, RenameParams,
-    SymbolInformation, TextDocumentPositionParams, TextEdit, WorkspaceEdit,
+    BaseSymbolInformation, CompletionItem, CompletionItemKind, CompletionList, CompletionParams,
+    CompletionResponse, Contents, DefinitionParams, DefinitionResponse, DocumentFormattingParams,
+    DocumentSymbolParams, DocumentSymbolResponse, Documentation, Hover, HoverParams,
+    InsertTextFormat, InsertTextMode, Location, MarkupContent, PrepareRenameParams, Range,
+    RenameParams, SymbolInformation, TextEdit, WorkspaceEdit,
 };
 
 use crate::tree_sitter_traversal::{Order, traverse};
@@ -31,12 +31,8 @@ fn get_node_at_point<'a>(parsed_code: &'a Ref<'_, ParsedCode>, point: Point) -> 
 
 // Request handlers.
 impl Server {
-    pub(crate) fn handle_prepare_rename(
-        &mut self,
-        id: RequestId,
-        params: TextDocumentPositionParams,
-    ) {
-        let uri = params.text_document.uri;
+    pub(crate) fn handle_prepare_rename(&mut self, id: RequestId, params: PrepareRenameParams) {
+        let uri = params.text_document_position_params.text_document.uri;
 
         let file = match self.get_code(&uri) {
             Some(code) => code,
@@ -45,7 +41,10 @@ impl Server {
         file.borrow_mut().gen_top_level_items_if_needed();
         let bfile = file.borrow();
 
-        let node = get_node_at_point(&bfile, to_point(params.position));
+        let node = get_node_at_point(
+            &bfile,
+            to_point(params.text_document_position_params.position),
+        );
         if node.kind() != "identifier" {
             self.respond(Response {
                 id,
@@ -108,7 +107,7 @@ impl Server {
         })
     }
     pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
-        let uri = params.text_document_position.text_document.uri;
+        let uri = params.text_document_position_params.text_document.uri;
         let ident_new_name = params.new_name;
 
         let file = match self.get_code(&uri) {
@@ -119,7 +118,10 @@ impl Server {
         let bfile = file.borrow();
 
         let (ident_initial_name, parent_scope, ident_initial_node) = {
-            let node = get_node_at_point(&bfile, to_point(params.text_document_position.position));
+            let node = get_node_at_point(
+                &bfile,
+                to_point(params.text_document_position_params.position),
+            );
             if node.kind() != "identifier" {
                 self.respond(Response {
                     id,
@@ -270,7 +272,7 @@ impl Server {
                     0,
                 );
                 items.first().map(|item| Hover {
-                    contents: HoverContents::Markup(MarkupContent {
+                    contents: Contents::MarkupContent(MarkupContent {
                         kind: lsp_types::MarkupKind::Markdown,
                         value: item.borrow_mut().get_hover(),
                     }),
@@ -288,7 +290,7 @@ impl Server {
         });
     }
 
-    pub(crate) fn handle_definition(&mut self, id: RequestId, params: GotoDefinitionParams) {
+    pub(crate) fn handle_definition(&mut self, id: RequestId, params: DefinitionParams) {
         let uri = &params.text_document_position_params.text_document.uri;
         let pos = params.text_document_position_params.position;
 
@@ -358,7 +360,7 @@ impl Server {
             _ => None,
         };
 
-        let result = result.map(GotoDefinitionResponse::Array);
+        let result = result.map(|result| DefinitionResponse::Definition(result.into()));
         let result = serde_json::to_value(result).unwrap();
 
         self.respond(Response {
@@ -369,8 +371,8 @@ impl Server {
     }
 
     pub(crate) fn handle_completion(&mut self, id: RequestId, params: CompletionParams) {
-        let uri = &params.text_document_position.text_document.uri;
-        let pos = params.text_document_position.position;
+        let uri = &params.text_document_position_params.text_document.uri;
+        let pos = params.text_document_position_params.position;
         let file = match self.get_code(uri) {
             Some(code) => code,
             _ => return,
@@ -478,24 +480,27 @@ impl Server {
                 })
                 .is_some()
         {
-            CompletionResponse::List(CompletionList {
+            CompletionList {
                 is_incomplete: true,
                 items: bfile
                     .get_include_completion(&node)
                     .iter()
                     .map(|file_name| CompletionItem {
                         label: file_name.clone(),
-                        kind: Some(CompletionItemKind::FILE),
+                        kind: Some(CompletionItemKind::File),
                         filter_text: Some(name.to_owned()),
                         insert_text: Some(file_name.clone()),
-                        insert_text_format: Some(InsertTextFormat::PLAIN_TEXT),
-                        insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
+                        insert_text_format: Some(InsertTextFormat::PlainText),
+                        insert_text_mode: Some(InsertTextMode::AdjustIndentation),
                         ..Default::default()
                     })
                     .collect(),
-            })
+                item_defaults: None,
+                apply_kind: None,
+            }
+            .into()
         } else {
-            CompletionResponse::List(CompletionList {
+            CompletionResponse::CompletionList(CompletionList {
                 is_incomplete: true,
                 items: items
                     .iter()
@@ -508,10 +513,10 @@ impl Server {
                             filter_text: Some(item.borrow().name.to_owned()),
                             insert_text: Some(snippet),
                             insert_text_format: Some(match item.borrow().kind {
-                                ItemKind::Variable => InsertTextFormat::PLAIN_TEXT,
-                                _ => InsertTextFormat::SNIPPET,
+                                ItemKind::Variable => InsertTextFormat::PlainText,
+                                _ => InsertTextFormat::Snippet,
                             }),
-                            insert_text_mode: Some(InsertTextMode::ADJUST_INDENTATION),
+                            insert_text_mode: Some(InsertTextMode::AdjustIndentation),
                             documentation: item.borrow().hover.as_ref().map(|doc| {
                                 Documentation::MarkupContent(MarkupContent {
                                     kind: lsp_types::MarkupKind::Markdown,
@@ -522,6 +527,8 @@ impl Server {
                         }
                     })
                     .collect(),
+                apply_kind: None,
+                item_defaults: None,
             })
         };
 
@@ -549,21 +556,23 @@ impl Server {
                     item.borrow().url.as_ref().map(|url| {
                         #[allow(deprecated)]
                         SymbolInformation {
-                            name: item.borrow().name.to_owned(),
-                            kind: item.borrow().get_symbol_kind(),
-                            tags: None,
+                            base_symbol_information: BaseSymbolInformation {
+                                name: item.borrow().name.to_owned(),
+                                kind: item.borrow().get_symbol_kind(),
+                                tags: None,
+                                container_name: None,
+                            },
                             deprecated: None,
                             location: Location {
                                 uri: url.clone(),
                                 range: item.borrow().range,
                             },
-                            container_name: None,
                         }
                     })
                 })
                 .collect();
 
-            let result = DocumentSymbolResponse::Flat(result);
+            let result = DocumentSymbolResponse::SymbolInformationList(result);
 
             let result = serde_json::to_value(result).unwrap();
             self.respond(Response {

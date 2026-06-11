@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use lsp_types::{CompletionItemKind, Range, SymbolKind, Url};
+use lsp_types::{CompletionItemKind, Range, SymbolKind, Uri};
 use regex::Regex;
 use tree_sitter::Node;
 
@@ -90,10 +90,10 @@ pub(crate) enum ItemKind {
 impl ItemKind {
     pub(crate) const fn completion_kind(&self) -> CompletionItemKind {
         match self {
-            Self::Variable => CompletionItemKind::VARIABLE,
-            Self::Function { .. } => CompletionItemKind::FUNCTION,
-            Self::Keyword(_) => CompletionItemKind::KEYWORD,
-            Self::Module { .. } => CompletionItemKind::MODULE,
+            Self::Variable => CompletionItemKind::Variable,
+            Self::Function { .. } => CompletionItemKind::Function,
+            Self::Keyword(_) => CompletionItemKind::Keyword,
+            Self::Module { .. } => CompletionItemKind::Module,
         }
     }
 }
@@ -103,7 +103,7 @@ pub(crate) struct Item {
     pub name: String,
     pub kind: ItemKind,
     pub range: Range,
-    pub url: Option<Url>,
+    pub url: Option<Uri>,
     pub is_builtin: bool,
 
     pub(crate) doc: Option<String>,
@@ -287,10 +287,10 @@ impl Item {
 
     pub(crate) const fn get_symbol_kind(&self) -> SymbolKind {
         match self.kind {
-            ItemKind::Function { .. } => SymbolKind::FUNCTION,
-            ItemKind::Module { .. } => SymbolKind::MODULE,
-            ItemKind::Variable => SymbolKind::VARIABLE,
-            ItemKind::Keyword(_) => SymbolKind::KEY,
+            ItemKind::Function { .. } => SymbolKind::Function,
+            ItemKind::Module { .. } => SymbolKind::Module,
+            ItemKind::Variable => SymbolKind::Variable,
+            ItemKind::Keyword(_) => SymbolKind::Key,
         }
     }
 }

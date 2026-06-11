@@ -3,7 +3,7 @@ use std::{env, path::PathBuf};
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
-    PublishDiagnosticsParams,
+    PublishDiagnosticsParams, TextDocumentContentChangeEvent, TextDocumentContentChangePartial,
 };
 use serde::Deserialize;
 
@@ -25,10 +25,16 @@ impl Server {
             content_changes,
         } = params;
 
-        let pc = match self.codes.get_refresh(&text_document.uri) {
+        let pc = match self
+            .codes
+            .get_refresh(&text_document.text_document_identifier.uri)
+        {
             Some(x) => x,
             None => {
-                err_to_console!("unknown document {}", text_document.uri);
+                err_to_console!(
+                    "unknown document {}",
+                    text_document.text_document_identifier.uri
+                );
                 return;
             }
         };
@@ -39,7 +45,7 @@ impl Server {
             .into_iter()
             .map(|node| Diagnostic {
                 range: node.lsp_range(),
-                severity: Some(DiagnosticSeverity::ERROR),
+                severity: Some(DiagnosticSeverity::Error),
                 message: if node.is_missing() {
                     format!("missing {}", node.kind())
                 } else {
@@ -50,14 +56,16 @@ impl Server {
             .collect();
 
         if content_changes.len() == 1 {
-            if let Some(range) = content_changes[0].range {
+            if let TextDocumentContentChangeEvent::TextDocumentContentChangePartial(
+                TextDocumentContentChangePartial { range, .. },
+            ) = content_changes[0]
+            {
                 let bpc = pc.borrow();
                 let pos = to_point(range.start);
                 let mut cursor = bpc.tree.root_node().walk();
                 cursor.goto_first_child_for_point(pos);
                 let node = cursor.node();
                 let kind = node.kind();
-                // let text = node_text(&bpc.code, &node);
 
                 if kind.is_include_statement() && bpc.get_include_url(&node).is_none() {
                     let mut range = node.child(1).unwrap().lsp_range();
@@ -65,7 +73,7 @@ impl Server {
                     range.end.character -= 1;
                     diags.push(Diagnostic {
                         range,
-                        severity: Some(DiagnosticSeverity::ERROR),
+                        severity: Some(DiagnosticSeverity::Error),
                         message: "file not found!".to_owned(),
                         ..Default::default()
                     });
@@ -76,7 +84,7 @@ impl Server {
         self.notify(lsp_server::Notification::new(
             "textDocument/publishDiagnostics".into(),
             PublishDiagnosticsParams {
-                uri: text_document.uri,
+                uri: text_document.text_document_identifier.uri,
                 diagnostics: diags,
                 version: Some(text_document.version),
             },
