@@ -204,7 +204,8 @@
 ; Let child nodes handle indentation
 (var_declaration . (assignment . (identifier) . "=" @append_input_softline))
 
-(assignments) @append_space
+; we want the node following an assignment to determine space/newline separation
+((assignments) . (_) @prepend_input_softline)
 
 ; NOTE uncomment for OpenSCAD 2022 and later
 ; OS2021 does not support trailing commas in assignments
@@ -221,7 +222,6 @@
 ;   .
 ;   (#multi_line_only!)
 ; )
-
 (assignments
   .
   "(" @append_empty_softline @append_indent_start
@@ -395,3 +395,4 @@
   "?" @append_input_softline @append_indent_start
   ":" @prepend_indent_end
 )
+
