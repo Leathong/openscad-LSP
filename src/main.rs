@@ -4,6 +4,7 @@
 #[macro_use]
 mod server;
 mod topiary;
+mod tree_sitter_traversal;
 
 use clap::Parser;
 use lsp_server::Connection;

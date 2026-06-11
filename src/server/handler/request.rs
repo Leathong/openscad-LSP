@@ -13,8 +13,8 @@ use lsp_types::{
     RenameParams, SymbolInformation, TextEdit, WorkspaceEdit,
 };
 
+use crate::tree_sitter_traversal::{Order, traverse};
 use tree_sitter::{Node, Point};
-use tree_sitter_traversal2::{Order, traverse};
 
 use crate::{
     response_item::{Item, ItemKind},
