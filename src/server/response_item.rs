@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use lsp_types::{CompletionItemKind, Range, SymbolKind, Uri};
-use regex::Regex;
+use regex::{Regex, RegexSet};
 use tree_sitter::Node;
 
 use crate::utils::*;
@@ -116,6 +116,26 @@ pub(crate) struct Item {
     pub(crate) snippet: Option<String>,
 }
 
+/// Heuristic: does this doc comment text contain Markdown markup?
+/// Deliberately excludes headings (`#` is the OpenSCAD debug modifier) and
+/// list bullets. `*x*` and `_x_` only count when set off by whitespace,
+/// parentheses or punctuation, so `2*x*3` and `snake_case_name` do not match. The text just inside the
+/// delimiters must be a letter or digit, which excludes globs like `*.scad,*.stl`.
+fn looks_like_markdown(doc: &str) -> bool {
+    lazy_static! {
+        static ref MD_RE: RegexSet = RegexSet::new([
+            r"(?m)^\s*\*?\s*```",                          // code fence (optional ` * ` gutter)
+            r"`[^`\n]+`",                                // inline code
+            r"(?m)(?:^|[^\w*])\*\*\S(?:[^*\n]*\S)?\*\*", // **bold**
+            r"\[[^\]\n]+\]\([^)\n]+\)",                  // [text](url)
+            r"(?m)(?:^|[\s(])\*[\p{L}\p{N}](?:[^*\n]*[\p{L}\p{N}])?\*(?:$|[\s).,;:!?])", // *italic*
+            r"(?m)(?:^|[\s(])_[\p{L}\p{N}](?:[^_\n]*[\p{L}\p{N}])?_(?:$|[\s).,;:!?])", // _italic_
+        ])
+        .unwrap();
+    }
+    MD_RE.is_match(doc)
+}
+
 /// Removes the common leading whitespace of all non-blank lines and turns
 /// whitespace-only lines into empty lines. Widths are counted in chars.
 fn dedent(doc: &str) -> String {
@@ -203,6 +223,7 @@ impl Item {
             let use_pre = match fmt {
                 DocFormat::Pre => true,
                 DocFormat::Markdown => false,
+                DocFormat::Auto => !looks_like_markdown(doc),
             };
             if self.is_builtin {
                 label = format!("{label}\n---\n\n{doc}\n");
@@ -406,5 +427,78 @@ mod tests {
         assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
         assert!(!item.get_hover(DocFormat::Markdown).contains("<pre>"));
         assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
+    }
+
+    #[test]
+    fn detects_markdown() {
+        for s in [
+            "```scad\ncube();\n```",
+            "  ```\nx\n```",
+            "* Example:\n* ```\n* box(1, 2);\n* ```",
+            "use `foo` here",
+            "**Usage:** foo()",
+            "a **b** c",
+            "(**b**)",
+            "see [docs](http://x.y)",
+            "a *b* c",
+            "*x* at start",
+            "ends with *x*",
+            "(*x*)",
+            "a *two words* here.",
+            "*note*: careful",
+            "see _x_.",
+            "_x_ first",
+            "a _two words_ here",
+        ] {
+            assert!(looks_like_markdown(s), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn ignores_plain_text() {
+        for s in [
+            "plain prose",
+            "a ** b",
+            "x**2 + y**2",
+            "2*x*3",
+            "snake_case_name and my_var_x",
+            "a * b * c",
+            "2 *x*3",
+            "x*y*z",
+            "w*h and (w*h)*d",
+            "*.scad,*.stl",
+            "*.scad *.stl",
+            "// ***",
+            "_____ banner _____",
+            "_ and _",
+            "a_b_c",
+            "the _foo_bar_ value",
+            "# debug modifier",
+            "- bullet\n- bullet",
+            "it`s unclosed",
+            "* 2 * 3\n* done",
+            "list[0] (see below)",
+            "  aligned   columns\n  here",
+        ] {
+            assert!(!looks_like_markdown(s), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn hover_auto_chooses_per_item() {
+        let md = func(Some(" use `x`"), false).make_hover(DocFormat::Auto);
+        assert!(!md.contains("<pre>"));
+        let plain = func(Some(" use x"), false).make_hover(DocFormat::Auto);
+        assert!(plain.contains("<pre>"));
+        let builtin = func(Some(" use x"), true).make_hover(DocFormat::Auto);
+        assert!(!builtin.contains("<pre>"));
+    }
+
+    #[test]
+    fn get_hover_treats_auto_as_distinct_cache_key() {
+        let mut item = func(Some(" use x"), false);
+        assert!(item.get_hover(DocFormat::Auto).contains("<pre>"));
+        assert!(!item.get_hover(DocFormat::Markdown).contains("<pre>"));
+        assert!(item.get_hover(DocFormat::Auto).contains("<pre>"));
     }
 }

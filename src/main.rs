@@ -18,6 +18,8 @@ pub(crate) enum DocFormat {
     Markdown,
     /// Wrap the doc text in <pre> tags (plain text).
     Pre,
+    /// Choose per item: Markdown if the doc text contains Markdown indicators.
+    Auto,
 }
 
 #[derive(Parser)]
@@ -55,8 +57,8 @@ pub(crate) struct Cli {
     #[clap(
         long,
         value_enum,
-        default_value_t = DocFormat::Pre,
-        help = "How doc comments of user and library items are rendered. Builtins are always Markdown"
+        default_value_t = DocFormat::Auto,
+        help = "How doc comments of user and library items are rendered; `auto` picks per item. Builtins are always Markdown"
     )]
     doc_format: DocFormat,
 }
@@ -97,6 +99,7 @@ mod tests {
             Ok(DocFormat::Markdown)
         );
         assert_eq!(DocFormat::from_str("PRE", true), Ok(DocFormat::Pre));
+        assert_eq!(DocFormat::from_str("Auto", true), Ok(DocFormat::Auto));
         assert!(DocFormat::from_str("html", true).is_err());
     }
 }
