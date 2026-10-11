@@ -274,7 +274,7 @@ impl Server {
                 items.first().map(|item| Hover {
                     contents: Contents::MarkupContent(MarkupContent {
                         kind: lsp_types::MarkupKind::Markdown,
-                        value: item.borrow_mut().get_hover(),
+                        value: item.borrow_mut().get_hover(self.args.doc_format),
                     }),
                     range: None,
                 })
@@ -507,6 +507,15 @@ impl Server {
                     .map(|item| {
                         let label = item.borrow_mut().get_label();
                         let snippet = item.borrow_mut().get_snippet(&self.args);
+                        let is_top_level = item.borrow().is_top_level;
+                        let documentation = if is_top_level {
+                            Some(Documentation::MarkupContent(MarkupContent {
+                                kind: lsp_types::MarkupKind::Markdown,
+                                value: item.borrow_mut().get_hover(self.args.doc_format),
+                            }))
+                        } else {
+                            None
+                        };
                         CompletionItem {
                             label,
                             kind: Some(item.borrow().kind.completion_kind()),
@@ -517,12 +526,7 @@ impl Server {
                                 _ => InsertTextFormat::Snippet,
                             }),
                             insert_text_mode: Some(InsertTextMode::AdjustIndentation),
-                            documentation: item.borrow().hover.as_ref().map(|doc| {
-                                Documentation::MarkupContent(MarkupContent {
-                                    kind: lsp_types::MarkupKind::Markdown,
-                                    value: doc.to_owned(),
-                                })
-                            }),
+                            documentation,
                             ..Default::default()
                         }
                     })

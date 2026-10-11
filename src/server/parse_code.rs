@@ -157,7 +157,6 @@ impl ParsedCode {
                         last.doc = Some(doc);
                     }
                     last.label = Some(last.make_label());
-                    last.hover = Some(last.make_hover());
                     return;
                 }
 
@@ -175,6 +174,7 @@ impl ParsedCode {
             } else {
                 if let Some(mut item) = Item::parse(&self.code, node) {
                     item.is_builtin = self.is_builtin;
+                    item.is_top_level = true;
                     if !self.is_builtin || self.external_builtin {
                         item.url = Some(self.url.clone());
                     }
@@ -182,7 +182,6 @@ impl ParsedCode {
                         .as_ref()
                         .map(|doc| self.extract_doc(doc, self.is_builtin));
                     item.label = Some(item.make_label());
-                    item.hover = Some(item.make_hover());
                     last_code_line = item.range.start.line as usize;
                     // log_to_console!("name: {} kind: {}", item.name, kind);
                     ret.push(item);
