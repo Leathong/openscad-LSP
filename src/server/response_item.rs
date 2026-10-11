@@ -5,7 +5,7 @@ use tree_sitter::Node;
 
 use crate::utils::*;
 
-use crate::Cli;
+use crate::{Cli, DocFormat};
 
 struct BuiltinFlags {}
 impl BuiltinFlags {
@@ -105,11 +105,36 @@ pub(crate) struct Item {
     pub range: Range,
     pub url: Option<Uri>,
     pub is_builtin: bool,
+    /// True for items produced by `gen_top_level_items` from source declarations
+    /// (not keywords, parameters or local items). Completion only attaches
+    /// documentation to these, matching the previous behaviour.
+    pub is_top_level: bool,
 
     pub(crate) doc: Option<String>,
-    pub(crate) hover: Option<String>,
+    pub(crate) hover: Option<(DocFormat, String)>,
     pub(crate) label: Option<String>,
     pub(crate) snippet: Option<String>,
+}
+
+/// Removes the common leading whitespace of all non-blank lines and turns
+/// whitespace-only lines into empty lines. Widths are counted in chars.
+fn dedent(doc: &str) -> String {
+    let indent = doc
+        .split('\n')
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| l.chars().take_while(|c| c.is_whitespace()).count())
+        .min()
+        .unwrap_or(0);
+    doc.split('\n')
+        .map(|l| {
+            if l.trim().is_empty() {
+                String::new()
+            } else {
+                l.chars().skip(indent).collect()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 impl Item {
@@ -120,12 +145,15 @@ impl Item {
         self.snippet.as_ref().unwrap().to_owned()
     }
 
-    pub(crate) fn get_hover(&mut self) -> String {
-        if self.hover.is_none() {
-            self.hover = Some(self.make_hover());
+    pub(crate) fn get_hover(&mut self, fmt: DocFormat) -> String {
+        match &self.hover {
+            Some((cached_fmt, text)) if *cached_fmt == fmt => text.to_owned(),
+            _ => {
+                let text = self.make_hover(fmt);
+                self.hover = Some((fmt, text.clone()));
+                text
+            }
         }
-        // log_to_console!("{:?}\n\n", &self.hover);
-        self.hover.as_ref().unwrap().to_owned()
     }
 
     pub(crate) fn get_label(&mut self) -> String {
@@ -160,7 +188,7 @@ impl Item {
         snippet
     }
 
-    pub(crate) fn make_hover(&self) -> String {
+    pub(crate) fn make_hover(&self, fmt: DocFormat) -> String {
         let mut label = match &self.label {
             Some(label) => label.to_owned(),
             None => self.make_label(),
@@ -171,10 +199,17 @@ impl Item {
             _ => format!("```scad\n{label}\n```"),
         };
         if let Some(doc) = &self.doc {
+            // Builtins are always raw Markdown, regardless of `fmt`.
+            let use_pre = match fmt {
+                DocFormat::Pre => true,
+                DocFormat::Markdown => false,
+            };
             if self.is_builtin {
                 label = format!("{label}\n---\n\n{doc}\n");
-            } else {
+            } else if use_pre {
                 label = format!("{label}\n---\n\n<pre>\n{doc}\n</pre>\n");
+            } else {
+                label = format!("{label}\n---\n\n{}\n", dedent(doc));
             }
         }
         // print!("{}", &label);
@@ -292,5 +327,84 @@ impl Item {
             ItemKind::Variable => SymbolKind::Variable,
             ItemKind::Keyword(_) => SymbolKind::Key,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn func(doc: Option<&str>, is_builtin: bool) -> Item {
+        Item {
+            name: "f".into(),
+            kind: ItemKind::Function {
+                flags: 0,
+                params: vec![],
+            },
+            doc: doc.map(str::to_owned),
+            is_builtin,
+            ..Default::default()
+        }
+    }
+
+    const HEADER: &str = "```scad\nfunction f()\n```";
+
+    #[test]
+    fn dedent_uniform_and_mixed() {
+        assert_eq!(dedent("  a\n  b"), "a\nb");
+        assert_eq!(dedent("  a\n    b\n  c"), "a\n  b\nc");
+    }
+
+    #[test]
+    fn dedent_blank_lines_and_trailing_comment_prefix() {
+        assert_eq!(dedent(" a\n\n b\n"), "a\n\nb\n");
+        assert_eq!(dedent(" a\n   \n b"), "a\n\nb");
+        // trailing same-line comment prefix produced by gen_top_level_items
+        assert_eq!(dedent("  \n x"), "\nx");
+    }
+
+    #[test]
+    fn dedent_empty_and_no_indent() {
+        assert_eq!(dedent(""), "");
+        assert_eq!(dedent("a\n b"), "a\n b");
+    }
+
+    #[test]
+    fn hover_without_doc_is_header_only() {
+        for fmt in [DocFormat::Pre, DocFormat::Markdown] {
+            assert_eq!(func(None, false).make_hover(fmt), HEADER);
+        }
+    }
+
+    #[test]
+    fn hover_pre_wraps_non_builtin() {
+        assert_eq!(
+            func(Some(" doc"), false).make_hover(DocFormat::Pre),
+            format!("{HEADER}\n---\n\n<pre>\n doc\n</pre>\n")
+        );
+    }
+
+    #[test]
+    fn hover_markdown_dedents_non_builtin() {
+        assert_eq!(
+            func(Some(" doc\n more"), false).make_hover(DocFormat::Markdown),
+            format!("{HEADER}\n---\n\ndoc\nmore\n")
+        );
+    }
+
+    #[test]
+    fn hover_builtin_ignores_format() {
+        let expected = format!("{HEADER}\n---\n\n  raw\n");
+        for fmt in [DocFormat::Pre, DocFormat::Markdown] {
+            assert_eq!(func(Some("  raw"), true).make_hover(fmt), expected);
+        }
+    }
+
+    #[test]
+    fn get_hover_recomputes_when_format_changes() {
+        let mut item = func(Some(" doc"), false);
+        assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
+        assert!(!item.get_hover(DocFormat::Markdown).contains("<pre>"));
+        assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
     }
 }

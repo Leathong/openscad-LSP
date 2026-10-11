@@ -1,5 +1,6 @@
 use std::{env, path::PathBuf};
 
+use clap::ValueEnum;
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeConfigurationParams, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, DidSaveTextDocumentParams,
@@ -7,7 +8,7 @@ use lsp_types::{
 };
 use serde::Deserialize;
 
-use crate::{server::Server, utils::*};
+use crate::{DocFormat, server::Server, utils::*};
 
 // Notification handlers.
 impl Server {
@@ -98,6 +99,7 @@ impl Server {
             default_param: Option<bool>,
             indent: Option<String>,
             query_file: Option<PathBuf>,
+            doc_format: Option<String>,
         }
 
         #[derive(Deserialize)]
@@ -129,6 +131,18 @@ impl Server {
 
             if let Some(default_param) = settings.openscad.default_param {
                 self.args.ignore_default = !default_param;
+            }
+
+            if let Some(fmt) = settings.openscad.doc_format {
+                match DocFormat::from_str(&fmt, true) {
+                    Ok(fmt) => self.args.doc_format = fmt,
+                    Err(_) => {
+                        err_to_console!(
+                            "invalid doc_format {:?}, expected one of: markdown, pre. keeping current value",
+                            fmt
+                        );
+                    }
+                }
             }
 
             self.args.indent = match settings.openscad.indent {
