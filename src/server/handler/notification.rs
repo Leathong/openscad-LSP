@@ -138,7 +138,7 @@ impl Server {
                     Ok(fmt) => self.args.doc_format = fmt,
                     Err(_) => {
                         err_to_console!(
-                            "invalid doc_format {:?}, expected one of: markdown, pre. keeping current value",
+                            "invalid doc_format {:?}, expected one of: markdown, pre, auto. keeping current value",
                             fmt
                         );
                     }
