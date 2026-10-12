@@ -96,6 +96,7 @@ impl Server {
         pub(crate) struct Openscad {
             search_paths: Option<String>,
             default_param: Option<bool>,
+            name_sole_param: Option<bool>,
             indent: Option<String>,
             query_file: Option<PathBuf>,
         }
@@ -129,6 +130,10 @@ impl Server {
 
             if let Some(default_param) = settings.openscad.default_param {
                 self.args.ignore_default = !default_param;
+            }
+
+            if let Some(name_sole_param) = settings.openscad.name_sole_param {
+                self.args.ignore_sole = !name_sole_param;
             }
 
             self.args.indent = match settings.openscad.indent {
