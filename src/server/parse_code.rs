@@ -253,18 +253,17 @@ impl ParsedCode {
             .trim_start_matches(&['<', '\n'][..])
             .trim_end_matches(&['>', '\n'][..]);
 
-        let dir;
         let mut filename = String::from("");
 
-        if path.ends_with('/') {
-            dir = path;
+        let dir = if path.ends_with('/') {
+            path
         } else {
             let path_buf = PathBuf::from(path);
             path_buf.file_name().map(|name| {
                 filename = String::from(name.to_str().unwrap());
             });
-            dir = path.trim_end_matches(&filename);
-        }
+            path.trim_end_matches(&filename)
+        };
 
         let mut inc_dirs = vec![];
         let inc_dir = self.url.to_file_path().unwrap().parent().unwrap().join(dir);

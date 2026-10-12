@@ -77,7 +77,7 @@ impl Server {
             }
         }
 
-        let url = Uri::parse(&format!("file://{}", &args.builtin)).unwrap();
+        let url = Uri::parse(&format!("file://{}", args.builtin)).unwrap();
 
         let mut instance = Self {
             library_locations: Rc::new(RefCell::new(vec![])),
