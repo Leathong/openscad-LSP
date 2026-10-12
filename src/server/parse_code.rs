@@ -253,7 +253,6 @@ impl ParsedCode {
             .trim_start_matches(&['<', '\n'][..])
             .trim_end_matches(&['>', '\n'][..]);
 
-        
         let mut filename = String::from("");
 
         let dir = if path.ends_with('/') {
