@@ -15,12 +15,20 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
+  lint:
     name: Check
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - run: cargo check --all-features
+
+      - name: check
+        run: cargo check --all-features
+
+      - name: check fmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --all-features --all-targets -- -D warnings
 
   test:
     name: Test Suite
@@ -28,20 +36,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: cargo test --all-features
-
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - run: cargo fmt --all -- --check
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - run: cargo clippy --all-features --all-targets -- -D warnings
 
   lockfile:
     name: Cargo.lock up-to-date?
