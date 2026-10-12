@@ -47,9 +47,9 @@ impl Server {
                 range: node.lsp_range(),
                 severity: Some(DiagnosticSeverity::Error),
                 message: if node.is_missing() {
-                    format!("missing {}", node.kind())
+                    format!("missing {}", node.kind()).into()
                 } else {
-                    "syntax error".to_owned()
+                    "syntax error".to_owned().into()
                 },
                 ..Default::default()
             })
@@ -74,7 +74,7 @@ impl Server {
                     diags.push(Diagnostic {
                         range,
                         severity: Some(DiagnosticSeverity::Error),
-                        message: "file not found!".to_owned(),
+                        message: "file not found!".to_owned().into(),
                         ..Default::default()
                     });
                 }
