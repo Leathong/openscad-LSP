@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use crate::{Server, utils::*};
 use lsp_server::{ExtractError, Message, Response};
 use lsp_types::{
     CompletionRequest, DefinitionRequest, DidChangeConfigurationNotification,
@@ -7,7 +8,6 @@ use lsp_types::{
     DidOpenTextDocumentNotification, DidSaveTextDocumentNotification, DocumentFormattingRequest,
     DocumentSymbolRequest, HoverRequest, PrepareRenameRequest, RenameRequest,
 };
-use crate::{Server, utils::*};
 
 use super::LoopAction;
 

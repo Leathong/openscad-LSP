@@ -92,13 +92,11 @@ impl Server {
 
         self.respond(Response {
             id,
-            response_result: Ok(
-                serde_json::to_value(Range {
-                    start: to_position(node.start_position()),
-                    end: to_position(node.end_position()),
-                })
-                .unwrap(),
-            ),
+            response_result: Ok(serde_json::to_value(Range {
+                start: to_position(node.start_position()),
+                end: to_position(node.end_position()),
+            })
+            .unwrap()),
         })
     }
     pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
