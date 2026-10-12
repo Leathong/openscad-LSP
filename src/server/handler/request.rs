@@ -48,8 +48,7 @@ impl Server {
         if node.kind() != "identifier" {
             self.respond(Response {
                 id,
-                result: None,
-                error: None,
+                response_result: Ok(serde_json::Value::Null),
             });
             return;
         }
@@ -62,8 +61,7 @@ impl Server {
         } else {
             self.respond(Response {
                 id,
-                result: None,
-                error: None,
+                response_result: Ok(serde_json::Value::Null),
             });
             return;
         };
@@ -73,8 +71,7 @@ impl Server {
         } else {
             self.respond(Response {
                 id,
-                result: None,
-                error: None,
+                response_result: Ok(serde_json::Value::Null),
             });
             return;
         };
@@ -82,8 +79,7 @@ impl Server {
         if url != uri {
             self.respond(Response {
                 id,
-                result: None,
-                error: Some(ResponseError {
+                response_result: Err(ResponseError {
                     code: 0,
                     message:
                         "Sorry, but renaming symbols defined in another file is not yet supported"
@@ -96,14 +92,11 @@ impl Server {
 
         self.respond(Response {
             id,
-            result: Some(
-                serde_json::to_value(Range {
-                    start: to_position(node.start_position()),
-                    end: to_position(node.end_position()),
-                })
-                .unwrap(),
-            ),
-            error: None,
+            response_result: Ok(serde_json::to_value(Range {
+                start: to_position(node.start_position()),
+                end: to_position(node.end_position()),
+            })
+            .unwrap()),
         })
     }
     pub(crate) fn handle_rename(&mut self, id: RequestId, params: RenameParams) {
@@ -125,8 +118,7 @@ impl Server {
             if node.kind() != "identifier" {
                 self.respond(Response {
                     id,
-                    result: None,
-                    error: Some(ResponseError {
+                    response_result: Err(ResponseError {
                         code: -32600, // Invalid Request error
                         message: "No identifier at given position".to_string(),
                         data: None,
@@ -148,8 +140,7 @@ impl Server {
             } else {
                 self.respond(Response {
                     id,
-                    result: None,
-                    error: Some(ResponseError {
+                    response_result: Err(ResponseError {
                         code: 0,
                         message: "No definition found for this identifier".to_string(),
                         data: None,
@@ -163,8 +154,7 @@ impl Server {
             } else {
                 self.respond(Response {
                     id,
-                    result: None,
-                    error: Some(ResponseError {
+                    response_result: Err(ResponseError {
                         code: 0,
                         message: "Cannot rename builtin".to_string(),
                         data: None,
@@ -176,8 +166,7 @@ impl Server {
             if url != uri {
                 self.respond(Response {
                     id,
-                    result: None,
-                    error: Some(ResponseError {
+                    response_result: Err(ResponseError {
                         code: 0,
                         message: "Sorry, but renaming symbols defined in another file is not yet supported".to_string(),
                         data: None,
@@ -237,8 +226,7 @@ impl Server {
 
         self.respond(Response {
             id,
-            result: Some(serde_json::to_value(result).unwrap()),
-            error: None,
+            response_result: Ok(serde_json::to_value(result).unwrap()),
         });
     }
     pub(crate) fn handle_hover(&mut self, id: RequestId, params: HoverParams) {
@@ -285,8 +273,7 @@ impl Server {
         let result = result.map(|r| serde_json::to_value(r).unwrap());
         self.respond(Response {
             id,
-            result,
-            error: None,
+            response_result: Ok(result.unwrap_or(serde_json::Value::Null)),
         });
     }
 
@@ -365,8 +352,7 @@ impl Server {
 
         self.respond(Response {
             id,
-            result: Some(result),
-            error: None,
+            response_result: Ok(result),
         });
     }
 
@@ -535,8 +521,7 @@ impl Server {
         let result = serde_json::to_value(result).unwrap();
         self.respond(Response {
             id,
-            result: Some(result),
-            error: None,
+            response_result: Ok(result),
         });
     }
 
@@ -577,8 +562,7 @@ impl Server {
             let result = serde_json::to_value(result).unwrap();
             self.respond(Response {
                 id,
-                result: Some(result),
-                error: None,
+                response_result: Ok(result),
             });
         }
     }
@@ -594,8 +578,7 @@ impl Server {
         let internal_err = |err: String| {
             self.respond(Response {
                 id: id.clone(),
-                result: None,
-                error: Some(ResponseError {
+                response_result: Err(ResponseError {
                     code: ErrorCode::InternalError as i32,
                     message: err,
                     data: None,
@@ -624,8 +607,7 @@ impl Server {
 
         self.respond(Response {
             id,
-            result: Some(result),
-            error: None,
+            response_result: Ok(result),
         });
     }
 }

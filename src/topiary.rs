@@ -9,7 +9,7 @@ use topiary_core::{Language, Operation, TopiaryQuery, formatter};
 
 #[derive(Debug)]
 /// Errors that may be encountered during formatting
-pub struct FormatError(topiary_core::FormatterError);
+pub struct FormatError(Box<dyn std::error::Error + Send + Sync>);
 
 impl Display for FormatError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -28,10 +28,11 @@ pub fn format(
 ) -> Result<(), FormatError> {
     let query_str = query_str.unwrap_or(OPENSCAD_QUERY);
     let grammar = tree_sitter_openscad::LANGUAGE.into();
-    let query = TopiaryQuery::new(&grammar, query_str).map_err(FormatError)?;
+    let query = TopiaryQuery::new(&grammar, query_str).map_err(|e| FormatError(e.into()))?;
     let language = Language {
         name: "openscad".to_owned(),
-        query,
+        formatting_query: query,
+        injection_query: None,
         grammar,
         indent,
     };
@@ -46,7 +47,9 @@ pub fn format(
             // users pay the cost of the check, although this cost should be fairly low.
             skip_idempotence: !cfg!(debug_assertions),
             tolerate_parsing_errors: false,
+            skip_stage: None,
         },
+        None,
     )
-    .map_err(FormatError)
+    .map_err(|e| FormatError(e.into()))
 }

@@ -1,5 +1,6 @@
 use std::error::Error;
 
+use crate::{Server, utils::*};
 use lsp_server::{ExtractError, Message, Response};
 use lsp_types::{
     CompletionRequest, DefinitionRequest, DidChangeConfigurationNotification,
@@ -7,9 +8,6 @@ use lsp_types::{
     DidOpenTextDocumentNotification, DidSaveTextDocumentNotification, DocumentFormattingRequest,
     DocumentSymbolRequest, HoverRequest, PrepareRenameRequest, RenameRequest,
 };
-use serde_json::json;
-
-use crate::{Server, utils::*};
 
 use super::LoopAction;
 
@@ -17,10 +15,7 @@ pub(crate) mod notification;
 pub(crate) mod request;
 
 impl Server {
-    pub(crate) fn respond(&self, mut resp: Response) {
-        if resp.result.is_none() {
-            resp.result = Some(json!(null))
-        }
+    pub(crate) fn respond(&self, resp: Response) {
         // log_to_console!("{:?}\n\n", &resp);
         self.connection
             .sender
