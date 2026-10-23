@@ -104,11 +104,13 @@ shown in hover and completion popups:
 
 -   `auto` (default): decided per item. The comment is shown as Markdown if it
     contains a code fence, `` `inline code` ``, `**bold**`, `*italic*`,
-    `_italic_` or a `[text](url)` link. Otherwise it is shown as preformatted
-    plain text (`<pre>`), which keeps its line breaks and alignment.
+    `_italic_` or a `[text](url)` link. Otherwise it is shown as plain text in
+    an indented code block, which keeps its line breaks and alignment.
 -   `markdown`: always Markdown. Common leading whitespace is removed.
--   `pre`: always preformatted plain text (`<pre>`). This was the only behaviour
-    before `doc_format` existed.
+-   `pre`: always plain text in an indented code block. Common leading
+    whitespace is removed and every line is indented by four spaces. No HTML
+    tags are used, so it also renders correctly in clients that show raw HTML
+    literally.
 
 `*italic*` and `_italic_` only count when set off by whitespace, parentheses or
 punctuation, so things like `2*x*3`, `snake_case_name` and `*.scad` do not
@@ -121,5 +123,6 @@ value is kept. An invalid value is logged and ignored, and the other settings
 in the same payload are still applied. Changes apply to the next hover or
 completion request without reopening files.
 
-Note that the default changed from `pre` to `auto`. Set `doc_format` to `pre`
-to keep the previous output.
+Note that the default changed from always-plain-text to `auto`, and plain text
+is now an indented code block instead of `<pre>` tags. Set `doc_format` to `pre`
+to show every comment as plain text.

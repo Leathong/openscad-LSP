@@ -16,7 +16,7 @@ use std::{error::Error, path::PathBuf};
 pub(crate) enum DocFormat {
     /// Send the doc text as Markdown (common indentation removed).
     Markdown,
-    /// Wrap the doc text in <pre> tags (plain text).
+    /// Show the doc text as plain text, in an indented code block.
     Pre,
     /// Choose per item: Markdown if the doc text contains Markdown indicators.
     Auto,

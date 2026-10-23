@@ -157,6 +157,25 @@ fn dedent(doc: &str) -> String {
         .join("\n")
 }
 
+/// Renders plain-text doc as a CommonMark indented code block: the text is
+/// dedented, leading and trailing blank lines are dropped, and every
+/// non-blank line gets a four space prefix. Unlike `<pre>` tags this renders
+/// correctly in clients that do not interpret raw HTML.
+fn indent_code(doc: &str) -> String {
+    dedent(doc)
+        .trim_matches('\n')
+        .split('\n')
+        .map(|l| {
+            if l.is_empty() {
+                String::new()
+            } else {
+                format!("    {l}")
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 impl Item {
     pub(crate) fn get_snippet(&mut self, args: &Cli) -> String {
         if self.snippet.is_none() {
@@ -228,7 +247,7 @@ impl Item {
             if self.is_builtin {
                 label = format!("{label}\n---\n\n{doc}\n");
             } else if use_pre {
-                label = format!("{label}\n---\n\n<pre>\n{doc}\n</pre>\n");
+                label = format!("{label}\n---\n\n{}\n", indent_code(doc));
             } else {
                 label = format!("{label}\n---\n\n{}\n", dedent(doc));
             }
@@ -370,6 +389,11 @@ mod tests {
 
     const HEADER: &str = "```scad\nfunction f()\n```";
 
+    /// True if the doc part of a hover is an indented code block (plain text).
+    fn is_code_block(hover: &str) -> bool {
+        hover.contains("\n    ")
+    }
+
     #[test]
     fn dedent_uniform_and_mixed() {
         assert_eq!(dedent("  a\n  b"), "a\nb");
@@ -398,11 +422,57 @@ mod tests {
     }
 
     #[test]
-    fn hover_pre_wraps_non_builtin() {
+    fn indent_code_dedents_then_indents() {
+        assert_eq!(indent_code(" a\n  b"), "    a\n     b");
+        assert_eq!(indent_code("a"), "    a");
+    }
+
+    #[test]
+    fn indent_code_blank_lines_stay_empty_and_edges_are_trimmed() {
+        assert_eq!(indent_code(" a\n\n b"), "    a\n\n    b");
+        assert_eq!(indent_code(" a\n   \n b"), "    a\n\n    b");
+        // `/** */` docs end with a newline
+        assert_eq!(indent_code("* L1\n* L2\n"), "    * L1\n    * L2");
+        // trailing same-line comment prefix produced by gen_top_level_items
+        assert_eq!(indent_code("  \n x"), "    x");
+        // nothing to show: no stray whitespace-only line
+        assert_eq!(indent_code(""), "");
+        assert_eq!(indent_code("  \n \n"), "");
+    }
+
+    #[test]
+    fn indent_code_keeps_markup_literal() {
         assert_eq!(
-            func(Some(" doc"), false).make_hover(DocFormat::Pre),
-            format!("{HEADER}\n---\n\n<pre>\n doc\n</pre>\n")
+            indent_code("```\n<b>x</b> *y*\n```"),
+            "    ```\n    <b>x</b> *y*\n    ```"
         );
+    }
+
+    #[test]
+    fn hover_pre_is_indented_code_block() {
+        assert_eq!(
+            func(Some(" doc\n  more"), false).make_hover(DocFormat::Pre),
+            format!("{HEADER}\n---\n\n    doc\n     more\n")
+        );
+    }
+
+    /// Doc text taken from the bundled builtins (`src/builtins`), which carries
+    /// its own `<pre><code>` block.
+    const BUILTIN_PRE_DOC: &str =
+        "Usage:\n<pre><code>\nfor (i = [0:36])\n  translate([ i * 10, 0, 0 ])\n\n</code></pre>\n";
+
+    #[test]
+    fn builtin_own_pre_tags_pass_through_in_every_format() {
+        let expected = format!("{HEADER}\n---\n\n{BUILTIN_PRE_DOC}\n");
+        for fmt in [DocFormat::Pre, DocFormat::Markdown, DocFormat::Auto] {
+            assert_eq!(func(Some(BUILTIN_PRE_DOC), true).make_hover(fmt), expected);
+        }
+    }
+
+    #[test]
+    fn hover_pre_has_no_html_tags() {
+        let h = func(Some(" doc"), false).make_hover(DocFormat::Pre);
+        assert!(!h.contains("<pre>") && !h.contains("</pre>"));
     }
 
     #[test]
@@ -424,9 +494,9 @@ mod tests {
     #[test]
     fn get_hover_recomputes_when_format_changes() {
         let mut item = func(Some(" doc"), false);
-        assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
-        assert!(!item.get_hover(DocFormat::Markdown).contains("<pre>"));
-        assert!(item.get_hover(DocFormat::Pre).contains("<pre>"));
+        assert!(is_code_block(&item.get_hover(DocFormat::Pre)));
+        assert!(!is_code_block(&item.get_hover(DocFormat::Markdown)));
+        assert!(is_code_block(&item.get_hover(DocFormat::Pre)));
     }
 
     #[test]
@@ -487,18 +557,18 @@ mod tests {
     #[test]
     fn hover_auto_chooses_per_item() {
         let md = func(Some(" use `x`"), false).make_hover(DocFormat::Auto);
-        assert!(!md.contains("<pre>"));
+        assert!(!is_code_block(&md));
         let plain = func(Some(" use x"), false).make_hover(DocFormat::Auto);
-        assert!(plain.contains("<pre>"));
+        assert!(is_code_block(&plain));
         let builtin = func(Some(" use x"), true).make_hover(DocFormat::Auto);
-        assert!(!builtin.contains("<pre>"));
+        assert!(!is_code_block(&builtin));
     }
 
     #[test]
     fn get_hover_treats_auto_as_distinct_cache_key() {
         let mut item = func(Some(" use x"), false);
-        assert!(item.get_hover(DocFormat::Auto).contains("<pre>"));
-        assert!(!item.get_hover(DocFormat::Markdown).contains("<pre>"));
-        assert!(item.get_hover(DocFormat::Auto).contains("<pre>"));
+        assert!(is_code_block(&item.get_hover(DocFormat::Auto)));
+        assert!(!is_code_block(&item.get_hover(DocFormat::Markdown)));
+        assert!(is_code_block(&item.get_hover(DocFormat::Auto)));
     }
 }
