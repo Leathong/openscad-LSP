@@ -74,6 +74,7 @@ Options:
       --depth <DEPTH>            search depth [default: 3]
       --indent <INDENT>          The indentation string used for that particular language. Defaults to "  " if not provided. Any string can be provided, but in most instances will be some whitespace: "  ", "    ", or "\t"
       --query-file <QUERY_FILE>  The query file used for topiary formatting
+      --doc-format <DOC_FORMAT>  How doc comments of user and library items are rendered; `auto` picks per item. Builtins are always Markdown [default: auto] [possible values: markdown, pre, auto]
   -h, --help                     Print help
   -V, --version                  Print version
 ```
@@ -88,8 +89,40 @@ To change the config at runtime, you can send notification `workspace/didChangeC
       "search_paths": "/libs",
       "indent": "    ",
       "query_file": "path/to/my/openscad.scm",
-      "default_param": true
+      "default_param": true,
+      "doc_format": "auto"
     }
   }
 }
 ```
+
+### Documentation format
+
+`doc_format` (`--doc-format` on the command line) controls how the doc comments
+of functions, modules and variables from your own files and libraries are
+shown in hover and completion popups:
+
+-   `auto` (default): decided per item. The comment is shown as Markdown if it
+    contains a code fence, `` `inline code` ``, `**bold**`, `*italic*`,
+    `_italic_` or a `[text](url)` link. Otherwise it is shown as plain text in
+    an indented code block, which keeps its line breaks and alignment.
+-   `markdown`: always Markdown. Common leading whitespace is removed.
+-   `pre`: always plain text in an indented code block. Common leading
+    whitespace is removed and every line is indented by four spaces. No HTML
+    tags are used, so it also renders correctly in clients that show raw HTML
+    literally.
+
+`*italic*` and `_italic_` only count when set off by whitespace, parentheses or
+punctuation, so things like `2*x*3`, `snake_case_name` and `*.scad` do not
+trigger Markdown.
+
+Built-in functions and modules are always shown as Markdown.
+
+If `doc_format` is missing from a `didChangeConfiguration` payload, the current
+value is kept. An invalid value is logged and ignored, and the other settings
+in the same payload are still applied. Changes apply to the next hover or
+completion request without reopening files.
+
+Note that the default changed from always-plain-text to `auto`, and plain text
+is now an indented code block instead of `<pre>` tags. Set `doc_format` to `pre`
+to show every comment as plain text.

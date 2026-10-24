@@ -1,11 +1,11 @@
 use lazy_static::lazy_static;
 use lsp_types::{CompletionItemKind, Range, SymbolKind, Uri};
 use regex::Regex;
-use tree_sitter::Node;
+use tree_sitter::{Node, Parser, Range as TsRange};
 
 use crate::utils::*;
 
-use crate::Cli;
+use crate::{Cli, DocFormat};
 
 struct BuiltinFlags {}
 impl BuiltinFlags {
@@ -105,11 +105,142 @@ pub(crate) struct Item {
     pub range: Range,
     pub url: Option<Uri>,
     pub is_builtin: bool,
+    /// True for items produced by `gen_top_level_items` from source declarations
+    /// (not keywords, parameters or local items). Completion only attaches
+    /// documentation to these, matching the previous behaviour.
+    pub is_top_level: bool,
 
     pub(crate) doc: Option<String>,
-    pub(crate) hover: Option<String>,
+    pub(crate) hover: Option<(DocFormat, String)>,
     pub(crate) label: Option<String>,
     pub(crate) snippet: Option<String>,
+}
+
+/// Calls `f` on `node` and every descendant, depth first.
+fn visit<'t>(node: Node<'t>, f: &mut impl FnMut(Node<'t>)) {
+    f(node);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        visit(child, f);
+    }
+}
+
+/// Does this inline-grammar node count as "real" Markdown markup in a code
+/// comment? The grammar is CommonMark, which is far more permissive than we
+/// want (`2*x*3` and `*.scad,*.stl` are emphasis to CommonMark), so emphasis is
+/// additionally required to be set off from surrounding text.
+fn is_markup(doc: &str, node: Node) -> bool {
+    let text = &doc[node.byte_range()];
+    let before = doc[..node.start_byte()].chars().next_back();
+    let after = doc[node.end_byte()..].chars().next();
+    match node.kind() {
+        "code_span" | "inline_link" => true,
+        // **bold**: not glued to a preceding word, so `x**2 + y**2` is not bold.
+        "strong_emphasis" => {
+            text.starts_with("**")
+                && before.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '*'))
+        }
+        // *italic* / _italic_: set off by whitespace, `(` or punctuation, with a
+        // letter or digit just inside, and no further delimiter inside.
+        "emphasis" => {
+            let delim = &text[..1];
+            let inner = &text[1..text.len() - 1];
+            let alnum = |c: Option<char>| c.is_some_and(char::is_alphanumeric);
+            before.is_none_or(|c| c.is_whitespace() || c == '(')
+                && after.is_none_or(|c| c.is_whitespace() || ").,;:!?".contains(c))
+                && alnum(inner.chars().next())
+                && alnum(inner.chars().next_back())
+                && !inner.contains(delim)
+        }
+        _ => false,
+    }
+}
+
+/// Heuristic: does this doc comment text contain Markdown markup?
+///
+/// Two-level parse with the tree-sitter Markdown grammars: the block grammar
+/// finds fenced code blocks and the `inline` spans, then the inline grammar
+/// is run over just those spans to find code spans, links and emphasis.
+/// Headings, lists and HTML blocks are deliberately not counted (`#` is the
+/// OpenSCAD debug modifier, and bullets read fine as plain text).
+fn looks_like_markdown(doc: &str) -> bool {
+    let mut block = Parser::new();
+    let mut inline = Parser::new();
+    if block
+        .set_language(&tree_sitter_md::LANGUAGE.into())
+        .is_err()
+        || inline
+            .set_language(&tree_sitter_md::INLINE_LANGUAGE.into())
+            .is_err()
+    {
+        return false;
+    }
+    let Some(block_tree) = block.parse(doc, None) else {
+        return false;
+    };
+
+    let mut fenced = false;
+    let mut spans: Vec<TsRange> = vec![];
+    visit(block_tree.root_node(), &mut |n| match n.kind() {
+        "fenced_code_block" => fenced = true,
+        "inline" => spans.push(n.range()),
+        _ => {}
+    });
+    if fenced {
+        return true;
+    }
+    if spans.is_empty() || inline.set_included_ranges(&spans).is_err() {
+        return false;
+    }
+    let Some(inline_tree) = inline.parse(doc, None) else {
+        return false;
+    };
+
+    let mut found = false;
+    visit(inline_tree.root_node(), &mut |n| {
+        found = found || is_markup(doc, n);
+    });
+    found
+}
+
+/// Removes the common leading whitespace of all non-blank lines and turns
+/// whitespace-only lines into empty lines. Widths are counted in chars.
+fn dedent(doc: &str) -> String {
+    let indent = doc
+        .split('\n')
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| l.chars().take_while(|c| c.is_whitespace()).count())
+        .min()
+        .unwrap_or(0);
+    doc.split('\n')
+        .map(|l| {
+            if l.trim().is_empty() {
+                String::new()
+            } else {
+                l.chars().skip(indent).collect()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// Renders plain-text doc as a CommonMark indented code block: the text is
+/// dedented, leading and trailing blank lines are dropped, and every
+/// non-blank line gets a four space prefix. Unlike `<pre>` tags this renders
+/// correctly in clients that do not interpret raw HTML.
+fn indent_code(doc: &str) -> String {
+    dedent(doc)
+        .trim_matches('\n')
+        .split('\n')
+        .map(|l| {
+            if l.is_empty() {
+                String::new()
+            } else {
+                format!("    {l}")
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 impl Item {
@@ -120,12 +251,15 @@ impl Item {
         self.snippet.as_ref().unwrap().to_owned()
     }
 
-    pub(crate) fn get_hover(&mut self) -> String {
-        if self.hover.is_none() {
-            self.hover = Some(self.make_hover());
+    pub(crate) fn get_hover(&mut self, fmt: DocFormat) -> String {
+        match &self.hover {
+            Some((cached_fmt, text)) if *cached_fmt == fmt => text.to_owned(),
+            _ => {
+                let text = self.make_hover(fmt);
+                self.hover = Some((fmt, text.clone()));
+                text
+            }
         }
-        // log_to_console!("{:?}\n\n", &self.hover);
-        self.hover.as_ref().unwrap().to_owned()
     }
 
     pub(crate) fn get_label(&mut self) -> String {
@@ -160,7 +294,7 @@ impl Item {
         snippet
     }
 
-    pub(crate) fn make_hover(&self) -> String {
+    pub(crate) fn make_hover(&self, fmt: DocFormat) -> String {
         let mut label = match &self.label {
             Some(label) => label.to_owned(),
             None => self.make_label(),
@@ -171,10 +305,18 @@ impl Item {
             _ => format!("```scad\n{label}\n```"),
         };
         if let Some(doc) = &self.doc {
+            // Builtins are always raw Markdown, regardless of `fmt`.
+            let use_pre = match fmt {
+                DocFormat::Pre => true,
+                DocFormat::Markdown => false,
+                DocFormat::Auto => !looks_like_markdown(doc),
+            };
             if self.is_builtin {
                 label = format!("{label}\n---\n\n{doc}\n");
+            } else if use_pre {
+                label = format!("{label}\n---\n\n{}\n", indent_code(doc));
             } else {
-                label = format!("{label}\n---\n\n<pre>\n{doc}\n</pre>\n");
+                label = format!("{label}\n---\n\n{}\n", dedent(doc));
             }
         }
         // print!("{}", &label);
@@ -292,5 +434,208 @@ impl Item {
             ItemKind::Variable => SymbolKind::Variable,
             ItemKind::Keyword(_) => SymbolKind::Key,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn func(doc: Option<&str>, is_builtin: bool) -> Item {
+        Item {
+            name: "f".into(),
+            kind: ItemKind::Function {
+                flags: 0,
+                params: vec![],
+            },
+            doc: doc.map(str::to_owned),
+            is_builtin,
+            ..Default::default()
+        }
+    }
+
+    const HEADER: &str = "```scad\nfunction f()\n```";
+
+    /// True if the doc part of a hover is an indented code block (plain text).
+    fn is_code_block(hover: &str) -> bool {
+        hover.contains("\n    ")
+    }
+
+    #[test]
+    fn dedent_uniform_and_mixed() {
+        assert_eq!(dedent("  a\n  b"), "a\nb");
+        assert_eq!(dedent("  a\n    b\n  c"), "a\n  b\nc");
+    }
+
+    #[test]
+    fn dedent_blank_lines_and_trailing_comment_prefix() {
+        assert_eq!(dedent(" a\n\n b\n"), "a\n\nb\n");
+        assert_eq!(dedent(" a\n   \n b"), "a\n\nb");
+        // trailing same-line comment prefix produced by gen_top_level_items
+        assert_eq!(dedent("  \n x"), "\nx");
+    }
+
+    #[test]
+    fn dedent_empty_and_no_indent() {
+        assert_eq!(dedent(""), "");
+        assert_eq!(dedent("a\n b"), "a\n b");
+    }
+
+    #[test]
+    fn hover_without_doc_is_header_only() {
+        for fmt in [DocFormat::Pre, DocFormat::Markdown] {
+            assert_eq!(func(None, false).make_hover(fmt), HEADER);
+        }
+    }
+
+    #[test]
+    fn indent_code_dedents_then_indents() {
+        assert_eq!(indent_code(" a\n  b"), "    a\n     b");
+        assert_eq!(indent_code("a"), "    a");
+    }
+
+    #[test]
+    fn indent_code_blank_lines_stay_empty_and_edges_are_trimmed() {
+        assert_eq!(indent_code(" a\n\n b"), "    a\n\n    b");
+        assert_eq!(indent_code(" a\n   \n b"), "    a\n\n    b");
+        // `/** */` docs end with a newline
+        assert_eq!(indent_code("* L1\n* L2\n"), "    * L1\n    * L2");
+        // trailing same-line comment prefix produced by gen_top_level_items
+        assert_eq!(indent_code("  \n x"), "    x");
+        // nothing to show: no stray whitespace-only line
+        assert_eq!(indent_code(""), "");
+        assert_eq!(indent_code("  \n \n"), "");
+    }
+
+    #[test]
+    fn indent_code_keeps_markup_literal() {
+        assert_eq!(
+            indent_code("```\n<b>x</b> *y*\n```"),
+            "    ```\n    <b>x</b> *y*\n    ```"
+        );
+    }
+
+    #[test]
+    fn hover_pre_is_indented_code_block() {
+        assert_eq!(
+            func(Some(" doc\n  more"), false).make_hover(DocFormat::Pre),
+            format!("{HEADER}\n---\n\n    doc\n     more\n")
+        );
+    }
+
+    /// Doc text taken from the bundled builtins (`src/builtins`), which carries
+    /// its own `<pre><code>` block.
+    const BUILTIN_PRE_DOC: &str =
+        "Usage:\n<pre><code>\nfor (i = [0:36])\n  translate([ i * 10, 0, 0 ])\n\n</code></pre>\n";
+
+    #[test]
+    fn builtin_own_pre_tags_pass_through_in_every_format() {
+        let expected = format!("{HEADER}\n---\n\n{BUILTIN_PRE_DOC}\n");
+        for fmt in [DocFormat::Pre, DocFormat::Markdown, DocFormat::Auto] {
+            assert_eq!(func(Some(BUILTIN_PRE_DOC), true).make_hover(fmt), expected);
+        }
+    }
+
+    #[test]
+    fn hover_pre_has_no_html_tags() {
+        let h = func(Some(" doc"), false).make_hover(DocFormat::Pre);
+        assert!(!h.contains("<pre>") && !h.contains("</pre>"));
+    }
+
+    #[test]
+    fn hover_markdown_dedents_non_builtin() {
+        assert_eq!(
+            func(Some(" doc\n more"), false).make_hover(DocFormat::Markdown),
+            format!("{HEADER}\n---\n\ndoc\nmore\n")
+        );
+    }
+
+    #[test]
+    fn hover_builtin_ignores_format() {
+        let expected = format!("{HEADER}\n---\n\n  raw\n");
+        for fmt in [DocFormat::Pre, DocFormat::Markdown] {
+            assert_eq!(func(Some("  raw"), true).make_hover(fmt), expected);
+        }
+    }
+
+    #[test]
+    fn get_hover_recomputes_when_format_changes() {
+        let mut item = func(Some(" doc"), false);
+        assert!(is_code_block(&item.get_hover(DocFormat::Pre)));
+        assert!(!is_code_block(&item.get_hover(DocFormat::Markdown)));
+        assert!(is_code_block(&item.get_hover(DocFormat::Pre)));
+    }
+
+    #[test]
+    fn detects_markdown() {
+        for s in [
+            "```scad\ncube();\n```",
+            "  ```\nx\n```",
+            "* Example:\n* ```\n* box(1, 2);\n* ```",
+            "use `foo` here",
+            "**Usage:** foo()",
+            "a **b** c",
+            "(**b**)",
+            "see [docs](http://x.y)",
+            "a *b* c",
+            "*x* at start",
+            "ends with *x*",
+            "(*x*)",
+            "a *two words* here.",
+            "*note*: careful",
+            "see _x_.",
+            "_x_ first",
+            "a _two words_ here",
+        ] {
+            assert!(looks_like_markdown(s), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn ignores_plain_text() {
+        for s in [
+            "plain prose",
+            "a ** b",
+            "x**2 + y**2",
+            "2*x*3",
+            "snake_case_name and my_var_x",
+            "a * b * c",
+            "2 *x*3",
+            "x*y*z",
+            "w*h and (w*h)*d",
+            "*.scad,*.stl",
+            "*.scad *.stl",
+            "// ***",
+            "_____ banner _____",
+            "_ and _",
+            "a_b_c",
+            "the _foo_bar_ value",
+            "# debug modifier",
+            "- bullet\n- bullet",
+            "it`s unclosed",
+            "* 2 * 3\n* done",
+            "list[0] (see below)",
+            "  aligned   columns\n  here",
+        ] {
+            assert!(!looks_like_markdown(s), "{s:?}");
+        }
+    }
+
+    #[test]
+    fn hover_auto_chooses_per_item() {
+        let md = func(Some(" use `x`"), false).make_hover(DocFormat::Auto);
+        assert!(!is_code_block(&md));
+        let plain = func(Some(" use x"), false).make_hover(DocFormat::Auto);
+        assert!(is_code_block(&plain));
+        let builtin = func(Some(" use x"), true).make_hover(DocFormat::Auto);
+        assert!(!is_code_block(&builtin));
+    }
+
+    #[test]
+    fn get_hover_treats_auto_as_distinct_cache_key() {
+        let mut item = func(Some(" use x"), false);
+        assert!(is_code_block(&item.get_hover(DocFormat::Auto)));
+        assert!(!is_code_block(&item.get_hover(DocFormat::Markdown)));
+        assert!(is_code_block(&item.get_hover(DocFormat::Auto)));
     }
 }

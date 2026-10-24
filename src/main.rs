@@ -6,10 +6,21 @@ mod server;
 mod topiary;
 mod tree_sitter_traversal;
 
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use lsp_server::Connection;
 use server::*;
 use std::{error::Error, path::PathBuf};
+
+/// How documentation comments of non-builtin items are rendered.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub(crate) enum DocFormat {
+    /// Send the doc text as Markdown (common indentation removed).
+    Markdown,
+    /// Show the doc text as plain text, in an indented code block.
+    Pre,
+    /// Choose per item: Markdown if the doc text contains Markdown indicators.
+    Auto,
+}
 
 #[derive(Parser)]
 #[clap(name = "OpenSCAD-LSP")]
@@ -42,6 +53,14 @@ pub(crate) struct Cli {
 
     #[clap(long, help = "The query file used for topiary formatting")]
     query_file: Option<PathBuf>,
+
+    #[clap(
+        long,
+        value_enum,
+        default_value_t = DocFormat::Auto,
+        help = "How doc comments of user and library items are rendered; `auto` picks per item. Builtins are always Markdown"
+    )]
+    doc_format: DocFormat,
 }
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -66,4 +85,21 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     err_to_console!("exit");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DocFormat;
+    use clap::ValueEnum;
+
+    #[test]
+    fn doc_format_parses_case_insensitively() {
+        assert_eq!(
+            DocFormat::from_str("markdown", true),
+            Ok(DocFormat::Markdown)
+        );
+        assert_eq!(DocFormat::from_str("PRE", true), Ok(DocFormat::Pre));
+        assert_eq!(DocFormat::from_str("Auto", true), Ok(DocFormat::Auto));
+        assert!(DocFormat::from_str("html", true).is_err());
+    }
 }
