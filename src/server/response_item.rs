@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use lsp_types::{CompletionItemKind, Range, SymbolKind, Uri};
-use regex::{Regex, RegexSet};
-use tree_sitter::Node;
+use regex::Regex;
+use tree_sitter::{Node, Parser, Range as TsRange};
 
 use crate::utils::*;
 
@@ -116,24 +116,91 @@ pub(crate) struct Item {
     pub(crate) snippet: Option<String>,
 }
 
-/// Heuristic: does this doc comment text contain Markdown markup?
-/// Deliberately excludes headings (`#` is the OpenSCAD debug modifier) and
-/// list bullets. `*x*` and `_x_` only count when set off by whitespace,
-/// parentheses or punctuation, so `2*x*3` and `snake_case_name` do not match. The text just inside the
-/// delimiters must be a letter or digit, which excludes globs like `*.scad,*.stl`.
-fn looks_like_markdown(doc: &str) -> bool {
-    lazy_static! {
-        static ref MD_RE: RegexSet = RegexSet::new([
-            r"(?m)^\s*\*?\s*```",                          // code fence (optional ` * ` gutter)
-            r"`[^`\n]+`",                                // inline code
-            r"(?m)(?:^|[^\w*])\*\*\S(?:[^*\n]*\S)?\*\*", // **bold**
-            r"\[[^\]\n]+\]\([^)\n]+\)",                  // [text](url)
-            r"(?m)(?:^|[\s(])\*[\p{L}\p{N}](?:[^*\n]*[\p{L}\p{N}])?\*(?:$|[\s).,;:!?])", // *italic*
-            r"(?m)(?:^|[\s(])_[\p{L}\p{N}](?:[^_\n]*[\p{L}\p{N}])?_(?:$|[\s).,;:!?])", // _italic_
-        ])
-        .unwrap();
+/// Calls `f` on `node` and every descendant, depth first.
+fn visit<'t>(node: Node<'t>, f: &mut impl FnMut(Node<'t>)) {
+    f(node);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        visit(child, f);
     }
-    MD_RE.is_match(doc)
+}
+
+/// Does this inline-grammar node count as "real" Markdown markup in a code
+/// comment? The grammar is CommonMark, which is far more permissive than we
+/// want (`2*x*3` and `*.scad,*.stl` are emphasis to CommonMark), so emphasis is
+/// additionally required to be set off from surrounding text.
+fn is_markup(doc: &str, node: Node) -> bool {
+    let text = &doc[node.byte_range()];
+    let before = doc[..node.start_byte()].chars().next_back();
+    let after = doc[node.end_byte()..].chars().next();
+    match node.kind() {
+        "code_span" | "inline_link" => true,
+        // **bold**: not glued to a preceding word, so `x**2 + y**2` is not bold.
+        "strong_emphasis" => {
+            text.starts_with("**")
+                && before.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '*'))
+        }
+        // *italic* / _italic_: set off by whitespace, `(` or punctuation, with a
+        // letter or digit just inside, and no further delimiter inside.
+        "emphasis" => {
+            let delim = &text[..1];
+            let inner = &text[1..text.len() - 1];
+            let alnum = |c: Option<char>| c.is_some_and(char::is_alphanumeric);
+            before.is_none_or(|c| c.is_whitespace() || c == '(')
+                && after.is_none_or(|c| c.is_whitespace() || ").,;:!?".contains(c))
+                && alnum(inner.chars().next())
+                && alnum(inner.chars().next_back())
+                && !inner.contains(delim)
+        }
+        _ => false,
+    }
+}
+
+/// Heuristic: does this doc comment text contain Markdown markup?
+///
+/// Two-level parse with the tree-sitter Markdown grammars: the block grammar
+/// finds fenced code blocks and the `inline` spans, then the inline grammar
+/// is run over just those spans to find code spans, links and emphasis.
+/// Headings, lists and HTML blocks are deliberately not counted (`#` is the
+/// OpenSCAD debug modifier, and bullets read fine as plain text).
+fn looks_like_markdown(doc: &str) -> bool {
+    let mut block = Parser::new();
+    let mut inline = Parser::new();
+    if block
+        .set_language(&tree_sitter_md::LANGUAGE.into())
+        .is_err()
+        || inline
+            .set_language(&tree_sitter_md::INLINE_LANGUAGE.into())
+            .is_err()
+    {
+        return false;
+    }
+    let Some(block_tree) = block.parse(doc, None) else {
+        return false;
+    };
+
+    let mut fenced = false;
+    let mut spans: Vec<TsRange> = vec![];
+    visit(block_tree.root_node(), &mut |n| match n.kind() {
+        "fenced_code_block" => fenced = true,
+        "inline" => spans.push(n.range()),
+        _ => {}
+    });
+    if fenced {
+        return true;
+    }
+    if spans.is_empty() || inline.set_included_ranges(&spans).is_err() {
+        return false;
+    }
+    let Some(inline_tree) = inline.parse(doc, None) else {
+        return false;
+    };
+
+    let mut found = false;
+    visit(inline_tree.root_node(), &mut |n| {
+        found = found || is_markup(doc, n);
+    });
+    found
 }
 
 /// Removes the common leading whitespace of all non-blank lines and turns
