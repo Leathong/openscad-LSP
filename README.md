@@ -71,6 +71,7 @@ Options:
       --builtin <BUILTIN>        external builtin functions file path, if set, the built-in builtin functions file will not be used [default: ]
       --stdio                    use stdio instead of tcp
       --ignore-default           exclude default params in auto-completion
+      --ignore-sole              exclude param name for sole argument in auto-completion
       --depth <DEPTH>            search depth [default: 3]
       --indent <INDENT>          The indentation string used for that particular language. Defaults to "  " if not provided. Any string can be provided, but in most instances will be some whitespace: "  ", "    ", or "\t"
       --query-file <QUERY_FILE>  The query file used for topiary formatting
@@ -89,6 +90,7 @@ To change the config at runtime, you can send notification `workspace/didChangeC
       "indent": "    ",
       "query_file": "path/to/my/openscad.scm",
       "default_param": true
+      "name_sole_param": true
     }
   }
 }
