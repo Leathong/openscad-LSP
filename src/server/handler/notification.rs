@@ -128,12 +128,12 @@ impl Server {
 
             self.extend_libs(paths);
 
-            if let Some(default_param) = settings.openscad.default_param {
-                self.args.ignore_default = !default_param;
+            if let Some(ignore_params_with_default) = settings.openscad.default_param {
+                self.args.ignore_params_with_default = ignore_params_with_default;
             }
 
-            if let Some(name_sole_param) = settings.openscad.name_sole_param {
-                self.args.ignore_sole = !name_sole_param;
+            if let Some(ignore_sole_param_name) = settings.openscad.name_sole_param {
+                self.args.ignore_sole_param_name = ignore_sole_param_name;
             }
 
             self.args.indent = match settings.openscad.indent {

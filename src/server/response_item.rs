@@ -54,16 +54,16 @@ impl Param {
     pub(crate) fn make_snippet(params: &[Self], ignore_name: bool, args: &Cli) -> String {
         let ps = params
             .iter()
-            .filter(|p| p.default.is_none() || !args.ignore_default);
+            .filter(|p| p.default.is_none() || !args.ignore_params_with_default);
         let count = ps.clone().count();
 
         ps.enumerate()
             .map(|(i, p)| {
-                if !args.ignore_default && p.default.as_ref().is_some() {
+                if !args.ignore_params_with_default && p.default.as_ref().is_some() {
                     return format!("{} = {}", p.name, p.default.as_ref().unwrap());
                 }
 
-                if ignore_name || (args.ignore_sole && count == 1) {
+                if ignore_name || (args.ignore_sole_param_name && count == 1) {
                     format!("${{{}:{}}}", i + 1, p.name)
                 } else {
                     format!("{} = ${{{}:{}}}", p.name, i + 1, p.name)
